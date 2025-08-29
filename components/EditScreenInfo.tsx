@@ -1,7 +1,7 @@
 import { Text, View } from 'react-native';
 
 export const EditScreenInfo = ({ path }: { path: string }) => {
-  const title = 'Texto de bien venido:';
+  const title = 'Textos de bien venido:';
   const description =
     'Cambia cualquier texto, guarda el archivo y tu aplicación se actualizará automáticamente.';
 
@@ -10,7 +10,9 @@ export const EditScreenInfo = ({ path }: { path: string }) => {
       <View className={styles.getStartedContainer}>
         <Text className={styles.getStartedText}>{title}</Text>
         <View className={styles.codeHighlightContainer + styles.homeScreenFilename}>
-          <Text className="text-center font-bold text-blue-800">{path}</Text>
+          <Text className="rounded-full bg-blue-800 p-4 text-center font-bold text-white ">
+            {path}
+          </Text>
         </View>
         <Text className={styles.getStartedText}>{description}</Text>
       </View>

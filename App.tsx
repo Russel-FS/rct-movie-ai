@@ -1,8 +1,8 @@
-import { ScreenContent } from 'components/ScreenContent';
 import { StatusBar } from 'expo-status-bar';
 import { Text, View } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 
+import { ScreenContent } from '~/shared/components/ScreenContent';
 import './global.css';
 
 export default function App() {

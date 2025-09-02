@@ -1,5 +1,4 @@
-import { Text, View } from 'react-native';
-
+import { Text, View } from 'react-native'; 
 import { EditScreenInfo } from './EditScreenInfo';
 
 type ScreenContentProps = {

@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { Text } from 'react-native';
+import { Text, View } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 
 import './global.css';
@@ -24,6 +24,7 @@ export default function App() {
     <>
       <Container>
         <Animated.View style={[{ padding: 20 }, animatedStyle]}>
+          <View className="h-5 rounded-full bg-black p-5"></View>
           <Text className="rounded-full bg-blue-600 p-3 text-white" onPress={startAnimation}>
             ¡Toca este texto para ver la animación!
           </Text>

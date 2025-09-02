@@ -8,12 +8,14 @@ const Header = () => {
   const handleClose = () => setIsOpen(false);
 
   return (
-    <View className="w-full flex-row items-center justify-between rounded-lg bg-gray-900 p-4">
-      <TouchableOpacity className="rounded-full bg-white p-1.5" onPress={() => setIsOpen(!isOpen)}>
+    <View className="w-full flex-row items-center justify-between  bg-gray-50 p-4">
+      <TouchableOpacity
+        className="rounded-full bg-gray-200  p-2"
+        onPress={() => setIsOpen(!isOpen)}>
         <Menu color={'black'} size={24} />
       </TouchableOpacity>
-      <Text className="text-lg font-bold text-white">Movie AI</Text>
-      <TouchableOpacity className="rounded-full bg-white p-1.5" onPress={() => setIsOpen(!isOpen)}>
+      <Text className="text-lg font-bold text-gray-800">Movie AI</Text>
+      <TouchableOpacity className="rounded-full bg-gray-200 p-2" onPress={() => setIsOpen(!isOpen)}>
         <UserIcon color={'black'} size={24} />
       </TouchableOpacity>
       <Modal isVisible={isOpen} onClose={handleClose} />

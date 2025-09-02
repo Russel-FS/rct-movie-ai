@@ -1,7 +1,11 @@
 import Header from '../Header';
 
 const Main = () => {
-  return <Header />;
+  return (
+    <>
+      <Header />
+    </>
+  );
 };
 
 export default Main;

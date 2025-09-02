@@ -4,6 +4,7 @@ import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-na
 
 import './global.css';
 import { Container } from '~/shared/components/Container';
+import Main from '~/home/components/Main';
 
 export default function App() {
   const scale = useSharedValue(1);
@@ -23,12 +24,7 @@ export default function App() {
   return (
     <>
       <Container>
-        <Animated.View style={[{ padding: 20 }, animatedStyle]}>
-          <View className="h-5 rounded-full bg-black p-5"></View>
-          <Text className="rounded-full bg-blue-600 p-3 text-white" onPress={startAnimation}>
-            ¡Toca este texto para ver la animación!
-          </Text>
-        </Animated.View>
+        <Main></Main>
       </Container>
       <StatusBar style="auto" />
     </>

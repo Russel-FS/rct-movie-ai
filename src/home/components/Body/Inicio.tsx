@@ -142,7 +142,7 @@ const Inicio = () => {
                       }`}>
                         <Text className="text-text-primary text-xs font-semibold">{movie.badge}</Text>
                       </View>
-                    )}
+                    )} 
                   </View>
                   <View className="p-4">
                     <Text className="text-text-primary text-base font-semibold mb-2 leading-5">{movie.title}</Text>

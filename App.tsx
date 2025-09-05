@@ -1,7 +1,7 @@
 // App.tsx
 import { StatusBar } from "expo-status-bar";
 import { View } from "react-native";
-import Header from "./src/home/components/Header"; // ajusta la ruta según tu proyecto
+import Header from "./src/home/components/Header"; 
 
 export default function App() {
   return (

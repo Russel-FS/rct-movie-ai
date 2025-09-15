@@ -20,6 +20,7 @@ export default function Navigation({ onTabChange, initialTab = 'home' }: Navigat
 
   const navItems: NavItem[] = [
     { id: 'home', name: 'Home', icon: 'home-outline', label: 'Inicio' },
+    { id: 'cartelera', name: 'Cartelera', icon: 'film-outline', label: 'Cartelera' },
     { id: 'Cines', name: 'Cines', icon: 'location-outline', label: 'Cines' },
     { id: 'entries', name: 'Entries', icon: 'ticket-outline', label: 'Entradas' },
     { id: 'profile', name: 'Profile', icon: 'person-outline', label: 'Perfil' },

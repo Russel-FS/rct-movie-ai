@@ -8,6 +8,7 @@ import Home from '~/home/page/Home';
 import Cines from '~/home/page/Cines';
 import Entradas from '~/home/page/Entradas';
 import Perfil from '~/home/page/Perfil';
+import Cartelera from '~/cartelera/pages/Cartelera';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<string>('home');
@@ -16,6 +17,8 @@ export default function App() {
     switch (activeTab) {
       case 'home':
         return <Home />;
+      case 'cartelera':
+        return <Cartelera />;
       case 'Cines':
         return <Cines />;
       case 'entries':

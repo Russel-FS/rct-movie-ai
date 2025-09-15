@@ -1,19 +1,24 @@
 import { useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import Cines from '~/home/page/Cines';
+import Entradas from '~/home/page/Entradas';
+import Perfil from '~/home/page/Perfil';
+import Home from '~/home/page/Home';
 
 interface NavItem {
   id: string;
   name: string;
   icon: keyof typeof Ionicons.glyphMap;
   label: string;
+  page?: React.ReactNode;
 }
 
 const navItems: NavItem[] = [
-  { id: 'home', name: 'Home', icon: 'home-outline', label: 'Inicio' },
-  { id: 'Cines', name: 'Cines', icon: 'location-outline', label: 'Cines' },
-  { id: 'entries', name: 'Entries', icon: 'ticket-outline', label: 'Entradas' },
-  { id: 'profile', name: 'Profile', icon: 'person-outline', label: 'Perfil' },
+  { id: 'home', name: 'Home', icon: 'home-outline', label: 'Inicio', page: <Home /> },
+  { id: 'Cines', name: 'Cines', icon: 'location-outline', label: 'Cines', page: <Cines /> },
+  { id: 'entries', name: 'Entries', icon: 'ticket-outline', label: 'Entradas', page: <Entradas /> },
+  { id: 'profile', name: 'Profile', icon: 'person-outline', label: 'Perfil', page: <Perfil /> },
 ];
 
 export default function Navigation() {
@@ -38,6 +43,7 @@ export default function Navigation() {
             }`}>
             {item.label}
           </Text>
+          {activeTab === item.id ? item.page : <Home />}
         </TouchableOpacity>
       ))}
     </View>

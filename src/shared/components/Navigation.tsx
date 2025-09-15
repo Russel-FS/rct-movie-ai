@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { User, Home, MapPin, Ticket, User2, Film } from 'lucide-react-native';
 
 export interface NavItem {
   id: string;
   name: string;
-  icon: keyof typeof Ionicons.glyphMap;
+  icon: ({ color, size }: { color: string; size: number }) => React.ReactNode;
   label: string;
   page?: React.ReactNode;
 }
@@ -19,11 +19,17 @@ export default function Navigation({ onTabChange, initialTab = 'home' }: Navigat
   const [activeTab, setActiveTab] = useState<string>(initialTab);
 
   const navItems: NavItem[] = [
-    { id: 'home', name: 'Home', icon: 'home-outline', label: 'Inicio' },
-    { id: 'cartelera', name: 'Cartelera', icon: 'film-outline', label: 'Cartelera' },
-    { id: 'Cines', name: 'Cines', icon: 'location-outline', label: 'Cines' },
-    { id: 'entries', name: 'Entries', icon: 'ticket-outline', label: 'Entradas' },
-    { id: 'profile', name: 'Profile', icon: 'person-outline', label: 'Perfil' },
+    { id: 'home', name: 'Home', icon: (props) => <Home {...props} />, label: 'Inicio' },
+    {
+      id: 'cartelera',
+      name: 'Cartelera',
+      icon: (props) => <Film {...props} />,
+      label: 'Cartelera',
+    },
+    { id: 'Cines', name: 'Cines', icon: (props) => <MapPin {...props} />, label: 'Cines' },
+    { id: 'entries', name: 'Entries', icon: (props) => <Ticket {...props} />, label: 'Entradas' },
+    { id: 'auth', name: 'Auth', icon: (props) => <User {...props} />, label: 'Acceso' },
+    { id: 'profile', name: 'Profile', icon: (props) => <User2 {...props} />, label: 'Perfil' },
   ];
 
   const handleTabPress = (tabId: string) => {
@@ -41,7 +47,7 @@ export default function Navigation({ onTabChange, initialTab = 'home' }: Navigat
           className="flex-1 items-center justify-center py-2"
           onPress={() => handleTabPress(item.id)}
           activeOpacity={0.7}>
-          <Ionicons name={item.icon} size={24} color={activeTab === item.id ? 'white' : 'gray'} />
+          {item.icon({ color: activeTab === item.id ? 'white' : 'gray', size: 24 })}
           <Text
             className={`mt-1 text-xs font-semibold ${
               activeTab === item.id ? 'text-white' : 'text-gray-400'

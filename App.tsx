@@ -9,6 +9,7 @@ import Cines from '~/home/page/Cines';
 import Entradas from '~/home/page/Entradas';
 import Perfil from '~/home/page/Perfil';
 import Cartelera from '~/cartelera/pages/Cartelera';
+import Auth from '~/auth/pages/Auth';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<string>('home');
@@ -23,6 +24,8 @@ export default function App() {
         return <Cines />;
       case 'entries':
         return <Entradas />;
+      case 'auth':
+        return <Auth />;
       case 'profile':
         return <Perfil />;
       default:

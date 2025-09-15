@@ -11,8 +11,8 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { id: 'home', name: 'Home', icon: 'home-outline', label: 'Inicio' },
-  { id: 'chat', name: 'Chat', icon: 'chatbubble-outline', label: 'Chat' },
-  { id: 'entries', name: 'Entries', icon: 'calendar-outline', label: 'Entradas' },
+  { id: 'Cines', name: 'Cines', icon: 'location-outline', label: 'Cines' },
+  { id: 'entries', name: 'Entries', icon: 'ticket-outline', label: 'Entradas' },
   { id: 'profile', name: 'Profile', icon: 'person-outline', label: 'Perfil' },
 ];
 

@@ -1,30 +1,33 @@
-import { ScreenContent } from 'src/shared/components/ScreenContent';
+import { ScreenContent } from 'src/shared/components/ScreeenContent';
 import { StatusBar } from 'expo-status-bar';
-import { Text, View, StyleSheet } from 'react-native';
-import { Footer } from './src/home/components/Footer';
+import { Text, View, StyleSheet, TouchableOpacity } from 'react-native';
+import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
+import { useRouter } from 'expo-router';
+import SeleccionLugar from 'src/cartelera/pages/SeleccionLugar'; // Importa el componente
 
 import './global.css';
 
-// Marcadores de posición para los otros componentes
-const Header = () => (
-  <View style={styles.header}>
-    <Text style={styles.placeholderText}>Header</Text>
-  </View>
-);
-const Hero = () => (
-  <View style={styles.hero}>
-    <Text style={styles.placeholderText}>Hero Section</Text>
-  </View>
-);
-
 export default function App() {
+  const scale = useSharedValue(1);
+  const router = useRouter();
+
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ scale: scale.value }],
+    };
+  });
+
+  const startAnimation = () => {
+    scale.value = withSpring(1.2, {}, () => {
+      scale.value = withSpring(1);
+    });
+  };
+
+  //tuve que agregar aqui para verl desde web pq en cel no me carga nose pq, estuve tratando como loco para que cargara
   return (
     <>
-      <ScreenContent title="Home" path="App.tsx">
-        <Header />
-        <Hero />
-      </ScreenContent>
-      <Footer />
+      {/* Muestra directamente el diseño de SeleccionLugar */}
+      <SeleccionLugar />
       <StatusBar style="auto" />
     </>
   );
@@ -47,3 +50,4 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
 });
+

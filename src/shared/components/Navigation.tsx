@@ -1,12 +1,8 @@
 import { useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import Cines from '~/home/page/Cines';
-import Entradas from '~/home/page/Entradas';
-import Perfil from '~/home/page/Perfil';
-import Home from '~/home/page/Home';
 
-interface NavItem {
+export interface NavItem {
   id: string;
   name: string;
   icon: keyof typeof Ionicons.glyphMap;
@@ -14,22 +10,30 @@ interface NavItem {
   page?: React.ReactNode;
 }
 
-const navItems: NavItem[] = [
-  { id: 'home', name: 'Home', icon: 'home-outline', label: 'Inicio', page: <Home /> },
-  { id: 'Cines', name: 'Cines', icon: 'location-outline', label: 'Cines', page: <Cines /> },
-  { id: 'entries', name: 'Entries', icon: 'ticket-outline', label: 'Entradas', page: <Entradas /> },
-  { id: 'profile', name: 'Profile', icon: 'person-outline', label: 'Perfil', page: <Perfil /> },
-];
+interface NavigationProps {
+  onTabChange?: (tabId: string) => void;
+  initialTab?: string;
+}
 
-export default function Navigation() {
-  const [activeTab, setActiveTab] = useState<string>('home');
+export default function Navigation({ onTabChange, initialTab = 'home' }: NavigationProps) {
+  const [activeTab, setActiveTab] = useState<string>(initialTab);
+
+  const navItems: NavItem[] = [
+    { id: 'home', name: 'Home', icon: 'home-outline', label: 'Inicio' },
+    { id: 'Cines', name: 'Cines', icon: 'location-outline', label: 'Cines' },
+    { id: 'entries', name: 'Entries', icon: 'ticket-outline', label: 'Entradas' },
+    { id: 'profile', name: 'Profile', icon: 'person-outline', label: 'Perfil' },
+  ];
 
   const handleTabPress = (tabId: string) => {
     setActiveTab(tabId);
+    if (onTabChange) {
+      onTabChange(tabId);
+    }
   };
 
   return (
-    <View className=" flex-row border-t border-gray-700 bg-gray-900 px-4 py-2">
+    <View className="flex-row border-t border-gray-700 bg-gray-900 px-4 py-2">
       {navItems.map((item) => (
         <TouchableOpacity
           key={item.id}
@@ -43,7 +47,6 @@ export default function Navigation() {
             }`}>
             {item.label}
           </Text>
-          {activeTab === item.id ? item.page : <Home />}
         </TouchableOpacity>
       ))}
     </View>

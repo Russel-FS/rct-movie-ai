@@ -3,21 +3,46 @@
 import React from 'react';
 import { SafeAreaView, StyleSheet, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import { useState } from 'react';
 
-// --- IMPORTAMOS LAS 3 PARTES DE LA PANTALLA ---
-// ¡Ojo! Las rutas ahora son correctas según tu última imagen.
-import Header from './src/home/components/Header';
-import Main from './src/home/components/Main';
-import Footer from './src/home/components/Footer';
-
-// Este archivo es para los estilos de Tailwind/Nativewind, lo dejamos.
 import './global.css';
-
+import { Container } from '~/shared/components/Container';
+import Navigation from '~/shared/components/Navigation';
+import Home from '~/home/page/Home';
+import Cines from '~/home/page/Cines';
+import Entradas from '~/home/page/Entradas';
+import Perfil from '~/home/page/Perfil';
+import Cartelera from '~/cartelera/pages/Cartelera';
+import Auth from '~/auth/pages/Auth';
 
 export default function App() {
+  const [activeTab, setActiveTab] = useState<string>('home');
+
+  const getActiveComponent = () => {
+    switch (activeTab) {
+      case 'home':
+        return <Home />;
+      case 'cartelera':
+        return <Cartelera />;
+      case 'Cines':
+        return <Cines />;
+      case 'entries':
+        return <Entradas />;
+      case 'auth':
+        return <Auth />;
+      case 'profile':
+        return <Perfil />;
+      default:
+        return <Home />;
+    }
+  };
+
   return (
-    // SafeAreaView es el contenedor principal
-    <SafeAreaView style={styles.container}>
+    <>
+      <Container>
+        {getActiveComponent()}
+        <Navigation onTabChange={setActiveTab} initialTab={activeTab} />
+      </Container>
       <StatusBar style="auto" />
       
       {/* 1. La cabecera arriba */}

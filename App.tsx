@@ -46,17 +46,9 @@ export default function App() {
       <StatusBar style="auto" />
       
       {/* 1. La cabecera arriba */}
-      <Header />
-
-      {/* 2. El contenido principal que se estira para ocupar el espacio */}
-      <View style={styles.content}>
-        <Main />
-      </View>
-
-      {/* 3. El pie de página abajo */}
-      <Footer />
+     
       
-    </SafeAreaView>
+    </>
   );
 }
 

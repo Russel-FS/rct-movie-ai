@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Text, View, ScrollView, TouchableOpacity, TextInput } from 'react-native';
+import { Text, View, ScrollView, TouchableOpacity, TextInput, Image } from 'react-native';
 import { Search } from 'lucide-react-native';
 
 // Definir la interfaz para el tipo Movie
@@ -10,6 +10,7 @@ interface Movie {
   genre: string;
   rating: number;
   duration: string;
+  image?: string; // URL de la imagen de la película (opcional)
 }
 
 // Props para el componente MovieCard
@@ -29,7 +30,8 @@ export default function Home() {
       subtitle: 'Dune: Parte Dos',
       genre: 'Ciencia Ficción',
       rating: 8.5,
-      duration: '2h 46m'
+      duration: '2h 46m',
+      image: 'https://es.web.img3.acsta.net/pictures/24/02/20/17/42/2385575.jpg'
     },
     {
       id: 2,
@@ -37,7 +39,8 @@ export default function Home() {
       subtitle: 'Oppenheimer',
       genre: 'Biografía',
       rating: 8.3,
-      duration: '3h 0m'
+      duration: '3h 0m',
+      image: 'https://m.media-amazon.com/images/M/MV5BNTFlZDI1YWQtMTVjNy00YWU1LTg2YjktMTlhYmRiYzQ3NTVhXkEyXkFqcGc@._V1_.jpg'
     },
     {
       id: 3,
@@ -45,7 +48,8 @@ export default function Home() {
       subtitle: 'Spider-Man',
       genre: 'Acción',
       rating: 7.8,
-      duration: '2h 28m'
+      duration: '2h 28m',
+      image: 'https://es.web.img2.acsta.net/pictures/21/12/01/12/07/0243323.jpg'
     },
     {
       id: 4,
@@ -53,7 +57,8 @@ export default function Home() {
       subtitle: 'John Wick 4',
       genre: 'Acción',
       rating: 7.9,
-      duration: '2h 49m'
+      duration: '2h 49m',
+      image: 'https://imgmedia.larepublica.pe/1000x580/larepublica/original/2021/12/23/61c4beca5e74872cef694be5.webp'
     }
   ];
 
@@ -72,12 +77,12 @@ export default function Home() {
 
   const MovieCard: React.FC<MovieCardProps> = ({ movie }) => (
     <TouchableOpacity className="bg-gray-800 rounded-lg p-4 mb-4 mx-2 flex-1">
-      {/* Placeholder para imagen de película */}
-      <View className="bg-gray-700 rounded-lg h-48 mb-3 items-center justify-center">
-        <View className="w-12 h-12 bg-gray-600 rounded-full items-center justify-center">
-          <View className="w-0 h-0 border-l-4 border-r-0 border-t-4 border-b-4 border-l-white border-t-transparent border-b-transparent ml-1" />
-        </View>
-      </View>
+      {/* Miniatura de la película */}
+    <Image
+      source={{ uri: movie.image }}
+      className="w-full h-48 rounded-lg mb-3"
+      resizeMode="cover"
+    />
       
       {/* Título de la película */}
       <Text className="text-white text-lg font-bold mb-1">{movie.title}</Text>

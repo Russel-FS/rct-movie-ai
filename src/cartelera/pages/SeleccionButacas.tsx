@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Text, View, TouchableOpacity, ScrollView } from 'react-native';
-import { Fila, Asiento } from '../../types/cinema';
+import { Fila, Asiento } from '../../shared/types/cinema';
 
 export default function SeleccionButacas() {
   const [asientosSeleccionados, setAsientosSeleccionados] = useState<string[]>([]);

@@ -1,7 +1,3 @@
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-
-CREATE EXTENSION IF NOT EXISTS "pgcrypto";
-
 CREATE TABLE roles (
     id SERIAL PRIMARY KEY,
     nombre VARCHAR(50) UNIQUE NOT NULL,
@@ -147,33 +143,3 @@ CREATE TABLE pagos (
     datos_pago JSONB, -- Información adicional del pago
     comprobante_url VARCHAR(500)
 );
-
-CREATE TABLE promociones (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4 (),
-    titulo VARCHAR(255) NOT NULL,
-    descripcion TEXT,
-    tipo VARCHAR(50) NOT NULL, -- descuento_porcentaje, descuento_fijo, 2x1
-    valor DECIMAL(8, 2), -- Porcentaje o monto fijo
-    codigo VARCHAR(50) UNIQUE,
-    fecha_inicio TIMESTAMP NOT NULL,
-    fecha_fin TIMESTAMP NOT NULL,
-    usos_maximos INTEGER,
-    usos_actuales INTEGER DEFAULT 0,
-    activa BOOLEAN DEFAULT true,
-    condiciones JSONB -- Condiciones específicas
-);
-
-CREATE TABLE notificaciones (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4 (),
-    usuario_id UUID REFERENCES usuarios (id) ON DELETE CASCADE,
-    titulo VARCHAR(255) NOT NULL,
-    mensaje TEXT NOT NULL,
-    tipo VARCHAR(50) DEFAULT 'general', -- general, reserva, promocion, recordatorio
-    leida BOOLEAN DEFAULT false,
-    enviada BOOLEAN DEFAULT false,
-    fecha_programada TIMESTAMP,
-    fecha_enviada TIMESTAMP,
-    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    datos_adicionales JSONB
-);
---

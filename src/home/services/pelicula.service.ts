@@ -1,4 +1,4 @@
-import { Pelicula } from '~/shared/types';
+import { Pelicula } from '~/shared/types/pelicula';
 import { HttpClient } from '../../shared/lib/useHttpClient';
 
 export class PeliculaService {

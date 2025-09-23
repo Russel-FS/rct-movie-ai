@@ -101,7 +101,7 @@ export default function CineEstelarMenu() {
         description: "Bolsa 150g",
         price: "S/ 12.00",
         type: "DULCE",
-        image: { uri: "https://assets.cinemark-core.com/67925fc2890878ee2b0e6386/common/1100-1752618390328" }
+        image: { uri: "https://assets.cinemark-core.com/6183fbcacbb5c4a4c7d8d950/vista/concessions/67925fc2890878ee2b0e6386/common/1100-1752618390328" }
       }
     ],
     Coleccionables: [

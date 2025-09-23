@@ -1,124 +1,268 @@
 import React, { useState } from 'react';
-import { Text, View, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
+import { Text, View, TouchableOpacity, ScrollView, Dimensions, Image } from 'react-native';
 
-type Producto = { name: string; description: string; price: string; type: string; };
+type Producto = { name: string; description: string; price: string; type: string; image: any };
 
-export default function SeleccionComidas() {
+export default function CineEstelarMenu() {
   const { width, height } = Dimensions.get('window');
-  // Define responsive font sizes and padding
-  const tGrande = width * 0.07; // Main title
-  const tMedio = width * 0.05;  // Item names and prices, subtitles
-  const tPeque = width * 0.038; // Item descriptions, category text
-  const paddingGeneral = width * 0.04; // General padding for the screen and cards
+  const tGrande = width * 0.07;
+  const tMedio = width * 0.045;
+  const tPeque = width * 0.035;
 
   const productos: Record<string, Producto[]> = {
     Combos: [
-      { name: "Combo Clásico", description: "Palomitas medianas + Refresco mediano", price: "$8.50", type: "COMBO" },
-      { name: "Combo Familiar", description: "Palomitas grandes + 2 Refrescos medianos", price: "$12.00", type: "COMBO" },
-      { name: "Combo Premium", description: "Palomitas grandes + Refresco grande + Nachos", price: "$15.50", type: "COMBO" },
+      {
+        name: "Combo Trio Estelar",
+        description: "3 Canchitas medianas + 3 Bebidas grandes",
+        price: "S/ 85.90",
+        type: "COMBO",
+        image: require('../../../assets/combotrio.png')
+      },
+      {
+        name: "Combo Duo Estelar",
+        description: "2 Canchitas + 2 Bebidas grandes",
+        price: "S/ 47.30",
+        type: "COMBO",
+        image: { uri: "https://assets.cinemark-core.com/6183fbcacbb5c4a4c7d8d950/vista/concessions/653aa79e5aa07300084dca61/common/529-1754336185869" }
+      },
+      {
+        name: "Combinación 1 Estelar",
+        description: "1 Canchita + 1 Bebida",
+        price: "S/ 22.20",
+        type: "COMBO",
+        image: { uri: "https://assets.cinemark-core.com/6183fbcacbb5c4a4c7d8d950/vista/concessions/653aa79e5aa07300084dca64/common/530-1754336201782" }
+      },
+      {
+        name: "Mega Combinación Estelar",
+        description: "1 Canchita + 1 Bebida grande",
+        price: "S/ 22.90",
+        type: "COMBO",
+        image: { uri: "https://assets.cinemark-core.com/6183fbcacbb5c4a4c7d8d950/vista/concessions/653aa79e5aa07300084dca67/common/531-1754336216332" }
+      },
     ],
-    Palomitas: [
-      { name: "Palomitas Medianas", description: "Crujientes palomitas con mantequilla", price: "$4.00", type: "PALOMITAS" },
-      { name: "Palomitas Grandes", description: "El doble de sabor, ideal para compartir", price: "$6.50", type: "PALOMITAS" },
-      { name: "Palomitas Extra Grande", description: "Para los verdaderos amantes del cine", price: "$8.00", type: "PALOMITAS" },
+    Canchita: [
+      {
+        name: "Canchita Mediana",
+        description: "Clásica con mantequilla",
+        price: "S/ 15.00",
+        type: "CANCHITA",
+        image: { uri: "https://assets.cinemark-core.com/6183fbcacbb5c4a4c7d8d950/vista/concessions/653aa79e5aa07300084dca76/common/535-1754336275727" }
+      },
+      {
+        name: "Canchita Grande",
+        description: "Ideal para compartir",
+        price: "S/ 20.00",
+        type: "CANCHITA",
+        image: { uri: "https://assets.cinemark-core.com/6183fbcacbb5c4a4c7d8d950/vista/concessions/653aa79e5aa07300084dca79/common/1094-1754336288561" }
+      },
     ],
     Bebidas: [
-      { name: "Refresco Mediano", description: "Coca Cola, Fanta, Sprite, Pepsi", price: "$2.50", type: "BEBIDA" },
-      { name: "Refresco Grande", description: "El tamaño perfecto para tu sed", price: "$3.50", type: "BEBIDA" },
-      { name: "Agua Mineral", description: "Botella de 500ml", price: "$2.00", type: "BEBIDA" },
-      { name: "Jugo Natural", description: "Naranja, Manzana o Piña", price: "$3.00", type: "BEBIDA" },
+      {
+        name: "Gaseosa Grande",
+        description: "Tamaño grande, refrescante",
+        price: "S/ 12.00",
+        type: "BEBIDA",
+        image: { uri: "https://assets.cinemark-core.com/6183fbcacbb5c4a4c7d8d950/vista/concessions/653aa79e5aa07300084dca7f/common/1095-1752610498463" }
+      },
+      {
+        name: "Gaseosa Mediana",
+        description: "Tamaño mediano",
+        price: "S/ 9.00",
+        type: "BEBIDA",
+        image: { uri: "https://assets.cinemark-core.com/6183fbcacbb5c4a4c7d8d950/vista/concessions/653aa79e5aa07300084dca7c/common/537-1752610612431" }
+      },
+      {
+        name: "Agua sin Gas",
+        description: "Botella de agua sin gas",
+        price: "S/ 7.00",
+        type: "BEBIDA",
+        image: { uri: "https://assets.cinemark-core.com/6183fbcacbb5c4a4c7d8d950/vista/concessions/653aa79e5aa07300084dca82/common/538-1752610632804" }
+      },
+    ],
+    Snacks: [
+      {
+        name: "Hot Dog Frankfurter",
+        description: "Pan, salchicha, mostaza y ketchup",
+        price: "S/ 16.00",
+        type: "SNACK",
+        image: { uri: "https://assets.cinemark-core.com/6183fbcacbb5c4a4c7d8d950/vista/concessions/653aa79e5aa07300084dca88/common/534-1756913017116" }
+      },
+      {
+        name: "Nachos con Queso",
+        description: "Nachos crujientes con queso cheddar",
+        price: "S/ 18.00",
+        type: "SNACK",
+        image: { uri: "https://assets.cinemark-core.com/6183fbcacbb5c4a4c7d8d950/vista/concessions/653aa79e5aa07300084dca91/common/536-1756912982119" }
+      },
     ],
     Dulces: [
-      { name: "Chocolates Variados", description: "Snickers, M&M's, Kit Kat", price: "$1.50", type: "DULCE" },
-      { name: "Gomitas Surtidas", description: "Ositos, aros y más", price: "$1.00", type: "DULCE" },
-      { name: "Barra de Caramelo", description: "Sabores surtidos", price: "$1.20", type: "DULCE" },
-      { name: "Helado Pequeño", description: "Vainilla, Chocolate o Fresa", price: "$3.00", type: "DULCE" },
+      {
+        name: "M&M's",
+        description: "Bolsa 150g",
+        price: "S/ 12.00",
+        type: "DULCE",
+        image: { uri: "https://assets.cinemark-core.com/67925fc2890878ee2b0e6386/common/1100-1752618390328" }
+      }
     ],
+    Coleccionables: [
+      {
+        name: "Combo Duo Superman",
+        description: "Combo edición especial Superman",
+        price: "S/ 49.90",
+        type: "COLECCIONABLE",
+        image: { uri: "https://assets.cinemark-core.com/6183fbcacbb5c4a4c7d8d950/vista/concessions/687ff623be197a99a4397654/common/15325-1754592931469" }
+      },
+      {
+        name: "Combo Vaso 4 Fantástico",
+        description: "Incluye vaso edición especial",
+        price: "S/ 39.90",
+        type: "COLECCIONABLE",
+        image: { uri: "https://assets.cinemark-core.com/6183fbcacbb5c4a4c7d8d950/vista/concessions/6883c5aeebe651c5cb3c42cb/common/15374-1754592910175" }
+      },
+      {
+        name: "Combo Duo Cabeza Pitufo",
+        description: "Combo edición Pitufo",
+        price: "S/ 44.90",
+        type: "COLECCIONABLE",
+        image: { uri: "https://assets.cinemark-core.com/6183fbcacbb5c4a4c7d8d950/vista/concessions/687ff623be197a99a4397660/common/15327-1754592965166" }
+      }
+    ],
+    Convenios: [
+      {
+        name: "Combo Gigante Ripley",
+        description: "Canchita gigante + 2 bebidas grandes",
+        price: "S/ 69.90",
+        type: "CONVENIO",
+        image: { uri: "https://assets.cinemark-core.com/6183fbcacbb5c4a4c7d8d950/vista/concessions/67d3050ca977aed84282bec1/common/15159-1754346176877" }
+      }
+    ]
   };
 
   const categorias = Object.keys(productos);
   const [catActiva, setCatActiva] = useState("Combos");
+  const [carrito, setCarrito] = useState<Producto[]>([]);
+
+  const agregarCarrito = (producto: Producto) => {
+    setCarrito([...carrito, producto]);
+  };
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#1f2937', paddingTop: height * 0.06, paddingHorizontal: paddingGeneral }}>
-      {/* Back Button and Title */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: height * 0.02 }}>
-        <TouchableOpacity style={{ padding: width * 0.01 }}>
-          {/* You might want to replace this with an actual icon component like from 'react-native-vector-icons' */}
-          <Text style={{ fontSize: tGrande * 0.8, color: 'white' }}>&#x2190;</Text> 
-        </TouchableOpacity>
-        <View style={{ flex: 1, alignItems: 'center', marginRight: width * 0.08 }}> {/* Adjust margin to center title properly */}
-          <Text style={{ fontSize: tGrande, fontWeight: '700', color: 'white' }}>Seleccionar Comida</Text>
-          <Text style={{ fontSize: tPeque, color: '#9ca3af', marginTop: height * 0.005 }}>Agrega algo delicioso</Text>
-        </View>
-      </View>
+    <View style={{ flex: 1, backgroundColor: '#1f2937' }}>
+      <ScrollView
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        style={{ marginTop: 8 }}
+      >
+        <Image
+          source={require('../../../assets/cineestelar.png')}
+          style={{ width, height: height * 0.18 }}
+          resizeMode="cover"
+        />
+        <Image
+          source={require('../../../assets/bannercine.png')}
+          style={{ width, height: height * 0.18 }}
+          resizeMode="cover"
+        />
+      </ScrollView>
 
-      {/* Horizontal Category Scroll */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: height * 0.02 }}>
-        {categorias.map((c) => (
+      {/* Categorías */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={{ paddingVertical: 12, borderBottomWidth: 1, borderColor: '#374151', backgroundColor: '#111827', marginTop: 12 }}
+      >
+        {categorias.map(c => (
           <TouchableOpacity
             key={c}
             onPress={() => setCatActiva(c)}
-            style={{
-              paddingHorizontal: width * 0.06,
-              paddingVertical: height * 0.012,
-              borderRadius: 50,
-              backgroundColor: catActiva === c ? '#2563eb' : '#374151',
-              marginRight: width * 0.02 // Adjusted for better spacing
-            }}
+            style={{ marginHorizontal: 14 }}
           >
-            <Text style={{ fontSize: tPeque, fontWeight: '500', color: catActiva === c ? 'white' : '#d1d5db' }}>{c}</Text>
+            <Text
+              style={{
+                fontSize: tMedio,
+                fontWeight: catActiva === c ? '700' : '500',
+                color: catActiva === c ? '#fbbf24' : '#9ca3af'
+              }}
+            >
+              {c.toUpperCase()}
+            </Text>
           </TouchableOpacity>
         ))}
       </ScrollView>
 
-      {/* Product List */}
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: height * 0.03, rowGap: height * 0.015 }}>
+      {/* Lista productos */}
+      <ScrollView contentContainerStyle={{ padding: 14, paddingBottom: 140 }}>
         {productos[catActiva].map(p => (
-          <View key={p.name} style={{
-            backgroundColor: '#374151',
-            borderRadius: 12,
-            padding: paddingGeneral,
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}>
-            <View style={{ flex: 1, marginRight: width * 0.03 }}>
-              {/* Type tag (e.g., COMBO, PALOMITAS) */}
-              <View style={{
-                paddingHorizontal: width * 0.03,
-                paddingVertical: height * 0.008,
-                borderRadius: 6,
-                marginBottom: height * 0.008,
-                // Dynamic background color based on type for visual distinction
-                backgroundColor: p.type === "COMBO" ? '#10b981' : // Green for Combos
-                                 p.type === "PALOMITAS" ? '#fbbf24' : // Yellow for Popcorn
-                                 p.type === "BEBIDA" ? '#3b82f6' : // Blue for Drinks
-                                 p.type === "DULCE" ? '#ec4899' : // Pink for Sweets
-                                 '#6b7280' // Default grey
-              }}>
-                <Text style={{ fontSize: tPeque * 0.9, fontWeight: '700', color: '#e5e7eb' }}>{p.type}</Text>
+          <View
+            key={p.name}
+            style={{
+              backgroundColor: '#374151',
+              borderRadius: 12,
+              marginBottom: 18,
+              shadowColor: '#000',
+              shadowOpacity: 0.1,
+              shadowRadius: 6,
+              elevation: 4
+            }}
+          >
+            <Image
+              source={p.image}
+              style={{
+                width: '100%',
+                height: height * 0.25,
+                borderTopLeftRadius: 12,
+                borderTopRightRadius: 12
+              }}
+              resizeMode="cover"
+            />
+            <View style={{ padding: 12 }}>
+              <Text style={{ fontSize: tMedio, fontWeight: '700', marginBottom: 4, color: '#fff' }}>
+                {p.name}
+              </Text>
+              <Text style={{ fontSize: tPeque, color: '#d1d5db', marginBottom: 6 }}>
+                {p.description}
+              </Text>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Text style={{ fontSize: tMedio, fontWeight: '700', color: '#fbbf24' }}>
+                  {p.price}
+                </Text>
+                <TouchableOpacity
+                  onPress={() => agregarCarrito(p)}
+                  style={{
+                    backgroundColor: '#2563eb',
+                    paddingHorizontal: 16,
+                    paddingVertical: 6,
+                    borderRadius: 30
+                  }}
+                >
+                  <Text style={{ color: 'white', fontSize: tMedio }}>+</Text>
+                </TouchableOpacity>
               </View>
-              <Text style={{ fontSize: tMedio, fontWeight: '600', color: 'white' }}>{p.name}</Text>
-              <Text style={{ fontSize: tPeque, color: '#d1d5db', marginTop: height * 0.003 }}>{p.description}</Text>
-              <Text style={{ fontSize: tMedio, fontWeight: '700', color: 'white', marginTop: height * 0.008 }}>{p.price}</Text>
             </View>
-            <TouchableOpacity style={{ backgroundColor: '#2563eb', paddingHorizontal: width * 0.05, paddingVertical: height * 0.015, borderRadius: 50 }}>
-              <Text style={{ fontSize: tMedio, fontWeight: '700', color: 'white' }}>+</Text>
-            </TouchableOpacity>
           </View>
         ))}
       </ScrollView>
 
-      {/* Bottom Buttons */}
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: height * 0.03, paddingBottom: height * 0.03 }}>
-        <TouchableOpacity style={{ backgroundColor: '#4b5563', paddingVertical: height * 0.02, borderRadius: 12, flex: 1, marginRight: width * 0.02, alignItems: 'center' }}>
-          <Text style={{ fontSize: tMedio, fontWeight: '600', color: 'white' }}>Omitir</Text>
+      {/* Botón continuar */}
+      {carrito.length > 0 && (
+        <TouchableOpacity
+          style={{
+            position: 'absolute',
+            bottom: 20,
+            left: 20,
+            right: 20,
+            backgroundColor: '#16a34a',
+            paddingVertical: 14,
+            borderRadius: 12,
+            alignItems: 'center'
+          }}
+        >
+          <Text style={{ color: 'white', fontSize: tMedio, fontWeight: '700' }}>
+            Continuar ({carrito.length} productos)
+          </Text>
         </TouchableOpacity>
-        <TouchableOpacity style={{ backgroundColor: '#2563eb', paddingVertical: height * 0.02, borderRadius: 12, flex: 1, marginLeft: width * 0.02, alignItems: 'center' }}>
-          <Text style={{ fontSize: tMedio, fontWeight: '600', color: 'white' }}>Continuar</Text>
-        </TouchableOpacity>
-      </View>
+      )}
     </View>
   );
 }

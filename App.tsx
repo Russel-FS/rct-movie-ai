@@ -44,10 +44,8 @@ export default function App() {
         <Navigation onTabChange={setActiveTab} initialTab={activeTab} />
       </Container>
       <StatusBar style="auto" />
-      
+
       {/* 1. La cabecera arriba */}
-     
-      
     </>
   );
 }

@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { Search, Star, Clock, Users, Film, RefreshCw } from 'lucide-react-native';
 import { usePeliculas } from '../hooks/usePeliculas';
-import { Pelicula } from '~/shared/types';
+import { Pelicula } from '~/shared/types/pelicula';
 
 // Props para el componente MovieCard
 interface MovieCardProps {

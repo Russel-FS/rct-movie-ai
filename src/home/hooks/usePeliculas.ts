@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 
 import { PeliculaService } from '../services/pelicula.service';
-import { Pelicula } from '~/shared/types';
+import { Pelicula } from '~/shared/types/pelicula';
 
 interface UsePeliculasState {
   peliculas: Pelicula[];

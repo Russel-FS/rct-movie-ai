@@ -3,34 +3,46 @@
 import React from 'react';
 import { SafeAreaView, StyleSheet, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { Text, View, StyleSheet, TouchableOpacity } from 'react-native';
-import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
-import { useRouter } from 'expo-router';
-import SeleccionLugar from 'src/cartelera/pages/SeleccionLugar'; // Importa el componente
+import { useState } from 'react';
 
 import './global.css';
+import { Container } from '~/shared/components/Container';
+import Navigation from '~/shared/components/Navigation';
+import Home from '~/home/page/Home';
+import Cines from '~/home/page/Cines';
+import Entradas from '~/home/page/Entradas';
+import Perfil from '~/home/page/Perfil';
+import Cartelera from '~/cartelera/pages/Cartelera';
+import Auth from '~/auth/pages/Auth';
 
 export default function App() {
-  const scale = useSharedValue(1);
-  const router = useRouter();
+  const [activeTab, setActiveTab] = useState<string>('home');
 
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ scale: scale.value }],
-    };
-  });
-
-  const startAnimation = () => {
-    scale.value = withSpring(1.2, {}, () => {
-      scale.value = withSpring(1);
-    });
+  const getActiveComponent = () => {
+    switch (activeTab) {
+      case 'home':
+        return <Home />;
+      case 'cartelera':
+        return <Cartelera />;
+      case 'Cines':
+        return <Cines />;
+      case 'entries':
+        return <Entradas />;
+      case 'auth':
+        return <Auth />;
+      case 'profile':
+        return <Perfil />;
+      default:
+        return <Home />;
+    }
   };
 
-  //tuve que agregar aqui para verl desde web pq en cel no me carga nose pq, estuve tratando como loco para que cargara
   return (
     <>
-      {/* Muestra directamente el diseño de SeleccionLugar */}
-      <SeleccionLugar />
+      <Container>
+        {getActiveComponent()}
+        <Navigation onTabChange={setActiveTab} initialTab={activeTab} />
+      </Container>
       <StatusBar style="auto" />
 
       {/* 1. La cabecera arriba */}

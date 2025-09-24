@@ -1,3 +1,7 @@
+// Este es el código FINAL para tu archivo App.tsx
+
+import React from 'react';
+import { SafeAreaView, StyleSheet, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
 
@@ -40,6 +44,21 @@ export default function App() {
         <Navigation onTabChange={setActiveTab} initialTab={activeTab} />
       </Container>
       <StatusBar style="auto" />
+      
+      {/* 1. La cabecera arriba */}
+     
+      
     </>
   );
 }
+
+// Estos son los estilos que hacen la magia del layout
+const styles = StyleSheet.create({
+  container: {
+    flex: 1, // Ocupa toda la pantalla
+    backgroundColor: '#fff',
+  },
+  content: {
+    flex: 1, // Se estira y empuja el footer hacia abajo
+  },
+});

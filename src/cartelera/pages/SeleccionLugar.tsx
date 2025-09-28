@@ -1,6 +1,36 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
+
+// Datos de ejemplo
+const exampleCinemas = [
+  {
+    id: 1,
+    name: 'Cinépolis Plaza Norte',
+    address: 'Av. Constituyentes 1050, Col. Centro',
+    distance: '2.3 km',
+    fechas: ['2024-03-14', '2024-03-15'],
+  },
+  {
+    id: 2,
+    name: 'Cinemex Galerías',
+    address: 'Blvd. Miguel de Cervantes 1200',
+    distance: '4.8 km',
+    fechas: ['2024-03-14', '2024-03-16'],
+  },
+  {
+    id: 3,
+    name: 'Cinépolis VIP Centro',
+    address: 'Calle Madero 445, Centro Histórico',
+    distance: '5.8 km',
+    fechas: ['2024-03-15'],
+  },
+];
+
+// Función para obtener cines (solo ejemplo)
+async function fetchCines() {
+  return exampleCinemas;
+}
 
 // Datos de ejemplo
 const movie = {
@@ -13,36 +43,35 @@ const movie = {
   synopsis: 'Paul Atreides se une a Chani y los Fremen mientras busca venganza contra los conspiradores que destruyeron a su familia. Enfrentando una difícil elección entre el amor y el destino del universo conocido, Paul se esfuerza por evitar un futuro terrible que solo él puede prever.',
 };
 
-const cinemas = [
-  {
-    id: 1,
-    name: 'Cinépolis Plaza Norte',
-    address: 'Av. Constituyentes 1050, Col. Centro',
-    distance: '2.3 km',
-    horarios: ['15:00', '17:30', '20:00'],
-  },
-  {
-    id: 2,
-    name: 'Cinemex Galerías',
-    address: 'Blvd. Miguel de Cervantes 1200',
-    distance: '4.8 km',
-    horarios: ['16:00', '18:30', '21:00'],
-  },
-  {
-    id: 3,
-    name: 'Cinépolis VIP Centro',
-    address: 'Calle Madero 445, Centro Histórico',
-    distance: '5.8 km',
-    horarios: ['14:30', '19:00'],
-  },
-];
-
 export default function SeleccionLugar() {
+  const [cinemas, setCinemas] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selectedCinema, setSelectedCinema] = useState<number | null>(null);
-  const [selectedHorario, setSelectedHorario] = useState<string | null>(null);
+  // Cambia a solo una fecha seleccionada por cine
+  const [selectedDate, setSelectedDate] = useState<{ [key: number]: string | null }>({});
   const [showSynopsis, setShowSynopsis] = useState(false);
   const [showGenreAccordion, setShowGenreAccordion] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    setLoading(true);
+    fetchCines().then((data) => {
+      setCinemas(data);
+      setLoading(false);
+    });
+  }, []);
+
+  // Saber si hay una fecha seleccionada para el cine actual
+  const hasSelectedDate = selectedCinema !== null && !!selectedDate[selectedCinema];
+
+  // Formatea la fecha como "14 Jueves"
+  const formatFecha = (fechaStr: string) => {
+    const dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+    const date = new Date(fechaStr);
+    const dia = date.getDate();
+    const diaSemana = dias[date.getDay()];
+    return `${dia} ${diaSemana}`;
+  };
 
   return (
     <View className="flex-1 bg-black">
@@ -170,28 +199,32 @@ export default function SeleccionLugar() {
       {/* Lista de cines */}
       <ScrollView className="flex-1 px-4 py-4">
         <Text className="text-white text-lg font-semibold mb-4">Seleccionar Cine</Text>
+        {loading && <Text className="text-gray-400">Cargando cines...</Text>}
         {cinemas.map((cine) => (
           <View
             key={cine.id}
             className={`mb-4 rounded-xl p-4 ${selectedCinema === cine.id ? 'bg-gray-800 border-2 border-blue-500' : 'bg-gray-800'}`}
           >
-            <TouchableOpacity onPress={() => { setSelectedCinema(cine.id); setSelectedHorario(null); }}>
+            <TouchableOpacity onPress={() => setSelectedCinema(cine.id)}>
               <Text className="text-white text-base font-semibold">{cine.name}</Text>
               <Text className="text-gray-400 text-sm">{cine.address}</Text>
               <Text className="text-gray-500 text-xs mb-2">{cine.distance} de tu ubicación</Text>
             </TouchableOpacity>
-            {/* Horarios */}
+            {/* Fechas disponibles */}
             {selectedCinema === cine.id && (
               <View className="flex-row flex-wrap gap-2 mt-2">
-                {cine.horarios.map((hora) => (
-                  <TouchableOpacity
-                    key={hora}
-                    className={`apple-button ${selectedHorario === hora ? 'bg-blue-700' : 'bg-blue-500'}`}
-                    onPress={() => setSelectedHorario(hora)}
-                  >
-                    <Text className="text-white font-semibold">{hora}</Text>
-                  </TouchableOpacity>
-                ))}
+                {cine.fechas.map((fecha: string) => {
+                  const isSelected = selectedDate[cine.id] === fecha;
+                  return (
+                    <TouchableOpacity
+                      key={fecha}
+                      className={`${isSelected ? 'bg-blue-700' : 'bg-blue-500'} rounded-lg px-3 py-1 mr-2 mb-2`}
+                      onPress={() => setSelectedDate(prev => ({ ...prev, [cine.id]: fecha }))}
+                    >
+                      <Text className="text-white font-semibold">{formatFecha(fecha)}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
               </View>
             )}
           </View>
@@ -200,21 +233,28 @@ export default function SeleccionLugar() {
 
       {/* Footer dinámico */}
       <View className="px-4 py-4 bg-gray-900 border-t border-gray-800">
-        {selectedCinema !== null && selectedHorario !== null ? (
-          <View className="flex-row items-center justify-between">
-            <View>
-              <Text className="text-white font-semibold">{cinemas.find(c => c.id === selectedCinema)?.name}</Text>
-              <Text className="text-gray-400 text-sm">{selectedHorario}</Text>
+        {selectedCinema !== null ? (
+          hasSelectedDate ? (
+            <View className="flex-row items-center justify-between">
+              <View>
+                <Text className="text-white font-semibold">{cinemas.find(c => c.id === selectedCinema)?.name}</Text>
+                <Text className="text-gray-400 text-sm">
+                  {formatFecha(selectedDate[selectedCinema]!)}
+                </Text>
+              </View>
+              <TouchableOpacity
+                className="apple-button"
+
+                onPress={() => router.push('/src/cartelera/pages/SeleccionHorario')}
+              >
+                <Text className="text-white font-semibold">Continuar</Text>
+              </TouchableOpacity>
             </View>
-            <TouchableOpacity
-              className="apple-button"
-              onPress={() => router.push('/src/cartelera/pages/SeleccionButacas')}
-            >
-              <Text className="text-white font-semibold">Continuar</Text>
-            </TouchableOpacity>
-          </View>
+          ) : (
+            <Text className="text-gray-400 text-center">Selecciona una fecha para continuar</Text>
+          )
         ) : (
-          <Text className="text-gray-400 text-center">Selecciona un cine y horario para continuar</Text>
+          <Text className="text-gray-400 text-center">Selecciona un cine para continuar</Text>
         )}
       </View>
     </View>

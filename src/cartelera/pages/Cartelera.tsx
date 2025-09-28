@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Text, View, ScrollView, TouchableOpacity } from 'react-native';
 import { MapPin, Clock, Armchair, UtensilsCrossed, CreditCard, Receipt, Film } from 'lucide-react-native';
 
-// Importar las páginas de navegación
 import SeleccionLugar from './SeleccionLugar';
 import SeleccionHorario from './SeleccionHorario';
 import SeleccionButacas from './SeleccionButacas';
@@ -52,7 +51,7 @@ export default function Cartelera() {
   };
 
   return (
-    <ScrollView className="flex-1">
+    <View className="flex-1 bg-black">
       <View className="px-4 py-6">
         <View className="mb-6 flex-row items-center">
           <Film size={24} color="white" />
@@ -60,15 +59,15 @@ export default function Cartelera() {
         </View>
 
         {/* Encabezado de navegación */}
-        <ScrollView 
-          horizontal 
-          showsHorizontalScrollIndicator={false} 
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
           className="mb-6">
           <View className="flex-row space-x-2">
             {navSteps.map((step) => (
               <TouchableOpacity
                 key={step.id}
-                className={`px-3 py-2 rounded-full flex-row items-center ${activeStep === step.id ? 'bg-blue-600' : 'bg-gray-700'}`}
+                className={`px-3 py-1 h-9 rounded-full flex-row items-center ${activeStep === step.id ? 'bg-blue-600' : 'bg-gray-700'}`}
                 onPress={() => handleStepPress(step.id)}
                 activeOpacity={0.7}>
                 {step.icon}
@@ -77,10 +76,12 @@ export default function Cartelera() {
             ))}
           </View>
         </ScrollView>
+      </View>
 
-        {/* Contenido según el paso seleccionado */}
+      {/* Contenido dinámico ocupa el resto de la pantalla */}
+      <View className="flex-1 px-4">
         {renderContent()}
       </View>
-    </ScrollView>
+    </View>
   );
 }

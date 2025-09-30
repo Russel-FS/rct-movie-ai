@@ -7,6 +7,12 @@
     font-family:
       -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', system-ui, sans-serif;
   }
+
+
+  body, #root {
+    background-color: #0a0a0a;
+    color: #fff;
+  }
 }
 
 @layer components {
@@ -22,13 +28,30 @@
 
   .apple-card {
     @apply rounded-apple-lg shadow-apple border-apple-gray-200 border bg-white;
+
+    /* Mejoras para tarjetas y botones si usas web */
+    background: #18181b;
+    border-radius: 1rem;
+    border: 1px solid #27272a;
+    box-shadow: 0 2px 8px 0 #0005;
   }
 
   .apple-button {
     @apply bg-apple-blue font-sf-pro-text rounded-apple px-6 py-3 font-semibold text-white transition-transform duration-150 active:scale-95;
+
+    background: #6366f1;
+    border-radius: 0.5rem;
+    padding: 0.5rem 1.2rem;
+    color: #fff;
+    font-weight: 600;
+    border: none;
   }
 
   .apple-button-secondary {
     @apply bg-apple-system-secondaryBackground text-apple-system-label font-sf-pro-text rounded-apple px-6 py-3 font-medium transition-transform duration-150 active:scale-95;
+  }
+
+  .apple-button:active {
+    background: #4f46e5;
   }
 }

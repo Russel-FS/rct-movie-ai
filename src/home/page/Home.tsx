@@ -12,13 +12,16 @@ import { Search, Star, Clock, Users, Film, RefreshCw } from 'lucide-react-native
 import { usePeliculas } from '../hooks/usePeliculas';
 import { Pelicula } from '~/shared/types/pelicula';
 
-// Props para el componente MovieCard
 interface MovieCardProps {
   pelicula: Pelicula;
+  onPress: () => void;
 }
 
-export default function Home() {
-  // Hook personalizado para manejar películas
+interface HomeProps {
+  onMoviePress?: (peliculaId: string) => void;
+}
+
+export default function Home({ onMoviePress }: HomeProps) {
   const {
     filteredPeliculas,
     peliculasDestacadas,
@@ -29,17 +32,26 @@ export default function Home() {
     refetch,
   } = usePeliculas();
 
-  // Función para formatear duración
+  const handleMoviePress = (peliculaId: string) => {
+    if (onMoviePress) {
+      onMoviePress(peliculaId);
+    } else {
+      console.log('Película seleccionada:', peliculaId);
+    }
+  };
+
   const formatDuration = (minutos: number): string => {
     const horas = Math.floor(minutos / 60);
     const mins = minutos % 60;
     return `${horas}h ${mins}m`;
   };
 
-  // Componente para tarjetas destacadas (horizontal)
-  const FeaturedMovieCard: React.FC<MovieCardProps> = ({ pelicula }) => (
-    <TouchableOpacity className="mr-3 w-48 rounded-lg bg-gray-800 p-3">
-      {/* Miniatura de la película */}
+  const FeaturedMovieCard: React.FC<MovieCardProps> = ({ pelicula, onPress }) => (
+    <TouchableOpacity 
+      className="mr-3 w-48 rounded-lg bg-gray-800 p-3"
+      onPress={onPress}
+      activeOpacity={0.7}
+    >
       <Image
         source={{
           uri: pelicula.poster_url || 'https://via.placeholder.com/300x450?text=Sin+Imagen',
@@ -48,18 +60,15 @@ export default function Home() {
         resizeMode="cover"
       />
 
-      {/* Badge destacada */}
       <View className="absolute right-1 top-1 flex-row items-center rounded bg-yellow-500 px-2 py-1">
         <Star size={12} color="#000000" fill="#000000" />
         <Text className="ml-1 text-xs font-bold text-black">Destacada</Text>
       </View>
 
-      {/* Título de la película */}
       <Text className="mb-1 text-base font-bold text-white" numberOfLines={2}>
         {pelicula.titulo}
       </Text>
 
-      {/* Información adicional */}
       <View className="flex-row items-center justify-between">
         <View className="flex-row items-center">
           <Film size={12} color="#9CA3AF" />
@@ -80,10 +89,12 @@ export default function Home() {
     </TouchableOpacity>
   );
 
-  // Componente para tarjetas del grid principal
-  const MovieCard: React.FC<MovieCardProps> = ({ pelicula }) => (
-    <TouchableOpacity className="mx-2 mb-4 flex-1 rounded-lg bg-gray-800 p-4">
-      {/* Miniatura de la película */}
+  const MovieCard: React.FC<MovieCardProps> = ({ pelicula, onPress }) => (
+    <TouchableOpacity 
+      className="mx-2 mb-4 flex-1 rounded-lg bg-gray-800 p-4"
+      onPress={onPress}
+      activeOpacity={0.7}
+    >
       <Image
         source={{
           uri: pelicula.poster_url || 'https://via.placeholder.com/300x450?text=Sin+Imagen',
@@ -92,17 +103,14 @@ export default function Home() {
         resizeMode="cover"
       />
 
-      {/* Título de la película */}
       <Text className="mb-1 text-lg font-bold text-white" numberOfLines={2}>
         {pelicula.titulo}
       </Text>
 
-      {/* Subtítulo */}
       <Text className="mb-2 text-sm text-gray-400" numberOfLines={1}>
         {pelicula.titulo_original || pelicula.titulo}
       </Text>
 
-      {/* Información adicional */}
       <View className="flex-row items-center justify-between">
         <View className="flex-row items-center">
           <Film size={12} color="#9CA3AF" />
@@ -121,7 +129,6 @@ export default function Home() {
         <Text className="ml-1 text-xs text-gray-400">{formatDuration(pelicula.duracion)}</Text>
       </View>
 
-      {/* Mostrar si es destacada */}
       {pelicula.destacada && (
         <View className="absolute right-2 top-2 flex-row items-center rounded bg-yellow-500 px-2 py-1">
           <Star size={10} color="#000000" fill="#000000" />
@@ -131,7 +138,6 @@ export default function Home() {
     </TouchableOpacity>
   );
 
-  // Mostrar loading
   if (loading) {
     return (
       <View className="flex-1 items-center justify-center bg-black">
@@ -141,7 +147,6 @@ export default function Home() {
     );
   }
 
-  // Mostrar error
   if (error) {
     return (
       <View className="flex-1 items-center justify-center bg-black px-4">
@@ -158,7 +163,6 @@ export default function Home() {
 
   return (
     <View className="flex-1 bg-black">
-      {/* Header fijo */}
       <View className="px-4 pb-4 pt-14">
         <Text className="mb-1 text-sm text-gray-400">Cine Estelar</Text>
         <Text className="mb-4 text-2xl font-bold text-white">Películas en Cartelera</Text>
@@ -167,7 +171,6 @@ export default function Home() {
           {filteredPeliculas.length !== 1 ? 's' : ''}
         </Text>
 
-        {/* Barra de búsqueda */}
         <View className="flex-row items-center rounded-lg bg-gray-800 px-4 py-3">
           <Search size={20} color="#9CA3AF" />
           <TextInput
@@ -180,12 +183,10 @@ export default function Home() {
         </View>
       </View>
 
-      {/* Contenido scrolleable */}
       <ScrollView
         className="flex-1"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ flexGrow: 1 }}>
-        {/* Sección de películas destacadas */}
         {peliculasDestacadas.length > 0 && !searchTerm && (
           <View className="mb-6">
             <View className="mb-4 flex-row items-center justify-between px-4">
@@ -204,13 +205,16 @@ export default function Home() {
               contentContainerStyle={{ paddingLeft: 16, paddingRight: 16 }}
               nestedScrollEnabled={true}>
               {peliculasDestacadas.map((pelicula) => (
-                <FeaturedMovieCard key={pelicula.id} pelicula={pelicula} />
+                <FeaturedMovieCard 
+                  key={pelicula.id} 
+                  pelicula={pelicula}
+                  onPress={() => handleMoviePress(pelicula.id)}
+                />
               ))}
             </ScrollView>
           </View>
         )}
 
-        {/* Título de la sección principal */}
         {filteredPeliculas.length > 0 && (
           <View className="mb-4 flex-row items-center justify-between px-4">
             <View className="flex-row items-center">
@@ -226,12 +230,14 @@ export default function Home() {
           </View>
         )}
 
-        {/* Grid de películas */}
         {filteredPeliculas.length > 0 ? (
           <View className="flex-row flex-wrap justify-between px-2">
             {filteredPeliculas.map((pelicula) => (
               <View key={pelicula.id} className="w-1/2">
-                <MovieCard pelicula={pelicula} />
+                <MovieCard 
+                  pelicula={pelicula}
+                  onPress={() => handleMoviePress(pelicula.id)}
+                />
               </View>
             ))}
           </View>
@@ -244,7 +250,6 @@ export default function Home() {
           </View>
         )}
 
-        {/* Espacio adicional al final */}
         <View className="h-8" />
       </ScrollView>
     </View>

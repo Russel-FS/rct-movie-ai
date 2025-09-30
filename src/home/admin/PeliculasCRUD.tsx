@@ -55,8 +55,18 @@ export default function PeliculasCRUD() {
   const [editingPelicula, setEditingPelicula] = useState<Pelicula | null>(null);
   const [formData, setFormData] = useState<CreatePeliculaDto>({
     titulo: '',
+    titulo_original: '',
+    sinopsis: '',
     duracion: 0,
     clasificacion: 'PG' as Clasificacion,
+    idioma_original: '',
+    subtitulos: '',
+    director: '',
+    reparto: '',
+    poster_url: '',
+    trailer_url: '',
+    fecha_estreno: '',
+    fecha_fin_exhibicion: ''
   });
   const [selectedGeneros, setSelectedGeneros] = useState<number[]>([]);
   const [formLoading, setFormLoading] = useState(false);
@@ -104,8 +114,18 @@ export default function PeliculasCRUD() {
     setEditingPelicula(null);
     setFormData({
       titulo: '',
+      titulo_original: '',
+      sinopsis: '',
       duracion: 0,
       clasificacion: 'PG' as Clasificacion,
+      idioma_original: '',
+      subtitulos: '',
+      director: '',
+      reparto: '',
+      poster_url: '',
+      trailer_url: '',
+      fecha_estreno: '',
+      fecha_fin_exhibicion: ''
     });
     setSelectedGeneros([]);
     setModalVisible(true);
@@ -141,18 +161,78 @@ export default function PeliculasCRUD() {
     setModalVisible(true);
   };
 
+  // Validar formato de fecha
+  const isValidDate = (dateString: string): boolean => {
+    if (!dateString) return true; // Permitir fechas vacías
+    const regex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!regex.test(dateString)) return false;
+    const date = new Date(dateString);
+    return !isNaN(date.getTime());
+  };
+
+  // Validar URL
+  const isValidUrl = (urlString: string): boolean => {
+    if (!urlString) return true; // Permitir URLs vacías
+    try {
+      new URL(urlString);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
   // Guardar película (crear o editar)
   const handleSave = async () => {
+    // Validar campos obligatorios
     if (!formData.titulo.trim()) {
       Alert.alert('Error', 'El título es obligatorio');
+      return;
+    }
+    if (formData.duracion <= 0) {
+      Alert.alert('Error', 'La duración debe ser mayor a 0 minutos');
+      return;
+    }
+    if (!formData.clasificacion) {
+      Alert.alert('Error', 'La clasificación es obligatoria');
+      return;
+    }
+
+    // Validar formatos
+    if (formData.fecha_estreno && !isValidDate(formData.fecha_estreno)) {
+      Alert.alert('Error', 'El formato de la fecha de estreno debe ser YYYY-MM-DD');
+      return;
+    }
+    if (formData.fecha_fin_exhibicion && !isValidDate(formData.fecha_fin_exhibicion)) {
+      Alert.alert('Error', 'El formato de la fecha de fin de exhibición debe ser YYYY-MM-DD');
+      return;
+    }
+    if (formData.poster_url && !isValidUrl(formData.poster_url)) {
+      Alert.alert('Error', 'La URL del poster no es válida');
+      return;
+    }
+    if (formData.trailer_url && !isValidUrl(formData.trailer_url)) {
+      Alert.alert('Error', 'La URL del trailer no es válida');
       return;
     }
 
     try {
       setFormLoading(true);
+
+      // Limpiar y formatear los datos antes de enviar
       const peliculaData = {
         ...formData,
-        generos_ids: selectedGeneros
+        titulo: formData.titulo.trim(),
+        titulo_original: formData.titulo_original?.trim() || undefined,
+        sinopsis: formData.sinopsis?.trim() || undefined,
+        director: formData.director?.trim() || undefined,
+        reparto: formData.reparto?.trim() || undefined,
+        idioma_original: formData.idioma_original?.trim() || undefined,
+        subtitulos: formData.subtitulos?.trim() || undefined,
+        poster_url: formData.poster_url?.trim() || undefined,
+        trailer_url: formData.trailer_url?.trim() || undefined,
+        fecha_estreno: formData.fecha_estreno?.trim() || undefined,
+        fecha_fin_exhibicion: formData.fecha_fin_exhibicion?.trim() || undefined,
+        generos_ids: selectedGeneros.length > 0 ? selectedGeneros : undefined
       };
 
       if (editingPelicula) {
@@ -476,7 +556,31 @@ export default function PeliculasCRUD() {
                   </View>
                 </View>
 
-                {/* Director */}
+                {/* Detalles técnicos adicionales */}
+                <View className="flex-row space-x-3">
+                  <View className="flex-1">
+                    <Text className="mb-2 text-sm font-bold text-white">Idioma Original</Text>
+                    <TextInput
+                      value={formData.idioma_original || ''}
+                      onChangeText={(text) => setFormData({ ...formData, idioma_original: text })}
+                      placeholder="Ej: Español"
+                      placeholderTextColor="#9CA3AF"
+                      className="rounded-lg bg-gray-800 px-4 py-3 text-white"
+                    />
+                  </View>
+                  <View className="flex-1">
+                    <Text className="mb-2 text-sm font-bold text-white">Subtítulos</Text>
+                    <TextInput
+                      value={formData.subtitulos || ''}
+                      onChangeText={(text) => setFormData({ ...formData, subtitulos: text })}
+                      placeholder="Ej: Español, Inglés"
+                      placeholderTextColor="#9CA3AF"
+                      className="rounded-lg bg-gray-800 px-4 py-3 text-white"
+                    />
+                  </View>
+                </View>
+
+                {/* Director y Reparto */}
                 <View>
                   <Text className="mb-2 text-sm font-bold text-white">Director</Text>
                   <TextInput
@@ -485,6 +589,19 @@ export default function PeliculasCRUD() {
                     placeholder="Nombre del director"
                     placeholderTextColor="#9CA3AF"
                     className="rounded-lg bg-gray-800 px-4 py-3 text-white"
+                  />
+                </View>
+
+                <View>
+                  <Text className="mb-2 text-sm font-bold text-white">Reparto</Text>
+                  <TextInput
+                    value={formData.reparto || ''}
+                    onChangeText={(text) => setFormData({ ...formData, reparto: text })}
+                    placeholder="Actores principales, separados por comas"
+                    placeholderTextColor="#9CA3AF"
+                    className="rounded-lg bg-gray-800 px-4 py-3 text-white"
+                    multiline
+                    numberOfLines={2}
                   />
                 </View>
 
@@ -498,6 +615,41 @@ export default function PeliculasCRUD() {
                     placeholderTextColor="#9CA3AF"
                     className="rounded-lg bg-gray-800 px-4 py-3 text-white"
                   />
+                </View>
+
+                <View>
+                  <Text className="mb-2 text-sm font-bold text-white">URL del Trailer</Text>
+                  <TextInput
+                    value={formData.trailer_url || ''}
+                    onChangeText={(text) => setFormData({ ...formData, trailer_url: text })}
+                    placeholder="https://..."
+                    placeholderTextColor="#9CA3AF"
+                    className="rounded-lg bg-gray-800 px-4 py-3 text-white"
+                  />
+                </View>
+
+                {/* Fechas */}
+                <View className="flex-row space-x-3">
+                  <View className="flex-1">
+                    <Text className="mb-2 text-sm font-bold text-white">Fecha de Estreno</Text>
+                    <TextInput
+                      value={formData.fecha_estreno || ''}
+                      onChangeText={(text) => setFormData({ ...formData, fecha_estreno: text })}
+                      placeholder="YYYY-MM-DD"
+                      placeholderTextColor="#9CA3AF"
+                      className="rounded-lg bg-gray-800 px-4 py-3 text-white"
+                    />
+                  </View>
+                  <View className="flex-1">
+                    <Text className="mb-2 text-sm font-bold text-white">Fecha Fin Exhibición</Text>
+                    <TextInput
+                      value={formData.fecha_fin_exhibicion || ''}
+                      onChangeText={(text) => setFormData({ ...formData, fecha_fin_exhibicion: text })}
+                      placeholder="YYYY-MM-DD"
+                      placeholderTextColor="#9CA3AF"
+                      className="rounded-lg bg-gray-800 px-4 py-3 text-white"
+                    />
+                  </View>
                 </View>
 
                 {/* Géneros */}

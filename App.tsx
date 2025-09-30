@@ -15,14 +15,31 @@ import Perfil from '~/home/page/Perfil';
 import Peliculas from '~/home/admin/PeliculasCRUD';
 import Genero from '~/home/admin/GeneroCRUD';
 
-import Cartelera from '~/cartelera/pages/Cartelera';
+// import Cartelera from '~/cartelera/pages/Cartelera';
 import Auth from '~/auth/pages/Auth';
+import SeleccionLugar from '~/cartelera/pages/SeleccionLugar';
+import SeleccionHorario from '~/cartelera/pages/SeleccionHorario';
+import SeleccionButacas from '~/cartelera/pages/SeleccionButacas';
+import SeleccionComidas from '~/cartelera/pages/SeleccionComidas';
+
+// Tipo para la información de selección
+interface SeleccionInfo {
+  peliculaId: string;
+  cinemaId?: number;
+  cinemaName?: string;
+  horario?: string;
+  fecha?: string;
+  funcionId?: number;
+  sala?: string;
+  formato?: string;
+  precio?: number;
+  asientosSeleccionados?: string[];
+}
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<string>('home');
-
-  // ⚠️ Estado temporal para manejar vista interna en "peliculas"
   const [vista, setVista] = useState<'menu' | 'peliculas' | 'generos'>('menu');
+  const [seleccionInfo, setSeleccionInfo] = useState<SeleccionInfo | null>(null);
 
   // 🔄 Resetear vista cada vez que se entra en el tab "peliculas"
   useEffect(() => {
@@ -30,6 +47,67 @@ export default function App() {
       setVista('menu');
     }
   }, [activeTab]);
+
+  // 🎬 Manejar la selección de película
+  const handleMoviePress = (peliculaId: string) => {
+    setSeleccionInfo({ peliculaId });
+    setActiveTab('seleccionLugar');
+  };
+
+  // ✅ Manejar la selección de cine y horario desde SeleccionLugar
+  const handleLugarSelected = (cinemaId: number, cinemaName: string, horario: string) => {
+    if (seleccionInfo) {
+      setSeleccionInfo({
+        ...seleccionInfo,
+        cinemaId,
+        cinemaName,
+        horario
+      });
+      setActiveTab('seleccionHorario');
+    }
+  };
+
+  // ✅ Manejar la selección de función desde SeleccionHorario
+  const handleHorarioSelected = (funcionId: number, fecha: string, sala: string, formato: string, precio: number) => {
+    if (seleccionInfo) {
+      setSeleccionInfo({
+        ...seleccionInfo,
+        funcionId,
+        fecha,
+        sala,
+        formato,
+        precio
+      });
+      setActiveTab('seleccionButacas');
+    }
+  };
+
+  // ✅ Manejar la selección de asientos desde SeleccionButacas
+  const handleButacasSelected = (asientos: string[]) => {
+    if (seleccionInfo) {
+      setSeleccionInfo({
+        ...seleccionInfo,
+        asientosSeleccionados: asientos
+      });
+      setActiveTab('seleccionComidas');
+    }
+  };
+
+  // 🔙 Manejar el regreso desde SeleccionLugar
+  const handleBackFromSeleccion = () => {
+    setSeleccionInfo(null);
+    setActiveTab('home');
+  };
+
+  // 🔙 Manejar el regreso desde SeleccionHorario
+  const handleBackFromHorario = () => {
+    setActiveTab('seleccionLugar');
+  };
+
+  // 🔙 Manejar el regreso desde SeleccionButacas
+  const handleBackFromButacas = () => {
+    setActiveTab('seleccionHorario');
+  };
 
   const renderContent = () => {
     switch (vista) {
@@ -111,9 +189,9 @@ export default function App() {
   const getActiveComponent = () => {
     switch (activeTab) {
       case 'home':
-        return <Home />;
+        return <Home onMoviePress={handleMoviePress} />;
       case 'cartelera':
-        return <Cartelera />;
+        return /*<Cartelera />;*/
       case 'Cines':
         return <Cines />;
       case 'entries':
@@ -124,8 +202,63 @@ export default function App() {
         return <Perfil />;
       case 'Admin':
         return renderContent();
+      case 'seleccionLugar':
+        return seleccionInfo ? (
+          <SeleccionLugar 
+            peliculaId={seleccionInfo.peliculaId} 
+            onBack={handleBackFromSeleccion}
+            onContinue={handleLugarSelected}
+          />
+        ) : (
+          <Home onMoviePress={handleMoviePress} />
+        );
+      case 'seleccionHorario':
+        return seleccionInfo && seleccionInfo.cinemaId ? (
+          <SeleccionHorario 
+            peliculaId={seleccionInfo.peliculaId}
+            cinemaId={seleccionInfo.cinemaId}
+            cinemaName={seleccionInfo.cinemaName || ''}
+            horario={seleccionInfo.horario || ''}
+            onBack={handleBackFromHorario}
+            onContinue={handleHorarioSelected}
+          />
+        ) : (
+          <Home onMoviePress={handleMoviePress} />
+        );
+      case 'seleccionButacas':
+        return seleccionInfo && seleccionInfo.funcionId ? (
+          <SeleccionButacas 
+            peliculaId={seleccionInfo.peliculaId}
+            cinemaName={seleccionInfo.cinemaName || ''}
+            fecha={seleccionInfo.fecha || ''}
+            hora={seleccionInfo.horario || ''}
+            sala={seleccionInfo.sala || ''}
+            formato={seleccionInfo.formato || ''}
+            precio={seleccionInfo.precio || 0}
+            onBack={handleBackFromButacas}
+            onContinue={handleButacasSelected}
+          />
+        ) : (
+          <Home onMoviePress={handleMoviePress} />
+        );
+      case 'seleccionComidas':
+        return seleccionInfo && seleccionInfo.asientosSeleccionados ? (
+          <SeleccionComidas 
+            peliculaId={seleccionInfo.peliculaId}
+            cinemaName={seleccionInfo.cinemaName || ''}
+            fecha={seleccionInfo.fecha || ''}
+            hora={seleccionInfo.horario || ''}
+            sala={seleccionInfo.sala || ''}
+            formato={seleccionInfo.formato || ''}
+            precio={seleccionInfo.precio || 0}
+            asientosSeleccionados={seleccionInfo.asientosSeleccionados}
+            onBack={() => setActiveTab('seleccionButacas')}
+          />
+        ) : (
+          <Home onMoviePress={handleMoviePress} />
+        );
       default:
-        return <Home />;
+        return <Home onMoviePress={handleMoviePress} />;
     }
   };
 
@@ -133,20 +266,25 @@ export default function App() {
     <>
       <Container>
         {getActiveComponent()}
-        <Navigation onTabChange={setActiveTab} initialTab={activeTab} />
+        {/* Solo mostrar Navigation si no estamos en las pantallas de selección */}
+        {activeTab !== 'seleccionLugar' && 
+         activeTab !== 'seleccionHorario' && 
+         activeTab !== 'seleccionButacas' && 
+         activeTab !== 'seleccionComidas' && (
+          <Navigation onTabChange={setActiveTab} initialTab={activeTab} />
+        )}
       </Container>
       <StatusBar style="auto" />
     </>
   );
 }
 
-// Estos son los estilos que hacen la magia del layout
 const styles = StyleSheet.create({
   container: {
-    flex: 1, // Ocupa toda la pantalla
+    flex: 1,
     backgroundColor: '#fff',
   },
   content: {
-    flex: 1, // Se estira y empuja el footer hacia abajo
+    flex: 1,
   },
 });

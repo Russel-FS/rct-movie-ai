@@ -196,7 +196,6 @@ const styles = StyleSheet.create({
   pasoBtn: {
     backgroundColor: "#3a4351",
     color: "#fff",
-    border: "none",
     borderRadius: 999,
     paddingHorizontal: 32,
     height: 48,
@@ -206,8 +205,6 @@ const styles = StyleSheet.create({
     gap: 10,
     fontSize: 16,
     fontWeight: "500",
-    cursor: "pointer",
-    transition: "background 0.2s",
     shadowColor: "rgba(0,0,0,0.08)",
     shadowOffset: {
       width: 0,

@@ -32,7 +32,7 @@ export default function FeaturedMoviesSection({
       <ScrollView
         horizontal={true}
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingLeft: 16, paddingRight: 16 }}
+        contentContainerStyle={{ paddingLeft: 16, paddingRight: 16, gap: 0 }}
         nestedScrollEnabled={true}>
         {peliculasDestacadas.map((pelicula) => (
           <FeaturedMovieCard

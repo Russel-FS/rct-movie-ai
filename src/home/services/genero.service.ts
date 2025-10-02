@@ -1,4 +1,4 @@
-import { GeneroMovie, CreateGeneroDto, UpdateGeneroDto } from '~/shared/types/genero';
+import { GeneroMovie } from '~/shared/types/genero';
 import { HttpClient } from '../../shared/lib/useHttpClient';
 
 export class GeneroService {
@@ -34,34 +34,17 @@ export class GeneroService {
   /**
    * Crea un nuevo género
    */
-  static async agregarGenero(generoData: CreateGeneroDto): Promise<GeneroMovie> {
+  static async crearGenero(generoData: Omit<GeneroMovie, 'id'>): Promise<GeneroMovie> {
     try {
-      // Verificar si ya existe un género con el mismo nombre
-      const generoExistente = await this.buscarGeneroPorNombre(generoData.nombre);
-      if (generoExistente) {
-        throw new Error('Ya existe un género con ese nombre');
-      }
-
-      // Preparar datos del género con valores por defecto
-      const generoCompleto = {
-        ...generoData,
-        activo: true
-      };
-
       const response = await HttpClient.post<GeneroMovie[]>(
         '/generos',
-        generoCompleto,
+        { ...generoData, activo: true },
         {
           headers: {
-            'Prefer': 'return=representation'
-          }
+            Prefer: 'return=representation',
+          },
         }
       );
-
-      if (response.data.length === 0) {
-        throw new Error('Error al crear el género');
-      }
-
       return response.data[0];
     } catch (error) {
       console.error('Error al crear género:', error);
@@ -72,25 +55,16 @@ export class GeneroService {
   /**
    * Actualiza un género existente
    */
-  static async modificarGenero(id: number, generoData: UpdateGeneroDto): Promise<GeneroMovie> {
+  static async actualizarGenero(
+    id: number,
+    generoData: Partial<GeneroMovie>
+  ): Promise<GeneroMovie> {
     try {
-      // Si se está actualizando el nombre, verificar que no exista otro género con ese nombre
-      if (generoData.nombre) {
-        const generoExistente = await this.buscarGeneroPorNombre(generoData.nombre);
-        if (generoExistente && generoExistente.id !== id) {
-          throw new Error('Ya existe otro género con ese nombre');
-        }
-      }
-
-      const response = await HttpClient.patch<GeneroMovie[]>(
-        `/generos?id=eq.${id}`,
-        generoData,
-        {
-          headers: {
-            'Prefer': 'return=representation'
-          }
-        }
-      );
+      const response = await HttpClient.patch<GeneroMovie[]>(`/generos?id=eq.${id}`, generoData, {
+        headers: {
+          Prefer: 'return=representation',
+        },
+      });
 
       if (response.data.length === 0) {
         throw new Error('Género no encontrado para actualizar');
@@ -113,8 +87,8 @@ export class GeneroService {
         { activo },
         {
           headers: {
-            'Prefer': 'return=representation'
-          }
+            Prefer: 'return=representation',
+          },
         }
       );
 
@@ -134,7 +108,7 @@ export class GeneroService {
    */
   static async eliminarGenero(id: number): Promise<void> {
     try {
-      await this.actualizarEstadoGenero(id, false);
+      await this.actualizarGenero(id, { activo: false });
     } catch (error) {
       console.error('Error al eliminar género:', error);
       throw error;
@@ -173,9 +147,7 @@ export class GeneroService {
    */
   private static async buscarGeneroPorNombre(nombre: string): Promise<GeneroMovie | null> {
     try {
-      const response = await HttpClient.get<GeneroMovie[]>(
-        `/generos?nombre=eq.${nombre}`
-      );
+      const response = await HttpClient.get<GeneroMovie[]>(`/generos?nombre=eq.${nombre}`);
       return response.data.length > 0 ? response.data[0] : null;
     } catch (error) {
       console.error('Error al buscar género por nombre:', error);
@@ -232,7 +204,9 @@ export class GeneroService {
   /**
    * Método auxiliar para obtener géneros con conteo manual
    */
-  private static async getGenerosConConteoManual(): Promise<(GeneroMovie & { total_peliculas: number })[]> {
+  private static async getGenerosConConteoManual(): Promise<
+    (GeneroMovie & { total_peliculas: number })[]
+  > {
     try {
       const generos = await this.getGeneros();
       const generosConConteo = await Promise.all(
@@ -240,7 +214,7 @@ export class GeneroService {
           const totalPeliculas = await this.verificarPeliculasAsociadas(genero.id);
           return {
             ...genero,
-            total_peliculas: totalPeliculas
+            total_peliculas: totalPeliculas,
           };
         })
       );
@@ -259,7 +233,9 @@ export class GeneroService {
       // Verificar si hay películas asociadas
       const peliculasAsociadas = await this.verificarPeliculasAsociadas(id);
       if (peliculasAsociadas > 0) {
-        throw new Error(`No se puede eliminar físicamente el género. Tiene ${peliculasAsociadas} película(s) asociada(s)`);
+        throw new Error(
+          `No se puede eliminar físicamente el género. Tiene ${peliculasAsociadas} película(s) asociada(s)`
+        );
       }
 
       await HttpClient.delete(`/generos?id=eq.${id}`);

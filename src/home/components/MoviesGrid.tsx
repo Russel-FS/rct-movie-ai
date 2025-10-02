@@ -36,9 +36,9 @@ export default function MoviesGrid({ peliculas, searchTerm, onMoviePress }: Movi
         </View>
       </View>
 
-      <View className="flex-row flex-wrap justify-between px-2">
+      <View className="flex-row flex-wrap px-4" style={{ gap: 16 }}>
         {peliculas.map((pelicula) => (
-          <View key={pelicula.id} className="w-1/2">
+          <View key={pelicula.id} style={{ width: '47%' }}>
             <MovieCard pelicula={pelicula} onPress={() => onMoviePress(pelicula.id)} />
           </View>
         ))}

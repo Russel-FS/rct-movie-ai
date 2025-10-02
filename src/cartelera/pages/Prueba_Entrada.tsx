@@ -34,7 +34,7 @@ const Entrada = () => {
             <Text style={styles.status}>COMPLETADA</Text>
             {/* Asegúrate de que la ruta a tu imagen sea correcta */}
             <Image
-              source={require('../../../assets/qr.png')}
+              source={require('../assets/images/qr-code.png')}
               style={styles.qrImage}
             />
             <Text style={styles.confirmationCode}>Código de confirmación</Text>

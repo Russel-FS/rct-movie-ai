@@ -1,87 +1,47 @@
-/*import { useState } from 'react';
-import { Text, View, ScrollView, TouchableOpacity } from 'react-native';
-import { MapPin, Clock, Armchair, UtensilsCrossed, CreditCard, Receipt, Film } from 'lucide-react-native';
-
-// Importar las páginas de navegación
-import SeleccionLugar from './SeleccionLugar';
-import SeleccionHorario from './SeleccionHorario';
-import SeleccionButacas from './SeleccionButacas';
-import SeleccionComidas from './SeleccionComidas';
-import MetodoPago from './MetodoPago';
-import ResumenPago from './ResumenPago';*/
-
-/*type NavStep = {
-  id: string;
-  label: string;
-  icon: React.ReactNode;
-};
+import { View, Text, ScrollView } from 'react-native';
+import { Film, Calendar, Clock } from 'lucide-react-native';
 
 export default function Cartelera() {
-  const [activeStep, setActiveStep] = useState<string>('lugar');
-
-  const navSteps: NavStep[] = [
-    { id: 'lugar', label: 'Selección de lugar', icon: <MapPin size={16} color="white" /> },
-    { id: 'horario', label: 'Selección horario', icon: <Clock size={16} color="white" /> },
-    { id: 'butacas', label: 'Selección de butacas', icon: <Armchair size={16} color="white" /> },
-    { id: 'comidas', label: 'Selección de comidas', icon: <UtensilsCrossed size={16} color="white" /> },
-    { id: 'pago', label: 'Método pago', icon: <CreditCard size={16} color="white" /> },
-    { id: 'resumen', label: 'Resumen', icon: <Receipt size={16} color="white" /> },
-  ];
-
-  const handleStepPress = (stepId: string) => {
-    setActiveStep(stepId);
-  };
-
-  const renderContent = () => {
-    switch (activeStep) {
-      case 'lugar':
-        return <SeleccionLugar />;
-      case 'horario':
-        return <SeleccionHorario />;
-      case 'butacas':
-        return <SeleccionButacas />;
-      case 'comidas':
-        return <SeleccionComidas />;
-      case 'pago':
-        return <MetodoPago />;
-      case 'resumen':
-        return <ResumenPago />;
-      default:
-        return null;
-    }
-  };
-
   return (
-    <ScrollView className="flex-1">
-      <View className="px-4 py-6">
-        <View className="mb-6 flex-row items-center">
-          <Film size={24} color="white" />
-          <Text className="ml-2 text-2xl font-bold text-white">Cartelera</Text>
-        </View>*/
-
-        {/* Encabezado de navegación */}
-        /*<ScrollView 
-          horizontal 
-          showsHorizontalScrollIndicator={false} 
-          className="mb-6">
-          <View className="flex-row space-x-2">
-            {navSteps.map((step) => (
-              <TouchableOpacity
-                key={step.id}
-                className={`px-3 py-2 rounded-full flex-row items-center ${activeStep === step.id ? 'bg-blue-600' : 'bg-gray-700'}`}
-                onPress={() => handleStepPress(step.id)}
-                activeOpacity={0.7}>
-                {step.icon}
-                <Text className="text-white text-xs ml-1">{step.label}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </ScrollView>*/
-
-        {/* Contenido según el paso seleccionado */}
-        /*{renderContent()}
+    <View className="flex-1 bg-black">
+      <View className="px-4 pb-4 pt-14">
+        <Text className="mb-1 text-sm text-gray-400">Cine Estelar</Text>
+        <Text className="mb-4 text-2xl font-bold text-white">Cartelera</Text>
+        <Text className="text-sm text-gray-300">
+          Próximamente: Vista completa de la cartelera con horarios
+        </Text>
       </View>
-    </ScrollView>
+
+      <ScrollView className="flex-1 px-4">
+        <View className="items-center justify-center py-20">
+          <View className="mb-6 rounded-full bg-gray-800 p-6">
+            <Film size={48} color="#9CA3AF" />
+          </View>
+          <Text className="mb-2 text-xl font-bold text-white">Cartelera en Desarrollo</Text>
+          <Text className="mb-4 text-center text-gray-400">
+            Esta sección mostrará todos los horarios{'\n'}y funciones disponibles
+          </Text>
+
+          <View className="w-full rounded-lg bg-gray-800 p-4">
+            <Text className="mb-3 text-lg font-bold text-white">Próximas funcionalidades:</Text>
+
+            <View className="mb-2 flex-row items-center">
+              <Calendar size={16} color="#3B82F6" />
+              <Text className="ml-3 text-gray-300">Vista por fechas</Text>
+            </View>
+
+            <View className="mb-2 flex-row items-center">
+              <Clock size={16} color="#3B82F6" />
+              <Text className="ml-3 text-gray-300">Horarios por cine</Text>
+            </View>
+
+            <View className="flex-row items-center">
+              <Film size={16} color="#3B82F6" />
+              <Text className="ml-3 text-gray-300">Filtros por género</Text>
+            </View>
+          </View>
+        </View>
+      </ScrollView>
+    </View>
   );
 }
-*/

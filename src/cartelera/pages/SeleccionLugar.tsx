@@ -1,17 +1,10 @@
-import { useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
-import { useRouter } from 'expo-router';
-
-// Datos de ejemplo
-const movie = {
-  title: 'Dune: Parte Dos',
-  genre: 'Ciencia Ficción',
-  duration: '2h 46m',
-  rating: '8.5',
-  classification: 'PG-13',
-  description: 'La épica continuación de la saga de Duna sigue a Paul en su viaje heroico mientras navega por las traicioneras arenas políticas y literales de Arrakis.',
-  synopsis: 'Paul Atreides se une a Chani y los Fremen mientras busca venganza contra los conspiradores que destruyeron a su familia. Enfrentando una difícil elección entre el amor y el destino del universo conocido, Paul se esfuerza por evitar un futuro terrible que solo él puede prever.',
-};
+import { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, Image, Linking, Alert } from 'react-native';
+import { Pelicula } from '~/shared/types/pelicula';
+import { GeneroMovie } from '~/shared/types/genero';
+import { PeliculaService } from '~/home/services/pelicula.service';
+import { GeneroService } from '~/home/services/genero.service';
+import { Calendar, Clock, Star, Film, Users, Play } from 'lucide-react-native';
 
 const cinemas = [
   {
@@ -37,184 +30,375 @@ const cinemas = [
   },
 ];
 
-export default function SeleccionLugar() {
+interface SeleccionLugarProps {
+  peliculaId: string;
+  onBack?: () => void;
+  onContinue?: (cinemaId: number, cinemaName: string, horario: string) => void;
+}
+
+export default function SeleccionLugar({ peliculaId, onBack, onContinue }: SeleccionLugarProps) {
   const [selectedCinema, setSelectedCinema] = useState<number | null>(null);
   const [selectedHorario, setSelectedHorario] = useState<string | null>(null);
-  const [showSynopsis, setShowSynopsis] = useState(false);
-  const [showGenreAccordion, setShowGenreAccordion] = useState(false);
-  const router = useRouter();
+  const [showFullSynopsis, setShowFullSynopsis] = useState(false);
+  const [pelicula, setPelicula] = useState<Pelicula | null>(null);
+  const [generos, setGeneros] = useState<GeneroMovie[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const formatDuration = (minutos: number): string => {
+    const horas = Math.floor(minutos / 60);
+    const mins = minutos % 60;
+    return `${horas}h ${mins}min`;
+  };
+
+  const formatDate = (dateString?: string): string => {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
+  };
+
+  const getGeneros = (): string => {
+    if (generos && generos.length > 0) {
+      return generos.map(g => g.nombre).join(', ');
+    }
+    return 'Sin género';
+  };
+
+  const handleWatchTrailer = async () => {
+    if (!pelicula?.trailer_url) {
+      Alert.alert('Tráiler no disponible', 'Este contenido no tiene tráiler disponible en este momento.');
+      return;
+    }
+
+    try {
+      const canOpen = await Linking.canOpenURL(pelicula.trailer_url);
+      if (canOpen) {
+        await Linking.openURL(pelicula.trailer_url);
+      } else {
+        Alert.alert('Error', 'No se puede abrir el tráiler');
+      }
+    } catch (error) {
+      console.error('Error al abrir tráiler:', error);
+      Alert.alert('Error', 'Hubo un problema al abrir el tráiler');
+    }
+  };
+
+  const handleContinue = () => {
+    if (selectedCinema !== null && selectedHorario !== null && onContinue) {
+      const cinema = cinemas.find(c => c.id === selectedCinema);
+      if (cinema) {
+        onContinue(cinema.id, cinema.name, selectedHorario);
+      }
+    }
+  };
+
+  useEffect(() => {
+    const fetchPelicula = async () => {
+      if (!peliculaId) {
+        setError('No se proporcionó un ID de película');
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        const data = await PeliculaService.getPeliculaById(peliculaId);
+        setPelicula(data);
+        
+        // Cargar géneros de la película usando el servicio
+        try {
+          const generosIds = await PeliculaService.getGenerosPelicula(peliculaId);
+          const todosGeneros = await GeneroService.getGeneros();
+          const generosFiltrados = todosGeneros.filter(g => generosIds.includes(g.id));
+          setGeneros(generosFiltrados);
+        } catch (generoError) {
+          console.error('Error al cargar géneros:', generoError);
+          setGeneros([]);
+        }
+        
+        setError(null);
+      } catch (err) {
+        console.error('Error al cargar película:', err);
+        setError('Error al cargar la información de la película');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPelicula();
+  }, [peliculaId]);
+
+  if (loading) {
+    return (
+      <View className="flex-1 items-center justify-center bg-black">
+        <ActivityIndicator size="large" color="#3B82F6" />
+        <Text className="mt-4 text-white text-base">Cargando película...</Text>
+      </View>
+    );
+  }
+
+  if (error || !pelicula) {
+    return (
+      <View className="flex-1 items-center justify-center bg-black px-6">
+        <Text className="mb-6 text-center text-red-400 text-base">
+          {error || 'No se pudo cargar la película'}
+        </Text>
+        <TouchableOpacity
+          onPress={() => onBack ? onBack() : console.log('Volver')}
+          className="rounded-xl bg-blue-600 px-8 py-3"
+          activeOpacity={0.8}
+        >
+          <Text className="font-bold text-white text-base">Volver al inicio</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   return (
     <View className="flex-1 bg-black">
-      {/* Header mejorado */}
-      <View className="relative">
-        {/* Sombra superior */}
-        <View style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          height: 32,
-          backgroundColor: 'transparent',
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 8 },
-          shadowOpacity: 0.5,
-          shadowRadius: 16,
-          zIndex: 1,
-        }} />
-        <View className="bg-black pb-4 pt-8 px-4 rounded-b-2xl items-center">
-          <View className="absolute left-4 top-10">
-            <TouchableOpacity
-              onPress={() => router.back()}
-              className="bg-gray-800 rounded-full w-9 h-9 items-center justify-center"
-              activeOpacity={0.7}
-            >
-              <Text className="text-white text-xl">{'‹'}</Text>
-            </TouchableOpacity>
-          </View>
-          <Text className="text-white text-2xl font-bold mb-1">Seleccionar Cine</Text>
-          <Text className="text-gray-300 text-base mb-1">{movie.title} · {movie.genre}</Text>
-          <View className="flex-row items-center justify-center w-full">
-            <View className="flex-row items-center">
-              <View className="w-2 h-2 rounded-full bg-blue-500 mr-1" />
-              <View style={{ width: 32, height: 1, backgroundColor: '#444', marginRight: 4 }} />
-              <Text className="text-gray-400 text-sm">Ficción</Text>
-              <View className="w-2 h-2 rounded-full bg-gray-700 ml-2" />
-            </View>
+      {/* Header */}
+      <View className="bg-gray-900 pb-6 pt-12 px-6 border-b border-gray-800">
+        <View className="flex-row items-center mb-4">
+          <TouchableOpacity
+            onPress={() => onBack ? onBack() : console.log('Volver')}
+            className="bg-gray-800 rounded-full w-10 h-10 items-center justify-center mr-4"
+            activeOpacity={0.7}
+          >
+            <Text className="text-white text-2xl">{'‹'}</Text>
+          </TouchableOpacity>
+          <View className="flex-1">
+            <Text className="text-white text-xl font-bold">Seleccionar Cine</Text>
+            <Text className="text-gray-400 text-sm mt-1">Elige dónde ver {pelicula.titulo}</Text>
           </View>
         </View>
       </View>
 
-      {/* Movie Card */}
-      <View className="mx-4 mt-4 mb-2 bg-gray-900 rounded-xl p-4 shadow-lg">
-        <View className="flex-row items-center mb-2">
-          <View className="bg-gray-800 rounded-lg w-16 h-16 items-center justify-center mr-4">
-            <Text className="text-white font-bold text-lg">DUNE</Text>
-          </View>
-          <View className="flex-1">
-            <Text className="text-white text-base font-bold">{movie.title}</Text>
-            <Text className="text-gray-400 text-xs">{movie.genre} · {movie.duration}</Text>
-            <View className="flex-row items-center mt-1">
-              <Text className="text-yellow-400 font-bold mr-1">★</Text>
-              <Text className="text-yellow-400 font-semibold">{movie.rating}</Text>
-              <Text className="text-gray-400 ml-3">{movie.classification}</Text>
+      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+        {/* Movie Card con Poster */}
+        <View className="mx-6 mt-6 mb-6">
+          <View className="bg-gray-900 rounded-2xl overflow-hidden shadow-xl">
+            {/* Poster con overlay para el trailer */}
+            <View className="relative">
+              {pelicula.poster_url ? (
+                <Image
+                  source={{ uri: pelicula.poster_url }}
+                  className="w-full h-64"
+                  resizeMode="cover"
+                />
+              ) : (
+                <View className="w-full h-64 bg-gray-800 items-center justify-center">
+                  <Film size={48} color="#6B7280" />
+                  <Text className="text-gray-500 mt-2">Sin imagen</Text>
+                </View>
+              )}
+              
+              {/* Botón de tráiler superpuesto */}
+              {pelicula.trailer_url && (
+                <View className="absolute inset-0 items-center justify-center">
+                  <TouchableOpacity
+                    onPress={handleWatchTrailer}
+                    className="bg-blue-600/90 rounded-full w-16 h-16 items-center justify-center"
+                    activeOpacity={0.8}
+                  >
+                    <Play size={28} color="#FFFFFF" fill="#FFFFFF" />
+                  </TouchableOpacity>
+                </View>
+              )}
             </View>
-          </View>
-        </View>
-        <View className="flex-row mb-2">
-          <TouchableOpacity
-            className={`flex-1 mr-2 rounded-lg py-2 ${!showSynopsis ? 'bg-blue-600' : 'bg-gray-800'}`}
-            onPress={() => setShowSynopsis(false)}
-          >
-            <Text className={`text-center font-semibold ${!showSynopsis ? 'text-white' : 'text-gray-300'}`}>Descripción Breve</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            className={`flex-1 rounded-lg py-2 ${showSynopsis ? 'bg-blue-600' : 'bg-gray-800'}`}
-            onPress={() => setShowSynopsis(true)}
-          >
-            <Text className={`text-center font-semibold ${showSynopsis ? 'text-white' : 'text-gray-300'}`}>Sinopsis Completa</Text>
-          </TouchableOpacity>
-        </View>
-        <View className="bg-gray-800 rounded-lg p-3 mb-3">
-          <Text className="text-gray-200 text-sm">
-            {showSynopsis ? movie.synopsis : movie.description}
-          </Text>
-        </View>
-
-        {/* Género y Clasificación Accordion */}
-        <View className="bg-black rounded-xl mb-2 border border-gray-800">
-          <TouchableOpacity
-            className="flex-row items-center px-4 py-3"
-            onPress={() => setShowGenreAccordion(!showGenreAccordion)}
-            activeOpacity={0.8}
-          >
-            <Text className="text-white font-semibold flex-1">Género y Clasificación</Text>
-            <View style={{
-              transform: [{ rotate: showGenreAccordion ? '90deg' : '0deg' }]
-            }}>
-              <Text className="text-gray-400 text-xl">›</Text>
-            </View>
-          </TouchableOpacity>
-          {showGenreAccordion && (
-            <View className="px-4 pb-3">
-              <View className="flex-row justify-between mb-1">
-                <Text className="text-gray-400">Género Principal</Text>
-                <Text className="text-gray-200">{movie.genre}</Text>
-              </View>
-              <View className="flex-row justify-between mb-1">
-                <Text className="text-gray-400">Duración</Text>
-                <Text className="text-gray-200">{movie.duration}</Text>
-              </View>
-              <View className="flex-row justify-between mb-1 items-center">
-                <Text className="text-gray-400">Calificación</Text>
+            
+            {/* Info Card */}
+            <View className="p-6">
+              {/* Título y Rating */}
+              <View className="mb-4">
+                <Text className="text-white text-2xl font-bold mb-2">{pelicula.titulo}</Text>
+                {pelicula.titulo_original && pelicula.titulo_original !== pelicula.titulo && (
+                  <Text className="text-gray-400 text-sm mb-3">{pelicula.titulo_original}</Text>
+                )}
                 <View className="flex-row items-center">
-                  <Text className="text-yellow-400 mr-1">★</Text>
-                  <Text className="text-yellow-300 font-semibold">{movie.rating}/10</Text>
+                  <View className="flex-row items-center bg-yellow-500/20 rounded-lg px-3 py-2 mr-3">
+                    <Star size={16} color="#EAB308" fill="#EAB308" />
+                    <Text className="text-yellow-400 font-bold ml-2 text-base">
+                      {pelicula.calificacion?.toFixed(1) || 'N/A'}
+                    </Text>
+                  </View>
+                  <View className="bg-gray-800 rounded-lg px-3 py-2">
+                    <Text className="text-gray-300 font-semibold">{pelicula.clasificacion}</Text>
+                  </View>
                 </View>
               </View>
-              <View className="flex-row justify-between">
-                <Text className="text-gray-400">Clasificación</Text>
-                <Text className="text-gray-200">{movie.classification}</Text>
-              </View>
-            </View>
-          )}
-        </View>
-        <View className="flex-row items-center mt-1 mb-1">
-          <View className="w-4 h-4 rounded-full border-2 border-blue-500 items-center justify-center mr-2">
-            <View className="w-2 h-2 rounded-full bg-blue-500" />
-          </View>
-          <Text className="text-gray-400 text-xs">Ordenado por distancia</Text>
-        </View>
-      </View>
 
-      {/* Lista de cines */}
-      <ScrollView className="flex-1 px-4 py-4">
-        <Text className="text-white text-lg font-semibold mb-4">Seleccionar Cine</Text>
-        {cinemas.map((cine) => (
-          <View
-            key={cine.id}
-            className={`mb-4 rounded-xl p-4 ${selectedCinema === cine.id ? 'bg-gray-800 border-2 border-blue-500' : 'bg-gray-800'}`}
-          >
-            <TouchableOpacity onPress={() => { setSelectedCinema(cine.id); setSelectedHorario(null); }}>
-              <Text className="text-white text-base font-semibold">{cine.name}</Text>
-              <Text className="text-gray-400 text-sm">{cine.address}</Text>
-              <Text className="text-gray-500 text-xs mb-2">{cine.distance} de tu ubicación</Text>
-            </TouchableOpacity>
-            {/* Horarios */}
-            {selectedCinema === cine.id && (
-              <View className="flex-row flex-wrap gap-2 mt-2">
-                {cine.horarios.map((hora) => (
-                  <TouchableOpacity
-                    key={hora}
-                    className={`apple-button ${selectedHorario === hora ? 'bg-blue-700' : 'bg-blue-500'}`}
-                    onPress={() => setSelectedHorario(hora)}
-                  >
-                    <Text className="text-white font-semibold">{hora}</Text>
-                  </TouchableOpacity>
-                ))}
+              {/* Botón Ver Tráiler (alternativo, debajo del título) */}
+              {pelicula.trailer_url && (
+                <TouchableOpacity
+                  onPress={handleWatchTrailer}
+                  className="bg-red-600 rounded-xl py-3 px-4 flex-row items-center justify-center mb-5"
+                  activeOpacity={0.8}
+                >
+                  <Play size={20} color="#FFFFFF" fill="#FFFFFF" />
+                  <Text className="text-white font-bold ml-2 text-base">Ver Tráiler</Text>
+                </TouchableOpacity>
+              )}
+
+              {/* Info Row */}
+              <View className="mb-5 space-y-3">
+                <View className="flex-row items-center">
+                  <Clock size={18} color="#9CA3AF" />
+                  <Text className="text-gray-300 ml-3 text-base">{formatDuration(pelicula.duracion)}</Text>
+                </View>
+                
+                <View className="flex-row items-start">
+                  <Film size={18} color="#9CA3AF" />
+                  <Text className="text-gray-300 ml-3 flex-1 text-base">{getGeneros()}</Text>
+                </View>
+
+                {pelicula.fecha_estreno && (
+                  <View className="flex-row items-center">
+                    <Calendar size={18} color="#9CA3AF" />
+                    <Text className="text-gray-300 ml-3 text-base">
+                      Estreno: {formatDate(pelicula.fecha_estreno)}
+                    </Text>
+                  </View>
+                )}
+
+                {pelicula.director && (
+                  <View className="flex-row items-start">
+                    <Users size={18} color="#9CA3AF" />
+                    <Text className="text-gray-300 ml-3 flex-1 text-base">
+                      Director: {pelicula.director}
+                    </Text>
+                  </View>
+                )}
+
+                {pelicula.idioma_original && (
+                  <View className="flex-row items-center">
+                    <Text className="text-gray-400 text-sm">Idioma: </Text>
+                    <Text className="text-gray-300 text-sm">{pelicula.idioma_original}</Text>
+                  </View>
+                )}
+
+                {pelicula.subtitulos && (
+                  <View className="flex-row items-center">
+                    <Text className="text-gray-400 text-sm">Subtítulos: </Text>
+                    <Text className="text-gray-300 text-sm">{pelicula.subtitulos}</Text>
+                  </View>
+                )}
               </View>
-            )}
+
+              {/* Sinopsis */}
+              {pelicula.sinopsis && (
+                <View className="bg-gray-800/50 rounded-xl p-4 mb-4">
+                  <Text className="text-white font-semibold mb-2 text-base">Sinopsis</Text>
+                  <Text className="text-gray-300 text-sm leading-6">
+                    {showFullSynopsis 
+                      ? pelicula.sinopsis
+                      : pelicula.sinopsis.length > 200
+                        ? `${pelicula.sinopsis.substring(0, 200)}...`
+                        : pelicula.sinopsis
+                    }
+                  </Text>
+                  {pelicula.sinopsis.length > 200 && (
+                    <TouchableOpacity
+                      onPress={() => setShowFullSynopsis(!showFullSynopsis)}
+                      className="mt-3"
+                      activeOpacity={0.7}
+                    >
+                      <Text className="text-blue-400 font-semibold text-sm">
+                        {showFullSynopsis ? 'Ver menos' : 'Ver más'}
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              )}
+
+              {/* Reparto */}
+              {pelicula.reparto && (
+                <View className="bg-gray-800/50 rounded-xl p-4">
+                  <Text className="text-white font-semibold mb-2 text-base">Reparto</Text>
+                  <Text className="text-gray-300 text-sm leading-6">{pelicula.reparto}</Text>
+                </View>
+              )}
+            </View>
           </View>
-        ))}
+        </View>
+
+        {/* Lista de cines */}
+        <View className="px-6 pb-8">
+          <Text className="text-white text-xl font-bold mb-4">Seleccionar Cine y Horario</Text>
+          {cinemas.map((cine) => (
+            <View
+              key={cine.id}
+              className={`mb-4 rounded-2xl p-5 ${
+                selectedCinema === cine.id 
+                  ? 'bg-gray-800 border-2 border-blue-500' 
+                  : 'bg-gray-900'
+              }`}
+            >
+              <TouchableOpacity 
+                onPress={() => { 
+                  setSelectedCinema(cine.id); 
+                  setSelectedHorario(null); 
+                }}
+                activeOpacity={0.7}
+              >
+                <Text className="text-white text-lg font-bold mb-2">{cine.name}</Text>
+                <Text className="text-gray-400 text-sm mb-1">{cine.address}</Text>
+                <Text className="text-gray-500 text-xs">📍 {cine.distance} de tu ubicación</Text>
+              </TouchableOpacity>
+              
+              {/* Horarios */}
+              {selectedCinema === cine.id && (
+                <View className="mt-4 pt-4 border-t border-gray-700">
+                  <Text className="text-gray-300 text-sm font-semibold mb-3">Horarios disponibles:</Text>
+                  <View className="flex-row flex-wrap gap-3">
+                    {cine.horarios.map((hora) => (
+                      <TouchableOpacity
+                        key={hora}
+                        className={`px-5 py-3 rounded-xl ${
+                          selectedHorario === hora 
+                            ? 'bg-blue-600' 
+                            : 'bg-gray-700'
+                        }`}
+                        onPress={() => setSelectedHorario(hora)}
+                        activeOpacity={0.7}
+                      >
+                        <Text className="text-white font-bold text-base">{hora}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+              )}
+            </View>
+          ))}
+        </View>
       </ScrollView>
 
       {/* Footer dinámico */}
-      <View className="px-4 py-4 bg-gray-900 border-t border-gray-800">
+      <View className="px-6 py-5 bg-gray-900 border-t border-gray-800">
         {selectedCinema !== null && selectedHorario !== null ? (
-          <View className="flex-row items-center justify-between">
-            <View>
-              <Text className="text-white font-semibold">{cinemas.find(c => c.id === selectedCinema)?.name}</Text>
-              <Text className="text-gray-400 text-sm">{selectedHorario}</Text>
+          <View>
+            <View className="mb-3">
+              <Text className="text-gray-400 text-xs mb-1">Selección:</Text>
+              <Text className="text-white font-bold text-base">
+                {cinemas.find(c => c.id === selectedCinema)?.name}
+              </Text>
+              <Text className="text-gray-300 text-sm mt-1">Hora: {selectedHorario}</Text>
             </View>
             <TouchableOpacity
-              className="apple-button"
-              onPress={() => router.push('/src/cartelera/pages/SeleccionButacas')}
+              className="bg-blue-600 px-6 py-4 rounded-xl"
+              onPress={handleContinue}
+              activeOpacity={0.8}
             >
-              <Text className="text-white font-semibold">Continuar</Text>
+              <Text className="text-white font-bold text-center text-base">
+                Continuar a Selección de Asientos
+              </Text>
             </TouchableOpacity>
           </View>
         ) : (
-          <Text className="text-gray-400 text-center">Selecciona un cine y horario para continuar</Text>
+          <View className="bg-gray-800 px-4 py-4 rounded-xl">
+            <Text className="text-gray-400 text-center text-sm">
+              Selecciona un cine y horario para continuar
+            </Text>
+          </View>
         )}
       </View>
     </View>

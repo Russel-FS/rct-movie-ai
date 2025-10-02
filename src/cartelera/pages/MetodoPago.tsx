@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, Image } from 'react-native';
 import { CreditCard, Smartphone, ChevronRight, ArrowLeft } from 'lucide-react-native';
+import PagoTarjeta from './PagoTarjeta';
+import PagoYape from './PagoYape';
 
 interface MetodoPagoProps {
   peliculaId: string;
@@ -39,6 +41,7 @@ export default function MetodoPago({
   onContinue
 }: MetodoPagoProps) {
   const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
+  const [showPaymentForm, setShowPaymentForm] = useState(false);
 
   const metodoPago = [
     {
@@ -56,10 +59,61 @@ export default function MetodoPago({
   ];
 
   const handleContinue = () => {
-    if (selectedMethod && onContinue) {
-      onContinue(selectedMethod, {});
+    if (selectedMethod) {
+      setShowPaymentForm(true);
     }
   };
+
+  const handlePaymentComplete = (detallesPago: any) => {
+    if (selectedMethod && onContinue) {
+      onContinue(selectedMethod, detallesPago);
+    }
+  };
+
+  const handleBackFromPaymentForm = () => {
+    setShowPaymentForm(false);
+  };
+
+  // Renderizar el formulario de pago específico según el método seleccionado
+  if (showPaymentForm) {
+    if (selectedMethod === 'tarjeta') {
+      return (
+        <PagoTarjeta
+          peliculaId={peliculaId}
+          cinemaName={cinemaName}
+          fecha={fecha}
+          hora={hora}
+          sala={sala}
+          formato={formato}
+          asientosSeleccionados={asientosSeleccionados}
+          comidas={comidas}
+          subtotalEntradas={subtotalEntradas}
+          subtotalComidas={subtotalComidas}
+          totalPagar={totalPagar}
+          onBack={handleBackFromPaymentForm}
+          onContinue={handlePaymentComplete}
+        />
+      );
+    } else if (selectedMethod === 'yape') {
+      return (
+        <PagoYape
+          peliculaId={peliculaId}
+          cinemaName={cinemaName}
+          fecha={fecha}
+          hora={hora}
+          sala={sala}
+          formato={formato}
+          asientosSeleccionados={asientosSeleccionados}
+          comidas={comidas}
+          subtotalEntradas={subtotalEntradas}
+          subtotalComidas={subtotalComidas}
+          totalPagar={totalPagar}
+          onBack={handleBackFromPaymentForm}
+          onContinue={handlePaymentComplete}
+        />
+      );
+    }
+  }
 
   return (
     <View className="flex-1 bg-black">

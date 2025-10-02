@@ -54,14 +54,13 @@ export default function App() {
     setActiveTab('seleccionLugar');
   };
 
-  // ✅ Manejar la selección de cine y horario desde SeleccionLugar
-  const handleLugarSelected = (cinemaId: number, cinemaName: string, horario: string) => {
+  // ✅ Manejar la selección de cine desde SeleccionLugar
+  const handleLugarSelected = (cinemaId: number, cinemaName: string) => {
     if (seleccionInfo) {
       setSeleccionInfo({
         ...seleccionInfo,
         cinemaId,
-        cinemaName,
-        horario
+        cinemaName
       });
       setActiveTab('seleccionHorario');
     }

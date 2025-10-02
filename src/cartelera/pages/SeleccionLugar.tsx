@@ -11,34 +11,30 @@ const cinemas = [
     id: 1,
     name: 'Cinépolis Plaza Norte',
     address: 'Av. Constituyentes 1050, Col. Centro',
-    distance: '2.3 km',
-    horarios: ['15:00', '17:30', '20:00'],
+    distance: '2.3 km'
   },
   {
     id: 2,
     name: 'Cinemex Galerías',
     address: 'Blvd. Miguel de Cervantes 1200',
-    distance: '4.8 km',
-    horarios: ['16:00', '18:30', '21:00'],
+    distance: '4.8 km'
   },
   {
     id: 3,
     name: 'Cinépolis VIP Centro',
     address: 'Calle Madero 445, Centro Histórico',
-    distance: '5.8 km',
-    horarios: ['14:30', '19:00'],
+    distance: '5.8 km'
   },
 ];
 
 interface SeleccionLugarProps {
   peliculaId: string;
   onBack?: () => void;
-  onContinue?: (cinemaId: number, cinemaName: string, horario: string) => void;
+  onContinue?: (cinemaId: number, cinemaName: string) => void;
 }
 
 export default function SeleccionLugar({ peliculaId, onBack, onContinue }: SeleccionLugarProps) {
   const [selectedCinema, setSelectedCinema] = useState<number | null>(null);
-  const [selectedHorario, setSelectedHorario] = useState<string | null>(null);
   const [showFullSynopsis, setShowFullSynopsis] = useState(false);
   const [pelicula, setPelicula] = useState<Pelicula | null>(null);
   const [generos, setGeneros] = useState<GeneroMovie[]>([]);
@@ -84,10 +80,10 @@ export default function SeleccionLugar({ peliculaId, onBack, onContinue }: Selec
   };
 
   const handleContinue = () => {
-    if (selectedCinema !== null && selectedHorario !== null && onContinue) {
+    if (selectedCinema !== null && onContinue) {
       const cinema = cinemas.find(c => c.id === selectedCinema);
       if (cinema) {
-        onContinue(cinema.id, cinema.name, selectedHorario);
+        onContinue(cinema.id, cinema.name);
       }
     }
   };
@@ -323,7 +319,7 @@ export default function SeleccionLugar({ peliculaId, onBack, onContinue }: Selec
 
         {/* Lista de cines */}
         <View className="px-6 pb-8">
-          <Text className="text-white text-xl font-bold mb-4">Seleccionar Cine y Horario</Text>
+          <Text className="text-white text-xl font-bold mb-4">Seleccionar Cine</Text>
           {cinemas.map((cine) => (
             <View
               key={cine.id}
@@ -334,10 +330,7 @@ export default function SeleccionLugar({ peliculaId, onBack, onContinue }: Selec
               }`}
             >
               <TouchableOpacity 
-                onPress={() => { 
-                  setSelectedCinema(cine.id); 
-                  setSelectedHorario(null); 
-                }}
+                onPress={() => setSelectedCinema(cine.id)}
                 activeOpacity={0.7}
               >
                 <Text className="text-white text-lg font-bold mb-2">{cine.name}</Text>
@@ -345,28 +338,7 @@ export default function SeleccionLugar({ peliculaId, onBack, onContinue }: Selec
                 <Text className="text-gray-500 text-xs">📍 {cine.distance} de tu ubicación</Text>
               </TouchableOpacity>
               
-              {/* Horarios */}
-              {selectedCinema === cine.id && (
-                <View className="mt-4 pt-4 border-t border-gray-700">
-                  <Text className="text-gray-300 text-sm font-semibold mb-3">Horarios disponibles:</Text>
-                  <View className="flex-row flex-wrap gap-3">
-                    {cine.horarios.map((hora) => (
-                      <TouchableOpacity
-                        key={hora}
-                        className={`px-5 py-3 rounded-xl ${
-                          selectedHorario === hora 
-                            ? 'bg-blue-600' 
-                            : 'bg-gray-700'
-                        }`}
-                        onPress={() => setSelectedHorario(hora)}
-                        activeOpacity={0.7}
-                      >
-                        <Text className="text-white font-bold text-base">{hora}</Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                </View>
-              )}
+
             </View>
           ))}
         </View>
@@ -374,14 +346,13 @@ export default function SeleccionLugar({ peliculaId, onBack, onContinue }: Selec
 
       {/* Footer dinámico */}
       <View className="px-6 py-5 bg-gray-900 border-t border-gray-800">
-        {selectedCinema !== null && selectedHorario !== null ? (
+        {selectedCinema !== null ? (
           <View>
             <View className="mb-3">
-              <Text className="text-gray-400 text-xs mb-1">Selección:</Text>
+              <Text className="text-gray-400 text-xs mb-1">Cine seleccionado:</Text>
               <Text className="text-white font-bold text-base">
                 {cinemas.find(c => c.id === selectedCinema)?.name}
               </Text>
-              <Text className="text-gray-300 text-sm mt-1">Hora: {selectedHorario}</Text>
             </View>
             <TouchableOpacity
               className="bg-blue-600 px-6 py-4 rounded-xl"
@@ -389,14 +360,14 @@ export default function SeleccionLugar({ peliculaId, onBack, onContinue }: Selec
               activeOpacity={0.8}
             >
               <Text className="text-white font-bold text-center text-base">
-                Continuar a Selección de Asientos
+                Continuar a Selección de Horario
               </Text>
             </TouchableOpacity>
           </View>
         ) : (
           <View className="bg-gray-800 px-4 py-4 rounded-xl">
             <Text className="text-gray-400 text-center text-sm">
-              Selecciona un cine y horario para continuar
+              Selecciona un cine para continuar
             </Text>
           </View>
         )}

@@ -231,465 +231,165 @@ export default function SeleccionButacas() {
         onPress={() => toggleAsiento(asiento.id)}
         disabled={estado === 'ocupado'}
         activeOpacity={0.7}
-        style={{
-          width: 28,
-          height: 28,
-          margin: 3,
-          borderRadius: 16,
-          justifyContent: 'center',
-          alignItems: 'center',
-          backgroundColor:
-            estado === 'disponible' ? '#1c1c1e' : estado === 'seleccionado' ? '#007AFF' : '#2c2c2e',
-          borderWidth: estado === 'disponible' ? 1 : 0,
-          borderColor: '#3a3a3c',
-          opacity: estado === 'ocupado' ? 0.4 : 1,
-          shadowColor: estado === 'seleccionado' ? '#007AFF' : 'transparent',
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.3,
-          shadowRadius: 6,
-          elevation: estado === 'seleccionado' ? 6 : 0,
-        }}>
-        {estado === 'seleccionado' && (
-          <View
-            style={{
-              width: 6,
-              height: 6,
-              borderRadius: 3,
-              backgroundColor: 'white',
-              shadowColor: 'white',
-              shadowOffset: { width: 0, height: 1 },
-              shadowOpacity: 0.5,
-              shadowRadius: 2,
-            }}
-          />
-        )}
-        {estado === 'ocupado' && (
-          <View
-            style={{
-              width: 14,
-              height: 2,
-              backgroundColor: '#8e8e93',
-              borderRadius: 1,
-              transform: [{ rotate: '45deg' }],
-            }}
-          />
-        )}
+        className={`m-1 h-7 w-7 items-center justify-center rounded-full ${
+          estado === 'disponible'
+            ? 'border border-gray-600 bg-gray-800'
+            : estado === 'seleccionado'
+              ? 'bg-white'
+              : 'bg-gray-600 opacity-40'
+        }`}>
+        {estado === 'seleccionado' && <View className="h-1.5 w-1.5 rounded-full bg-black" />}
+        {estado === 'ocupado' && <View className="h-0.5 w-3 rotate-45 rounded bg-gray-400" />}
       </TouchableOpacity>
     );
   };
 
   const renderFila = (fila: Fila) => {
     return (
-      <View
-        key={fila.letra}
-        style={{
-          marginBottom: 16,
-          flexDirection: 'row',
-          alignItems: 'center',
-          paddingHorizontal: 4,
-        }}>
-        <Text
-          style={{
-            width: 28,
-            textAlign: 'center',
-            fontSize: 14,
-            fontWeight: '600',
-            color: '#8e8e93',
-            letterSpacing: 0.5,
-          }}>
+      <View key={fila.letra} className="mb-4 flex-row items-center px-1">
+        <Text className="w-7 text-center text-sm font-semibold tracking-wide text-gray-400">
           {fila.letra}
         </Text>
-        <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'center' }}>
-          <View
-            style={{
-              flex: 1,
-              flexDirection: 'row',
-              flexWrap: 'wrap',
-              justifyContent: 'flex-end',
-              paddingRight: 8,
-            }}>
+        <View className="flex-1 flex-row justify-center">
+          <View className="flex-1 flex-row flex-wrap justify-end pr-2">
             {fila.asientos.slice(0, 6).map(renderAsiento)}
           </View>
-          <View style={{ width: 24 }} />
-          <View
-            style={{
-              flex: 1,
-              flexDirection: 'row',
-              flexWrap: 'wrap',
-              justifyContent: 'flex-start',
-              paddingLeft: 8,
-            }}>
+          <View className="w-6" />
+          <View className="flex-1 flex-row flex-wrap justify-start pl-2">
             {fila.asientos.slice(6, 12).map(renderAsiento)}
           </View>
         </View>
-        <View style={{ width: 28 }} />
+        <View className="w-7" />
       </View>
     );
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#000' }}>
-      <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
-        {/* Header con botón de regreso */}
-        <View style={{ paddingHorizontal: 28, paddingTop: 48, paddingBottom: 24 }}>
-          <TouchableOpacity
-            onPress={handleBack}
-            style={{
-              width: 40,
-              height: 40,
-              borderRadius: 20,
-              backgroundColor: '#1c1c1e',
-              justifyContent: 'center',
-              alignItems: 'center',
-              marginBottom: 20,
-            }}
-            activeOpacity={0.7}>
-            <Text style={{ color: '#fff', fontSize: 24 }}>{'‹'}</Text>
-          </TouchableOpacity>
+    <View className="flex-1 bg-black">
+      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+        {/* Header */}
+        <View className="px-4 pb-6 pt-14">
+          <View className="flex-row items-center justify-between">
+            <View className="flex-row items-center">
+              <TouchableOpacity
+                onPress={handleBack}
+                className="mr-4 h-10 w-10 items-center justify-center rounded-full bg-gray-800/50"
+                activeOpacity={0.7}>
+                <ChevronLeft size={20} color="#9CA3AF" />
+              </TouchableOpacity>
+              <View>
+                <Text className="text-sm font-medium text-gray-400">Seleccionar asientos</Text>
+                <Text className="text-2xl font-bold text-white">Elige tu lugar</Text>
+              </View>
+            </View>
+          </View>
+        </View>
 
-          {/* Información de la función */}
-          <View
-            style={{
-              backgroundColor: '#1c1c1e',
-              borderRadius: 18,
-              padding: 20,
-              marginBottom: 20,
-              borderWidth: 1,
-              borderColor: '#2c2c2e',
-            }}>
-            <Text style={{ fontSize: 14, color: '#8e8e93', marginBottom: 8 }}>{cinemaName}</Text>
-            <Text style={{ fontSize: 18, fontWeight: '600', color: '#fff', marginBottom: 12 }}>
+        {/* Info de la función */}
+        <View className="mx-4 mb-8">
+          <View className="rounded-3xl bg-gray-800/50 p-6">
+            <View className="mb-4 flex-row items-center">
+              <MapPin size={16} color="#9CA3AF" />
+              <Text className="ml-2 text-lg font-bold text-white">{cinemaName}</Text>
+            </View>
+
+            <Text className="mb-4 text-xl font-bold text-white">
               {sala} • {formato}
             </Text>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+
+            <View className="flex-row items-center space-x-6">
               <View>
-                <Text style={{ fontSize: 12, color: '#8e8e93', marginBottom: 4 }}>Fecha</Text>
-                <Text style={{ fontSize: 14, fontWeight: '500', color: '#fff' }}>
-                  {formatFecha(fecha)}
-                </Text>
+                <Text className="text-sm font-medium text-gray-400">Fecha</Text>
+                <Text className="text-base font-medium text-white">{formatFecha(fecha)}</Text>
               </View>
-              <View>
-                <Text style={{ fontSize: 12, color: '#8e8e93', marginBottom: 4 }}>Hora</Text>
-                <Text style={{ fontSize: 14, fontWeight: '500', color: '#fff' }}>{hora}</Text>
+
+              <View className="flex-row items-center">
+                <Clock size={14} color="#9CA3AF" />
+                <Text className="ml-1 text-base font-medium text-white">{hora}</Text>
               </View>
+
               <View>
-                <Text style={{ fontSize: 12, color: '#8e8e93', marginBottom: 4 }}>Precio</Text>
-                <Text style={{ fontSize: 14, fontWeight: '500', color: '#fff' }}>
+                <Text className="text-sm font-medium text-gray-400">Precio</Text>
+                <Text className="text-base font-medium text-white">
                   S/ {(precio || 0).toFixed(2)}
                 </Text>
               </View>
             </View>
           </View>
-
-          {/* Barra de progreso */}
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              marginBottom: 20,
-            }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <View
-                style={{
-                  backgroundColor: '#10B981',
-                  borderRadius: 12,
-                  width: 24,
-                  height: 24,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}>
-                <Text style={{ color: '#fff', fontSize: 10, fontWeight: 'bold' }}>✓</Text>
-              </View>
-              <Text style={{ color: '#10B981', fontSize: 10, marginLeft: 6, fontWeight: '600' }}>
-                Lugar
-              </Text>
-            </View>
-            <View
-              style={{ flex: 1, height: 1.5, backgroundColor: '#10B981', marginHorizontal: 8 }}
-            />
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <View
-                style={{
-                  backgroundColor: '#10B981',
-                  borderRadius: 12,
-                  width: 24,
-                  height: 24,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}>
-                <Text style={{ color: '#fff', fontSize: 10, fontWeight: 'bold' }}>✓</Text>
-              </View>
-              <Text style={{ color: '#10B981', fontSize: 10, marginLeft: 6, fontWeight: '600' }}>
-                Horario
-              </Text>
-            </View>
-            <View
-              style={{ flex: 1, height: 1.5, backgroundColor: '#007AFF', marginHorizontal: 8 }}
-            />
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <View
-                style={{
-                  backgroundColor: '#007AFF',
-                  borderRadius: 12,
-                  width: 24,
-                  height: 24,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}>
-                <Text style={{ color: '#fff', fontSize: 10, fontWeight: 'bold' }}>3</Text>
-              </View>
-              <Text style={{ color: '#fff', fontSize: 10, marginLeft: 6, fontWeight: '600' }}>
-                Asientos
-              </Text>
-            </View>
-          </View>
-
-          <Text
-            style={{
-              fontSize: 34,
-              fontWeight: '700',
-              color: '#fff',
-              marginBottom: 8,
-              letterSpacing: -1,
-            }}>
-            Selecciona
-          </Text>
-          <Text
-            style={{
-              fontSize: 34,
-              fontWeight: '300',
-              color: '#fff',
-              marginBottom: 12,
-              letterSpacing: -1,
-            }}>
-            tus asientos
-          </Text>
-          <Text style={{ fontSize: 17, color: '#8e8e93', lineHeight: 22 }}>
-            Elige la experiencia perfecta
-          </Text>
         </View>
 
-        <View style={{ alignItems: 'center', marginBottom: 48 }}>
-          <View
-            style={{
-              width: 320,
-              height: 6,
-              backgroundColor: '#1c1c1e',
-              borderRadius: 3,
-              marginBottom: 16,
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.3,
-              shadowRadius: 4,
-            }}
-          />
-          <Text
-            style={{
-              fontSize: 12,
-              fontWeight: '600',
-              color: '#636366',
-              letterSpacing: 3,
-            }}>
-            PANTALLA
-          </Text>
+        {/* Pantalla */}
+        <View className="mb-12 items-center">
+          <View className="mb-4 h-1.5 w-80 rounded-full bg-gray-800" />
+          <Text className="text-xs font-semibold tracking-widest text-gray-500">PANTALLA</Text>
         </View>
 
-        <View
-          style={{
-            marginHorizontal: 16,
-            marginBottom: 32,
-            backgroundColor: '#1c1c1e',
-            borderRadius: 24,
-            padding: 20,
-            borderWidth: 1,
-            borderColor: '#2c2c2e',
-          }}>
+        {/* Mapa de asientos */}
+        <View className="mx-4 mb-8 rounded-3xl bg-gray-800/50 p-5">
           {filasData.map(renderFila)}
         </View>
 
-        <View style={{ paddingHorizontal: 24, marginBottom: 28 }}>
-          <View
-            style={{
-              backgroundColor: '#1c1c1e',
-              borderRadius: 18,
-              padding: 20,
-              borderWidth: 1,
-              borderColor: '#2c2c2e',
-            }}>
-            <View
-              style={{
-                flexDirection: 'row',
-                flexWrap: 'wrap',
-                justifyContent: 'center',
-                alignItems: 'center',
-                gap: 16,
-              }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <View
-                  style={{
-                    width: 22,
-                    height: 22,
-                    borderRadius: 11,
-                    backgroundColor: '#1c1c1e',
-                    borderWidth: 1,
-                    borderColor: '#3a3a3c',
-                    marginRight: 10,
-                  }}
-                />
-                <Text style={{ fontSize: 14, color: '#fff', fontWeight: '500' }}>Disponible</Text>
+        {/* Leyenda */}
+        <View className="mx-4 mb-8">
+          <View className="rounded-3xl bg-gray-800/50 p-6">
+            <View className="flex-row flex-wrap items-center justify-center gap-6">
+              <View className="flex-row items-center">
+                <View className="mr-3 h-6 w-6 rounded-full border border-gray-600 bg-gray-800" />
+                <Text className="text-sm font-medium text-white">Disponible</Text>
               </View>
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <View
-                  style={{
-                    width: 22,
-                    height: 22,
-                    borderRadius: 11,
-                    backgroundColor: '#007AFF',
-                    marginRight: 10,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    shadowColor: '#007AFF',
-                    shadowOffset: { width: 0, height: 2 },
-                    shadowOpacity: 0.3,
-                    shadowRadius: 4,
-                  }}>
-                  <View
-                    style={{ width: 5, height: 5, borderRadius: 2.5, backgroundColor: 'white' }}
-                  />
+
+              <View className="flex-row items-center">
+                <View className="mr-3 h-6 w-6 items-center justify-center rounded-full bg-white">
+                  <View className="h-1.5 w-1.5 rounded-full bg-black" />
                 </View>
-                <Text style={{ fontSize: 14, color: '#fff', fontWeight: '500' }}>Seleccionado</Text>
+                <Text className="text-sm font-medium text-white">Seleccionado</Text>
               </View>
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <View
-                  style={{
-                    width: 22,
-                    height: 22,
-                    borderRadius: 11,
-                    backgroundColor: '#2c2c2e',
-                    marginRight: 10,
-                    opacity: 0.4,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                  }}>
-                  <View
-                    style={{
-                      width: 10,
-                      height: 1.5,
-                      backgroundColor: '#8e8e93',
-                      borderRadius: 1,
-                      transform: [{ rotate: '45deg' }],
-                    }}
-                  />
+
+              <View className="flex-row items-center">
+                <View className="mr-3 h-6 w-6 items-center justify-center rounded-full bg-gray-600 opacity-40">
+                  <View className="h-0.5 w-3 rotate-45 rounded bg-gray-400" />
                 </View>
-                <Text style={{ fontSize: 14, color: '#fff', fontWeight: '500' }}>Ocupado</Text>
+                <Text className="text-sm font-medium text-white">Ocupado</Text>
               </View>
             </View>
           </View>
         </View>
 
+        {/* Resumen de selección */}
         {asientosSeleccionados.length > 0 && (
-          <View style={{ marginHorizontal: 28, marginBottom: 40 }}>
-            <View
-              style={{
-                backgroundColor: '#007AFF',
-                borderRadius: 20,
-                padding: 28,
-                shadowColor: '#007AFF',
-                shadowOffset: { width: 0, height: 8 },
-                shadowOpacity: 0.3,
-                shadowRadius: 16,
-                elevation: 12,
-              }}>
-              <View
-                style={{
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  alignItems: 'flex-start',
-                  marginBottom: 24,
-                }}>
-                <View style={{ flex: 1, paddingRight: 16 }}>
-                  <Text
-                    style={{
-                      color: 'white',
-                      fontSize: 22,
-                      fontWeight: '700',
-                      marginBottom: 8,
-                      letterSpacing: -0.5,
-                    }}>
+          <View className="mx-4 mb-8">
+            <View className="rounded-3xl bg-white p-6">
+              <View className="mb-6 flex-row items-start justify-between">
+                <View className="flex-1 pr-4">
+                  <Text className="mb-2 text-xl font-bold text-black">
                     {asientosSeleccionados.length} asiento
                     {asientosSeleccionados.length > 1 ? 's' : ''}
                   </Text>
-                  <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-                    <Text
-                      style={{
-                        color: 'rgba(255,255,255,0.8)',
-                        fontSize: 16,
-                        fontWeight: '500',
-                        lineHeight: 20,
-                      }}
-                      numberOfLines={3}>
-                      {asientosSeleccionados.join(' • ')}
-                    </Text>
-                  </View>
+                  <Text className="text-base text-gray-600" numberOfLines={3}>
+                    {asientosSeleccionados.join(' • ')}
+                  </Text>
                 </View>
-                <View style={{ alignItems: 'flex-end', minWidth: 120 }}>
-                  <Text
-                    style={{
-                      color: 'white',
-                      fontSize: 28,
-                      fontWeight: '300',
-                      letterSpacing: -1,
-                    }}>
+                <View className="items-end">
+                  <Text className="text-2xl font-bold text-black">
                     S/ {calcularTotal().toLocaleString()}
                   </Text>
-                  <Text
-                    style={{
-                      color: 'rgba(255,255,255,0.8)',
-                      fontSize: 14,
-                      fontWeight: '500',
-                      marginTop: 2,
-                    }}>
-                    Total
-                  </Text>
+                  <Text className="text-sm font-medium text-gray-600">Total</Text>
                 </View>
               </View>
+
               <TouchableOpacity
-                style={{
-                  backgroundColor: 'white',
-                  borderRadius: 16,
-                  paddingVertical: 18,
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.1,
-                  shadowRadius: 4,
-                }}
+                className="rounded-full bg-black px-6 py-4"
                 onPress={handleContinue}
                 activeOpacity={0.8}>
-                <Text
-                  style={{
-                    color: '#007AFF',
-                    textAlign: 'center',
-                    fontSize: 18,
-                    fontWeight: '600',
-                    letterSpacing: -0.3,
-                  }}>
-                  Continuar
-                </Text>
+                <Text className="text-center text-lg font-bold text-white">Continuar</Text>
               </TouchableOpacity>
             </View>
           </View>
         )}
 
-        <View style={{ paddingHorizontal: 28, paddingBottom: 48 }}>
-          <Text
-            style={{
-              textAlign: 'center',
-              fontSize: 16,
-              color: '#8e8e93',
-              lineHeight: 24,
-              fontWeight: '400',
-            }}>
+        {/* Mensaje informativo */}
+        <View className="px-4 pb-12">
+          <Text className="text-center text-base leading-6 text-gray-400">
             Las filas centrales ofrecen la mejor experiencia.{'\n'}
             Toca para seleccionar tus asientos favoritos.
           </Text>

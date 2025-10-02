@@ -84,6 +84,15 @@ export default function MetodoPago() {
     setShowPaymentForm(false);
   };
 
+  const formatFecha = (fechaStr: string) => {
+    const fecha = new Date(fechaStr);
+    return fecha.toLocaleDateString('es-ES', {
+      weekday: 'short',
+      day: 'numeric',
+      month: 'short',
+    });
+  };
+
   // Renderizar el formulario de pago específico según el método seleccionado
   if (showPaymentForm) {
     if (selectedMethod === 'tarjeta') {
@@ -128,43 +137,62 @@ export default function MetodoPago() {
   return (
     <View className="flex-1 bg-black">
       {/* Header */}
-      <View className="border-b border-gray-800 bg-gray-900 px-6 pb-6 pt-12">
-        <View className="mb-4 flex-row items-center">
-          <TouchableOpacity
-            onPress={handleBack}
-            className="mr-4 h-10 w-10 items-center justify-center rounded-full bg-gray-800">
-            <ArrowLeft size={24} color="#FFFFFF" />
-          </TouchableOpacity>
-          <View>
-            <Text className="text-xl font-bold text-white">Método de Pago</Text>
-            <Text className="text-sm text-gray-400">Elige cómo quieres pagar</Text>
+      <View className="px-4 pb-6 pt-14">
+        <View className="flex-row items-center justify-between">
+          <View className="flex-row items-center">
+            <TouchableOpacity
+              onPress={handleBack}
+              className="mr-4 h-10 w-10 items-center justify-center rounded-full bg-gray-800/50"
+              activeOpacity={0.7}>
+              <ChevronLeft size={20} color="#9CA3AF" />
+            </TouchableOpacity>
+            <View>
+              <Text className="text-sm font-medium text-gray-400">Método de pago</Text>
+              <Text className="text-2xl font-bold text-white">¿Cómo quieres pagar?</Text>
+            </View>
           </View>
         </View>
       </View>
 
       <ScrollView className="flex-1">
         {/* Resumen de la compra */}
-        <View className="p-6">
-          <Text className="mb-4 text-lg font-bold text-white">Resumen de la compra</Text>
-          <View className="mb-6 rounded-xl bg-gray-900 p-4">
-            <View className="mb-4 border-b border-gray-800 pb-4">
-              <Text className="text-sm text-gray-400">Cinema</Text>
-              <Text className="font-bold text-white">{cinemaName}</Text>
-              <Text className="mt-1 text-sm text-gray-300">
-                {fecha} - {hora} • {sala} • {formato}
+        <View className="mx-4 mb-8">
+          <View className="rounded-3xl bg-gray-800/50 p-6">
+            <Text className="mb-4 text-xl font-bold text-white">Resumen de Compra</Text>
+
+            <View className="mb-4 flex-row items-center">
+              <MapPin size={16} color="#9CA3AF" />
+              <Text className="ml-2 text-lg font-bold text-white">{cinemaName}</Text>
+            </View>
+
+            <Text className="mb-4 text-base font-medium text-white">
+              {sala} • {formato}
+            </Text>
+
+            <View className="mb-4 flex-row items-center justify-between">
+              <View className="flex-row items-center">
+                <Calendar size={14} color="#9CA3AF" />
+                <Text className="ml-2 text-base font-medium text-white">{formatFecha(fecha)}</Text>
+              </View>
+
+              <View className="flex-row items-center">
+                <Clock size={14} color="#9CA3AF" />
+                <Text className="ml-1 text-base font-medium text-white">{hora}</Text>
+              </View>
+            </View>
+
+            <View className="mb-4 border-t border-gray-700 pt-4">
+              <Text className="mb-2 text-sm font-medium text-gray-400">Asientos seleccionados</Text>
+              <Text className="text-base font-medium text-white">
+                {asientosSeleccionados.join(', ')}
               </Text>
             </View>
 
-            <View key="asientos" className="mb-4 border-b border-gray-800 pb-4">
-              <Text className="text-sm text-gray-400">Asientos</Text>
-              <Text className="font-bold text-white">{asientosSeleccionados.join(', ')}</Text>
-            </View>
-
             {comidas && comidas.length > 0 && (
-              <View key="comidas" className="mb-4 border-b border-gray-800 pb-4">
-                <Text className="text-sm text-gray-400">Comidas y Bebidas</Text>
+              <View className="mb-4 border-t border-gray-700 pt-4">
+                <Text className="mb-3 text-sm font-medium text-gray-400">Dulcería</Text>
                 {comidas.map((item) => (
-                  <View key={`comida-${item.id}`} className="mt-2 flex-row justify-between">
+                  <View key={`comida-${item.id}`} className="mb-2 flex-row justify-between">
                     <Text className="text-white">
                       {item.cantidad}x {item.nombre}
                     </Text>
@@ -174,56 +202,86 @@ export default function MetodoPago() {
               </View>
             )}
 
-            <View>
+            <View className="border-t border-gray-700 pt-4">
               <View className="mb-2 flex-row justify-between">
-                <Text className="text-gray-400">Subtotal Entradas</Text>
+                <Text className="text-gray-300">Entradas</Text>
                 <Text className="text-white">S/ {(subtotalEntradas || 0).toFixed(2)}</Text>
               </View>
-              <View key="subtotal-comidas" className="mb-2 flex-row justify-between">
-                <Text className="text-gray-400">Subtotal Comidas</Text>
+              <View className="mb-4 flex-row justify-between">
+                <Text className="text-gray-300">Dulcería</Text>
                 <Text className="text-white">S/ {(subtotalComidas || 0).toFixed(2)}</Text>
               </View>
-              <View key="total" className="mt-3 flex-row justify-between">
-                <Text className="font-bold text-white">Total a Pagar</Text>
-                <Text className="font-bold text-white">S/ {(totalPagar || 0).toFixed(2)}</Text>
+              <View className="flex-row justify-between">
+                <Text className="text-xl font-bold text-white">Total</Text>
+                <Text className="text-xl font-bold text-white">
+                  S/ {(totalPagar || 0).toFixed(2)}
+                </Text>
               </View>
             </View>
           </View>
+        </View>
 
-          {/* Métodos de pago */}
-          <Text className="mb-4 text-lg font-bold text-white">Elige tu método de pago</Text>
+        {/* Métodos de pago */}
+        <View className="px-4">
+          <Text className="mb-6 text-2xl font-bold text-white">Métodos de Pago</Text>
           {metodoPago.map((metodo) => (
             <TouchableOpacity
               key={`metodo-${metodo.id}`}
               onPress={() => setSelectedMethod(metodo.id)}
-              className={`mb-4 flex-row items-center rounded-xl p-4 ${
-                selectedMethod === metodo.id ? 'bg-blue-600' : 'bg-gray-900'
-              }`}>
-              <View className="mr-4 rounded-full bg-gray-800/50 p-3">
-                <metodo.icon size={24} color="#FFFFFF" />
-              </View>
-              <View className="flex-1">
-                <Text className="font-bold text-white">{metodo.nombre}</Text>
-                <Text className="text-sm text-gray-400">{metodo.descripcion}</Text>
-              </View>
-              {selectedMethod === metodo.id && (
-                <View className="rounded-full bg-white/20 p-2">
-                  <ChevronRight size={20} color="#FFFFFF" />
+              className={`mb-4 overflow-hidden rounded-3xl ${
+                selectedMethod === metodo.id ? 'bg-white' : 'bg-gray-800/50'
+              }`}
+              activeOpacity={0.8}>
+              <View className="flex-row items-center p-6">
+                <View
+                  className={`mr-4 rounded-full p-3 ${
+                    selectedMethod === metodo.id ? 'bg-gray-100' : 'bg-gray-700/50'
+                  }`}>
+                  <metodo.icon size={24} color={selectedMethod === metodo.id ? '#000' : '#FFF'} />
                 </View>
-              )}
+                <View className="flex-1">
+                  <Text
+                    className={`text-lg font-bold ${
+                      selectedMethod === metodo.id ? 'text-black' : 'text-white'
+                    }`}>
+                    {metodo.nombre}
+                  </Text>
+                  <Text
+                    className={`text-sm ${
+                      selectedMethod === metodo.id ? 'text-gray-600' : 'text-gray-400'
+                    }`}>
+                    {metodo.descripcion}
+                  </Text>
+                </View>
+                {selectedMethod === metodo.id && (
+                  <View className="h-8 w-8 items-center justify-center rounded-full bg-black">
+                    <Text className="text-sm font-bold text-white">✓</Text>
+                  </View>
+                )}
+              </View>
             </TouchableOpacity>
           ))}
         </View>
       </ScrollView>
 
       {/* Footer */}
-      <View className="border-t border-gray-800 bg-gray-900 px-6 py-4">
-        <TouchableOpacity
-          onPress={handleSelectMethod}
-          disabled={!selectedMethod}
-          className={`rounded-xl py-4 ${selectedMethod ? 'bg-blue-600' : 'bg-gray-700'}`}>
-          <Text className="text-center font-bold text-white">Continuar al Pago</Text>
-        </TouchableOpacity>
+      <View className="border-t border-gray-800/50 bg-black px-4 py-6">
+        {selectedMethod ? (
+          <TouchableOpacity
+            className="rounded-full bg-white px-6 py-4"
+            onPress={handleSelectMethod}
+            activeOpacity={0.8}>
+            <Text className="text-center text-lg font-bold text-black">
+              Continuar con {metodoPago.find((m) => m.id === selectedMethod)?.nombre}
+            </Text>
+          </TouchableOpacity>
+        ) : (
+          <View className="rounded-full bg-gray-800/50 px-6 py-4">
+            <Text className="text-center text-lg font-medium text-gray-400">
+              Selecciona un método de pago
+            </Text>
+          </View>
+        )}
       </View>
     </View>
   );

@@ -1,5 +1,6 @@
 export type RootStackParamList = {
   MainTabs: undefined;
+  GenreMovies: { generoId: number };
   SeleccionLugar: { peliculaId: string };
   SeleccionHorario: {
     peliculaId: string;

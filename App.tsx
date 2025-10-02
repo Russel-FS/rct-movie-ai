@@ -9,7 +9,7 @@ import { RootStackParamList } from '~/shared/types/navigation';
 // Navegadores
 import MainTabNavigator from '~/shared/components/Navigation';
 
-// Pantallas del flujo de compra
+import GenreMovies from '~/home/page/GenreMovies';
 import SeleccionLugar from '~/cartelera/pages/SeleccionLugar';
 import SeleccionHorario from '~/cartelera/pages/SeleccionHorario';
 import SeleccionButacas from '~/cartelera/pages/SeleccionButacas';
@@ -31,6 +31,15 @@ export default function App() {
         }}>
         {/* Navegador principal con tabs */}
         <Stack.Screen name="MainTabs" component={MainTabNavigator} />
+
+        {/* Pantalla de género específico */}
+        <Stack.Screen
+          name="GenreMovies"
+          component={GenreMovies}
+          options={{
+            animation: 'slide_from_right',
+          }}
+        />
 
         {/* Flujo de compra de entradas */}
         <Stack.Screen

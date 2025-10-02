@@ -12,6 +12,7 @@ import {
   MoviesGrid,
   LoadingState,
   ErrorState,
+  HomeSkeleton,
 } from '../components';
 
 type HomeNavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -51,16 +52,12 @@ export default function Home() {
     console.log('Perfil pressed');
   };
 
-  const handleViewAllGenre = (generoId: number) => {
-    console.log('Ver todo género:', generoId);
-  };
-
   const handleRefresh = async () => {
     await refetchPeliculas();
   };
 
   if (loading && filteredPeliculas.length === 0) {
-    return <LoadingState message="Cargando experiencia cinematográfica..." />;
+    return <HomeSkeleton />;
   }
 
   if (error && filteredPeliculas.length === 0) {
@@ -116,7 +113,6 @@ export default function Home() {
               genero={genero}
               peliculas={peliculasPorGenero[genero.id] || []}
               onMoviePress={handleMoviePress}
-              onViewAllPress={handleViewAllGenre}
             />
           ))}
 

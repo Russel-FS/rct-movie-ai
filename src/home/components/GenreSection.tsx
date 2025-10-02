@@ -1,22 +1,26 @@
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ChevronRight } from 'lucide-react-native';
 import { Pelicula } from '~/shared/types/pelicula';
 import { GeneroMovie } from '~/shared/types/genero';
+import { RootStackParamList } from '~/shared/types/navigation';
 import MovieCard from './MovieCard';
 
 interface GenreSectionProps {
   genero: GeneroMovie;
   peliculas: Pelicula[];
   onMoviePress: (peliculaId: string) => void;
-  onViewAllPress: (generoId: number) => void;
 }
 
-export default function GenreSection({
-  genero,
-  peliculas,
-  onMoviePress,
-  onViewAllPress,
-}: GenreSectionProps) {
+type GenreSectionNavigationProp = NativeStackNavigationProp<RootStackParamList>;
+
+export default function GenreSection({ genero, peliculas, onMoviePress }: GenreSectionProps) {
+  const navigation = useNavigation<GenreSectionNavigationProp>();
+
+  const handleViewAllPress = () => {
+    navigation.navigate('GenreMovies', { generoId: genero.id });
+  };
   if (peliculas.length === 0) return null;
 
   return (
@@ -31,7 +35,7 @@ export default function GenreSection({
         </View>
 
         <TouchableOpacity
-          onPress={() => onViewAllPress(genero.id)}
+          onPress={handleViewAllPress}
           className="flex-row items-center rounded-full bg-gray-800/50 px-3 py-2"
           activeOpacity={0.7}>
           <Text className="mr-1 text-sm font-semibold text-blue-400">Ver Todo</Text>

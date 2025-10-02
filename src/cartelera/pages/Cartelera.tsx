@@ -1,4 +1,4 @@
-import { useState } from 'react';
+/*import { useState } from 'react';
 import { Text, View, ScrollView, TouchableOpacity } from 'react-native';
 import { MapPin, Clock, Armchair, UtensilsCrossed, CreditCard, Receipt, Film } from 'lucide-react-native';
 
@@ -8,9 +8,9 @@ import SeleccionHorario from './SeleccionHorario';
 import SeleccionButacas from './SeleccionButacas';
 import SeleccionComidas from './SeleccionComidas';
 import MetodoPago from './MetodoPago';
-import ResumenPago from './ResumenPago';
+import ResumenPago from './ResumenPago';*/
 
-type NavStep = {
+/*type NavStep = {
   id: string;
   label: string;
   icon: React.ReactNode;
@@ -57,10 +57,10 @@ export default function Cartelera() {
         <View className="mb-6 flex-row items-center">
           <Film size={24} color="white" />
           <Text className="ml-2 text-2xl font-bold text-white">Cartelera</Text>
-        </View>
+        </View>*/
 
         {/* Encabezado de navegación */}
-        <ScrollView 
+        /*<ScrollView 
           horizontal 
           showsHorizontalScrollIndicator={false} 
           className="mb-6">
@@ -76,11 +76,12 @@ export default function Cartelera() {
               </TouchableOpacity>
             ))}
           </View>
-        </ScrollView>
+        </ScrollView>*/
 
         {/* Contenido según el paso seleccionado */}
-        {renderContent()}
+        /*{renderContent()}
       </View>
     </ScrollView>
   );
 }
+*/

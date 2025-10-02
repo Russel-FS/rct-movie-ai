@@ -1,145 +1,167 @@
 import { useMemo, useState } from 'react';
 import { Text, View, TouchableOpacity, ScrollView } from 'react-native';
-import { Fila, Asiento } from '../../shared/types/cinema';
+import { Fila, Asiento } from '~/shared/types/cinema';
 
-export default function SeleccionButacas() {
+interface SeleccionButacasProps {
+  peliculaId: string;
+  cinemaName: string;
+  fecha: string;
+  hora: string;
+  sala: string;
+  formato: string;
+  precio: number;
+  onBack?: () => void;
+  onContinue?: (asientos: string[]) => void;
+}
+
+export default function SeleccionButacas({
+  peliculaId,
+  cinemaName,
+  fecha,
+  hora,
+  sala,
+  formato,
+  precio,
+  onBack,
+  onContinue
+}: SeleccionButacasProps) {
   const [asientosSeleccionados, setAsientosSeleccionados] = useState<string[]>([]);
 
   const filasData: Fila[] = [
     {
       letra: 'A',
       asientos: [
-        { id: 'A1', numero: 1, ocupado: false, precio: 12000 },
-        { id: 'A2', numero: 2, ocupado: false, precio: 12000 },
-        { id: 'A3', numero: 3, ocupado: true, precio: 12000 },
-        { id: 'A4', numero: 4, ocupado: false, precio: 12000 },
-        { id: 'A5', numero: 5, ocupado: false, precio: 12000 },
-        { id: 'A6', numero: 6, ocupado: false, precio: 12000 },
-        { id: 'A7', numero: 7, ocupado: false, precio: 12000 },
-        { id: 'A8', numero: 8, ocupado: false, precio: 12000 },
-        { id: 'A9', numero: 9, ocupado: true, precio: 12000 },
-        { id: 'A10', numero: 10, ocupado: false, precio: 12000 },
-        { id: 'A11', numero: 11, ocupado: false, precio: 12000 },
-        { id: 'A12', numero: 12, ocupado: false, precio: 12000 },
+        { id: 'A1', numero: 1, ocupado: false, precio: precio },
+        { id: 'A2', numero: 2, ocupado: false, precio: precio },
+        { id: 'A3', numero: 3, ocupado: true, precio: precio },
+        { id: 'A4', numero: 4, ocupado: false, precio: precio },
+        { id: 'A5', numero: 5, ocupado: false, precio: precio },
+        { id: 'A6', numero: 6, ocupado: false, precio: precio },
+        { id: 'A7', numero: 7, ocupado: false, precio: precio },
+        { id: 'A8', numero: 8, ocupado: false, precio: precio },
+        { id: 'A9', numero: 9, ocupado: true, precio: precio },
+        { id: 'A10', numero: 10, ocupado: false, precio: precio },
+        { id: 'A11', numero: 11, ocupado: false, precio: precio },
+        { id: 'A12', numero: 12, ocupado: false, precio: precio },
       ],
     },
     {
       letra: 'B',
       asientos: [
-        { id: 'B1', numero: 1, ocupado: false, precio: 12000 },
-        { id: 'B2', numero: 2, ocupado: false, precio: 12000 },
-        { id: 'B3', numero: 3, ocupado: false, precio: 12000 },
-        { id: 'B4', numero: 4, ocupado: true, precio: 12000 },
-        { id: 'B5', numero: 5, ocupado: false, precio: 12000 },
-        { id: 'B6', numero: 6, ocupado: false, precio: 12000 },
-        { id: 'B7', numero: 7, ocupado: false, precio: 12000 },
-        { id: 'B8', numero: 8, ocupado: false, precio: 12000 },
-        { id: 'B9', numero: 9, ocupado: false, precio: 12000 },
-        { id: 'B10', numero: 10, ocupado: true, precio: 12000 },
-        { id: 'B11', numero: 11, ocupado: false, precio: 12000 },
-        { id: 'B12', numero: 12, ocupado: false, precio: 12000 },
+        { id: 'B1', numero: 1, ocupado: false, precio: precio },
+        { id: 'B2', numero: 2, ocupado: false, precio: precio },
+        { id: 'B3', numero: 3, ocupado: false, precio: precio },
+        { id: 'B4', numero: 4, ocupado: true, precio: precio },
+        { id: 'B5', numero: 5, ocupado: false, precio: precio },
+        { id: 'B6', numero: 6, ocupado: false, precio: precio },
+        { id: 'B7', numero: 7, ocupado: false, precio: precio },
+        { id: 'B8', numero: 8, ocupado: false, precio: precio },
+        { id: 'B9', numero: 9, ocupado: false, precio: precio },
+        { id: 'B10', numero: 10, ocupado: true, precio: precio },
+        { id: 'B11', numero: 11, ocupado: false, precio: precio },
+        { id: 'B12', numero: 12, ocupado: false, precio: precio },
       ],
     },
     {
       letra: 'C',
       asientos: [
-        { id: 'C1', numero: 1, ocupado: false, precio: 12000 },
-        { id: 'C2', numero: 2, ocupado: false, precio: 12000 },
-        { id: 'C3', numero: 3, ocupado: false, precio: 12000 },
-        { id: 'C4', numero: 4, ocupado: false, precio: 12000 },
-        { id: 'C5', numero: 5, ocupado: false, precio: 12000 },
-        { id: 'C6', numero: 6, ocupado: true, precio: 12000 },
-        { id: 'C7', numero: 7, ocupado: false, precio: 12000 },
-        { id: 'C8', numero: 8, ocupado: false, precio: 12000 },
-        { id: 'C9', numero: 9, ocupado: false, precio: 12000 },
-        { id: 'C10', numero: 10, ocupado: false, precio: 12000 },
-        { id: 'C11', numero: 11, ocupado: false, precio: 12000 },
-        { id: 'C12', numero: 12, ocupado: false, precio: 12000 },
+        { id: 'C1', numero: 1, ocupado: false, precio: precio },
+        { id: 'C2', numero: 2, ocupado: false, precio: precio },
+        { id: 'C3', numero: 3, ocupado: false, precio: precio },
+        { id: 'C4', numero: 4, ocupado: false, precio: precio },
+        { id: 'C5', numero: 5, ocupado: false, precio: precio },
+        { id: 'C6', numero: 6, ocupado: true, precio: precio },
+        { id: 'C7', numero: 7, ocupado: false, precio: precio },
+        { id: 'C8', numero: 8, ocupado: false, precio: precio },
+        { id: 'C9', numero: 9, ocupado: false, precio: precio },
+        { id: 'C10', numero: 10, ocupado: false, precio: precio },
+        { id: 'C11', numero: 11, ocupado: false, precio: precio },
+        { id: 'C12', numero: 12, ocupado: false, precio: precio },
       ],
     },
     {
       letra: 'D',
       asientos: [
-        { id: 'D1', numero: 1, ocupado: false, precio: 12000 },
-        { id: 'D2', numero: 2, ocupado: false, precio: 12000 },
-        { id: 'D3', numero: 3, ocupado: false, precio: 12000 },
-        { id: 'D4', numero: 4, ocupado: false, precio: 12000 },
-        { id: 'D5', numero: 5, ocupado: false, precio: 12000 },
-        { id: 'D6', numero: 6, ocupado: false, precio: 12000 },
-        { id: 'D7', numero: 7, ocupado: true, precio: 12000 },
-        { id: 'D8', numero: 8, ocupado: false, precio: 12000 },
-        { id: 'D9', numero: 9, ocupado: false, precio: 12000 },
-        { id: 'D10', numero: 10, ocupado: false, precio: 12000 },
-        { id: 'D11', numero: 11, ocupado: false, precio: 12000 },
-        { id: 'D12', numero: 12, ocupado: false, precio: 12000 },
+        { id: 'D1', numero: 1, ocupado: false, precio: precio },
+        { id: 'D2', numero: 2, ocupado: false, precio: precio },
+        { id: 'D3', numero: 3, ocupado: false, precio: precio },
+        { id: 'D4', numero: 4, ocupado: false, precio: precio },
+        { id: 'D5', numero: 5, ocupado: false, precio: precio },
+        { id: 'D6', numero: 6, ocupado: false, precio: precio },
+        { id: 'D7', numero: 7, ocupado: true, precio: precio },
+        { id: 'D8', numero: 8, ocupado: false, precio: precio },
+        { id: 'D9', numero: 9, ocupado: false, precio: precio },
+        { id: 'D10', numero: 10, ocupado: false, precio: precio },
+        { id: 'D11', numero: 11, ocupado: false, precio: precio },
+        { id: 'D12', numero: 12, ocupado: false, precio: precio },
       ],
     },
     {
       letra: 'E',
       asientos: [
-        { id: 'E1', numero: 1, ocupado: false, precio: 12000 },
-        { id: 'E2', numero: 2, ocupado: false, precio: 12000 },
-        { id: 'E3', numero: 3, ocupado: false, precio: 12000 },
-        { id: 'E4', numero: 4, ocupado: false, precio: 12000 },
-        { id: 'E5', numero: 5, ocupado: false, precio: 12000 },
-        { id: 'E6', numero: 6, ocupado: false, precio: 12000 },
-        { id: 'E7', numero: 7, ocupado: false, precio: 12000 },
-        { id: 'E8', numero: 8, ocupado: true, precio: 12000 },
-        { id: 'E9', numero: 9, ocupado: false, precio: 12000 },
-        { id: 'E10', numero: 10, ocupado: false, precio: 12000 },
-        { id: 'E11', numero: 11, ocupado: false, precio: 12000 },
-        { id: 'E12', numero: 12, ocupado: false, precio: 12000 },
+        { id: 'E1', numero: 1, ocupado: false, precio: precio },
+        { id: 'E2', numero: 2, ocupado: false, precio: precio },
+        { id: 'E3', numero: 3, ocupado: false, precio: precio },
+        { id: 'E4', numero: 4, ocupado: false, precio: precio },
+        { id: 'E5', numero: 5, ocupado: false, precio: precio },
+        { id: 'E6', numero: 6, ocupado: false, precio: precio },
+        { id: 'E7', numero: 7, ocupado: false, precio: precio },
+        { id: 'E8', numero: 8, ocupado: true, precio: precio },
+        { id: 'E9', numero: 9, ocupado: false, precio: precio },
+        { id: 'E10', numero: 10, ocupado: false, precio: precio },
+        { id: 'E11', numero: 11, ocupado: false, precio: precio },
+        { id: 'E12', numero: 12, ocupado: false, precio: precio },
       ],
     },
     {
       letra: 'F',
       asientos: [
-        { id: 'F1', numero: 1, ocupado: false, precio: 12000 },
-        { id: 'F2', numero: 2, ocupado: false, precio: 12000 },
-        { id: 'F3', numero: 3, ocupado: false, precio: 12000 },
-        { id: 'F4', numero: 4, ocupado: false, precio: 12000 },
-        { id: 'F5', numero: 5, ocupado: false, precio: 12000 },
-        { id: 'F6', numero: 6, ocupado: false, precio: 12000 },
-        { id: 'F7', numero: 7, ocupado: false, precio: 12000 },
-        { id: 'F8', numero: 8, ocupado: false, precio: 12000 },
-        { id: 'F9', numero: 9, ocupado: true, precio: 12000 },
-        { id: 'F10', numero: 10, ocupado: false, precio: 12000 },
-        { id: 'F11', numero: 11, ocupado: false, precio: 12000 },
-        { id: 'F12', numero: 12, ocupado: false, precio: 12000 },
+        { id: 'F1', numero: 1, ocupado: false, precio: precio },
+        { id: 'F2', numero: 2, ocupado: false, precio: precio },
+        { id: 'F3', numero: 3, ocupado: false, precio: precio },
+        { id: 'F4', numero: 4, ocupado: false, precio: precio },
+        { id: 'F5', numero: 5, ocupado: false, precio: precio },
+        { id: 'F6', numero: 6, ocupado: false, precio: precio },
+        { id: 'F7', numero: 7, ocupado: false, precio: precio },
+        { id: 'F8', numero: 8, ocupado: false, precio: precio },
+        { id: 'F9', numero: 9, ocupado: true, precio: precio },
+        { id: 'F10', numero: 10, ocupado: false, precio: precio },
+        { id: 'F11', numero: 11, ocupado: false, precio: precio },
+        { id: 'F12', numero: 12, ocupado: false, precio: precio },
       ],
     },
     {
       letra: 'G',
       asientos: [
-        { id: 'G1', numero: 1, ocupado: false, precio: 12000 },
-        { id: 'G2', numero: 2, ocupado: false, precio: 12000 },
-        { id: 'G3', numero: 3, ocupado: false, precio: 12000 },
-        { id: 'G4', numero: 4, ocupado: false, precio: 12000 },
-        { id: 'G5', numero: 5, ocupado: true, precio: 12000 },
-        { id: 'G6', numero: 6, ocupado: false, precio: 12000 },
-        { id: 'G7', numero: 7, ocupado: false, precio: 12000 },
-        { id: 'G8', numero: 8, ocupado: false, precio: 12000 },
-        { id: 'G9', numero: 9, ocupado: false, precio: 12000 },
-        { id: 'G10', numero: 10, ocupado: false, precio: 12000 },
-        { id: 'G11', numero: 11, ocupado: false, precio: 12000 },
-        { id: 'G12', numero: 12, ocupado: false, precio: 12000 },
+        { id: 'G1', numero: 1, ocupado: false, precio: precio },
+        { id: 'G2', numero: 2, ocupado: false, precio: precio },
+        { id: 'G3', numero: 3, ocupado: false, precio: precio },
+        { id: 'G4', numero: 4, ocupado: false, precio: precio },
+        { id: 'G5', numero: 5, ocupado: true, precio: precio },
+        { id: 'G6', numero: 6, ocupado: false, precio: precio },
+        { id: 'G7', numero: 7, ocupado: false, precio: precio },
+        { id: 'G8', numero: 8, ocupado: false, precio: precio },
+        { id: 'G9', numero: 9, ocupado: false, precio: precio },
+        { id: 'G10', numero: 10, ocupado: false, precio: precio },
+        { id: 'G11', numero: 11, ocupado: false, precio: precio },
+        { id: 'G12', numero: 12, ocupado: false, precio: precio },
       ],
     },
     {
       letra: 'H',
       asientos: [
-        { id: 'H1', numero: 1, ocupado: false, precio: 12000 },
-        { id: 'H2', numero: 2, ocupado: false, precio: 12000 },
-        { id: 'H3', numero: 3, ocupado: false, precio: 12000 },
-        { id: 'H4', numero: 4, ocupado: false, precio: 12000 },
-        { id: 'H5', numero: 5, ocupado: false, precio: 12000 },
-        { id: 'H6', numero: 6, ocupado: true, precio: 12000 },
-        { id: 'H7', numero: 7, ocupado: false, precio: 12000 },
-        { id: 'H8', numero: 8, ocupado: false, precio: 12000 },
-        { id: 'H9', numero: 9, ocupado: false, precio: 12000 },
-        { id: 'H10', numero: 10, ocupado: false, precio: 12000 },
-        { id: 'H11', numero: 11, ocupado: false, precio: 12000 },
-        { id: 'H12', numero: 12, ocupado: false, precio: 12000 },
+        { id: 'H1', numero: 1, ocupado: false, precio: precio },
+        { id: 'H2', numero: 2, ocupado: false, precio: precio },
+        { id: 'H3', numero: 3, ocupado: false, precio: precio },
+        { id: 'H4', numero: 4, ocupado: false, precio: precio },
+        { id: 'H5', numero: 5, ocupado: false, precio: precio },
+        { id: 'H6', numero: 6, ocupado: true, precio: precio },
+        { id: 'H7', numero: 7, ocupado: false, precio: precio },
+        { id: 'H8', numero: 8, ocupado: false, precio: precio },
+        { id: 'H9', numero: 9, ocupado: false, precio: precio },
+        { id: 'H10', numero: 10, ocupado: false, precio: precio },
+        { id: 'H11', numero: 11, ocupado: false, precio: precio },
+        { id: 'H12', numero: 12, ocupado: false, precio: precio },
       ],
     },
   ];
@@ -179,6 +201,15 @@ export default function SeleccionButacas() {
       }
     }
     return total;
+  };
+
+  const formatFecha = (fechaStr: string) => {
+    const fecha = new Date(fechaStr);
+    return fecha.toLocaleDateString('es-ES', { 
+      weekday: 'long', 
+      day: 'numeric', 
+      month: 'short' 
+    });
   };
 
   const renderAsiento = (asiento: Asiento) => {
@@ -289,7 +320,119 @@ export default function SeleccionButacas() {
   return (
     <View style={{ flex: 1, backgroundColor: '#000' }}>
       <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
-        <View style={{ paddingHorizontal: 28, paddingTop: 64, paddingBottom: 40 }}>
+        {/* Header con botón de regreso */}
+        <View style={{ paddingHorizontal: 28, paddingTop: 48, paddingBottom: 24 }}>
+          <TouchableOpacity
+            onPress={() => onBack && onBack()}
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 20,
+              backgroundColor: '#1c1c1e',
+              justifyContent: 'center',
+              alignItems: 'center',
+              marginBottom: 20,
+            }}
+            activeOpacity={0.7}>
+            <Text style={{ color: '#fff', fontSize: 24 }}>{'‹'}</Text>
+          </TouchableOpacity>
+
+          {/* Información de la función */}
+          <View
+            style={{
+              backgroundColor: '#1c1c1e',
+              borderRadius: 18,
+              padding: 20,
+              marginBottom: 20,
+              borderWidth: 1,
+              borderColor: '#2c2c2e',
+            }}>
+            <Text style={{ fontSize: 14, color: '#8e8e93', marginBottom: 8 }}>
+              {cinemaName}
+            </Text>
+            <Text style={{ fontSize: 18, fontWeight: '600', color: '#fff', marginBottom: 12 }}>
+              {sala} • {formato}
+            </Text>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+              <View>
+                <Text style={{ fontSize: 12, color: '#8e8e93', marginBottom: 4 }}>Fecha</Text>
+                <Text style={{ fontSize: 14, fontWeight: '500', color: '#fff' }}>
+                  {formatFecha(fecha)}
+                </Text>
+              </View>
+              <View>
+                <Text style={{ fontSize: 12, color: '#8e8e93', marginBottom: 4 }}>Hora</Text>
+                <Text style={{ fontSize: 14, fontWeight: '500', color: '#fff' }}>{hora}</Text>
+              </View>
+              <View>
+                <Text style={{ fontSize: 12, color: '#8e8e93', marginBottom: 4 }}>Precio</Text>
+                <Text style={{ fontSize: 14, fontWeight: '500', color: '#fff' }}>
+                  S/ {(precio || 0).toFixed(2)}
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Barra de progreso */}
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: 20,
+            }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <View
+                style={{
+                  backgroundColor: '#10B981',
+                  borderRadius: 12,
+                  width: 24,
+                  height: 24,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}>
+                <Text style={{ color: '#fff', fontSize: 10, fontWeight: 'bold' }}>✓</Text>
+              </View>
+              <Text style={{ color: '#10B981', fontSize: 10, marginLeft: 6, fontWeight: '600' }}>
+                Lugar
+              </Text>
+            </View>
+            <View style={{ flex: 1, height: 1.5, backgroundColor: '#10B981', marginHorizontal: 8 }} />
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <View
+                style={{
+                  backgroundColor: '#10B981',
+                  borderRadius: 12,
+                  width: 24,
+                  height: 24,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}>
+                <Text style={{ color: '#fff', fontSize: 10, fontWeight: 'bold' }}>✓</Text>
+              </View>
+              <Text style={{ color: '#10B981', fontSize: 10, marginLeft: 6, fontWeight: '600' }}>
+                Horario
+              </Text>
+            </View>
+            <View style={{ flex: 1, height: 1.5, backgroundColor: '#007AFF', marginHorizontal: 8 }} />
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <View
+                style={{
+                  backgroundColor: '#007AFF',
+                  borderRadius: 12,
+                  width: 24,
+                  height: 24,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}>
+                <Text style={{ color: '#fff', fontSize: 10, fontWeight: 'bold' }}>3</Text>
+              </View>
+              <Text style={{ color: '#fff', fontSize: 10, marginLeft: 6, fontWeight: '600' }}>
+                Asientos
+              </Text>
+            </View>
+          </View>
+
           <Text
             style={{
               fontSize: 34,
@@ -486,7 +629,7 @@ export default function SeleccionButacas() {
                       fontWeight: '300',
                       letterSpacing: -1,
                     }}>
-                    ${calcularTotal().toLocaleString()}
+                    S/ {calcularTotal().toLocaleString()}
                   </Text>
                   <Text
                     style={{
@@ -509,6 +652,7 @@ export default function SeleccionButacas() {
                   shadowOpacity: 0.1,
                   shadowRadius: 4,
                 }}
+                onPress={() => onContinue && onContinue(asientosSeleccionados)}
                 activeOpacity={0.8}>
                 <Text
                   style={{

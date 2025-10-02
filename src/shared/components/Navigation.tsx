@@ -30,6 +30,8 @@ export default function Navigation({ onTabChange, initialTab = 'home' }: Navigat
     { id: 'entries', name: 'Entries', icon: (props) => <Ticket {...props} />, label: 'Entradas' },
     { id: 'auth', name: 'Auth', icon: (props) => <User {...props} />, label: 'Acceso' },
     { id: 'profile', name: 'Profile', icon: (props) => <User2 {...props} />, label: 'Perfil' },
+    // Boton temporal realizado por james para el crud de peliculas
+      { id: 'Admin', name: 'Admin', icon: (props) => <Film {...props} />, label: 'Admin' },
   ];
 
   const handleTabPress = (tabId: string) => {

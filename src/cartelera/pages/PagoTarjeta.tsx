@@ -111,120 +111,132 @@ export default function PagoTarjeta({
   return (
     <View className="flex-1 bg-black">
       {/* Header */}
-      <View className="border-b border-gray-800 bg-gray-900 px-6 pb-6 pt-12">
-        <View className="mb-4 flex-row items-center">
-          <TouchableOpacity
-            onPress={onBack}
-            className="mr-4 h-10 w-10 items-center justify-center rounded-full bg-gray-800">
-            <ArrowLeft size={24} color="#FFFFFF" />
-          </TouchableOpacity>
-          <View>
-            <Text className="text-xl font-bold text-white">Pago con Tarjeta</Text>
-            <Text className="text-sm text-gray-400">Ingresa los datos de tu tarjeta</Text>
+      <View className="px-4 pb-6 pt-14">
+        <View className="flex-row items-center justify-between">
+          <View className="flex-row items-center">
+            <TouchableOpacity
+              onPress={onBack}
+              className="mr-4 h-10 w-10 items-center justify-center rounded-full bg-gray-800/50"
+              activeOpacity={0.7}>
+              <ChevronLeft size={20} color="#9CA3AF" />
+            </TouchableOpacity>
+            <View>
+              <Text className="text-sm font-medium text-gray-400">Pago con tarjeta</Text>
+              <Text className="text-2xl font-bold text-white">Datos de tu tarjeta</Text>
+            </View>
           </View>
         </View>
       </View>
 
       <ScrollView className="flex-1">
-        <View className="p-6">
-          {/* Resumen de la compra */}
-          <View className="mb-6 rounded-xl bg-gray-900 p-4">
-            <View className="mb-2 flex-row justify-between">
-              <Text className="text-gray-400">Total a Pagar</Text>
-              <Text className="font-bold text-white">S/ {(totalPagar || 0).toFixed(2)}</Text>
+        {/* Total a pagar */}
+        <View className="mx-4 mb-8">
+          <View className="rounded-3xl bg-gray-800/50 p-6">
+            <Text className="mb-2 text-lg font-bold text-white">Total a Pagar</Text>
+            <Text className="text-3xl font-bold text-white">S/ {(totalPagar || 0).toFixed(2)}</Text>
+          </View>
+        </View>
+
+        {/* Formulario de tarjeta */}
+        <View className="px-4">
+          <Text className="mb-6 text-2xl font-bold text-white">Datos de la Tarjeta</Text>
+
+          <View className="mb-6">
+            <Text className="mb-3 text-base font-medium text-white">Número de Tarjeta</Text>
+            <View className="flex-row items-center rounded-3xl bg-gray-800/50 px-6 py-4">
+              <CreditCard size={20} color="#9CA3AF" />
+              <TextInput
+                className="ml-3 flex-1 text-lg text-white"
+                placeholder="1234 5678 9012 3456"
+                placeholderTextColor="#6B7280"
+                value={numeroTarjeta}
+                onChangeText={handleNumeroTarjetaChange}
+                keyboardType="numeric"
+                maxLength={19}
+              />
             </View>
+            {errors.numeroTarjeta && (
+              <Text className="mt-2 text-sm text-red-400">{errors.numeroTarjeta}</Text>
+            )}
           </View>
 
-          {/* Formulario de tarjeta */}
-          <View className="mb-6 rounded-xl bg-gray-900 p-4">
-            <View className="mb-4">
-              <Text className="mb-2 text-white">Número de Tarjeta</Text>
-              <View className="flex-row items-center rounded-lg bg-gray-800 px-4 py-3">
-                <CreditCard size={20} color="#9CA3AF" />
+          <View className="mb-6">
+            <Text className="mb-3 text-base font-medium text-white">Nombre del Titular</Text>
+            <View className="rounded-3xl bg-gray-800/50 px-6 py-4">
+              <TextInput
+                className="text-lg text-white"
+                placeholder="Como aparece en la tarjeta"
+                placeholderTextColor="#6B7280"
+                value={nombreTitular}
+                onChangeText={setNombreTitular}
+              />
+            </View>
+            {errors.nombreTitular && (
+              <Text className="mt-2 text-sm text-red-400">{errors.nombreTitular}</Text>
+            )}
+          </View>
+
+          <View className="mb-6 flex-row space-x-4">
+            <View className="flex-1">
+              <Text className="mb-3 text-base font-medium text-white">Fecha de Expiración</Text>
+              <View className="rounded-3xl bg-gray-800/50 px-6 py-4">
                 <TextInput
-                  className="ml-2 flex-1 text-white"
-                  placeholder="1234 5678 9012 3456"
+                  className="text-lg text-white"
+                  placeholder="MM/YY"
                   placeholderTextColor="#6B7280"
-                  value={numeroTarjeta}
-                  onChangeText={handleNumeroTarjetaChange}
+                  value={fechaExpiracion}
+                  onChangeText={handleFechaExpiracionChange}
                   keyboardType="numeric"
-                  maxLength={19} // 16 dígitos + 3 espacios
+                  maxLength={5}
                 />
               </View>
-              {errors.numeroTarjeta && (
-                <Text className="mt-1 text-red-500">{errors.numeroTarjeta}</Text>
+              {errors.fechaExpiracion && (
+                <Text className="mt-2 text-sm text-red-400">{errors.fechaExpiracion}</Text>
               )}
             </View>
 
-            <View className="mb-4">
-              <Text className="mb-2 text-white">Nombre del Titular</Text>
-              <View className="flex-row items-center rounded-lg bg-gray-800 px-4 py-3">
+            <View className="flex-1">
+              <Text className="mb-3 text-base font-medium text-white">CVV</Text>
+              <View className="flex-row items-center rounded-3xl bg-gray-800/50 px-6 py-4">
+                <Lock size={20} color="#9CA3AF" />
                 <TextInput
-                  className="flex-1 text-white"
-                  placeholder="Como aparece en la tarjeta"
+                  className="ml-3 flex-1 text-lg text-white"
+                  placeholder="123"
                   placeholderTextColor="#6B7280"
-                  value={nombreTitular}
-                  onChangeText={setNombreTitular}
+                  value={cvv}
+                  onChangeText={setCvv}
+                  keyboardType="numeric"
+                  maxLength={4}
+                  secureTextEntry
                 />
               </View>
-              {errors.nombreTitular && (
-                <Text className="mt-1 text-red-500">{errors.nombreTitular}</Text>
-              )}
-            </View>
-
-            <View className="mb-4 flex-row">
-              <View className="mr-2 flex-1">
-                <Text className="mb-2 text-white">Fecha de Expiración</Text>
-                <View className="flex-row items-center rounded-lg bg-gray-800 px-4 py-3">
-                  <TextInput
-                    className="flex-1 text-white"
-                    placeholder="MM/YY"
-                    placeholderTextColor="#6B7280"
-                    value={fechaExpiracion}
-                    onChangeText={handleFechaExpiracionChange}
-                    keyboardType="numeric"
-                    maxLength={5} // MM/YY
-                  />
-                </View>
-                {errors.fechaExpiracion && (
-                  <Text className="mt-1 text-red-500">{errors.fechaExpiracion}</Text>
-                )}
-              </View>
-
-              <View className="ml-2 flex-1">
-                <Text className="mb-2 text-white">CVV</Text>
-                <View className="flex-row items-center rounded-lg bg-gray-800 px-4 py-3">
-                  <Lock size={20} color="#9CA3AF" />
-                  <TextInput
-                    className="ml-2 flex-1 text-white"
-                    placeholder="123"
-                    placeholderTextColor="#6B7280"
-                    value={cvv}
-                    onChangeText={setCvv}
-                    keyboardType="numeric"
-                    maxLength={4}
-                    secureTextEntry
-                  />
-                </View>
-                {errors.cvv && <Text className="mt-1 text-red-500">{errors.cvv}</Text>}
-              </View>
+              {errors.cvv && <Text className="mt-2 text-sm text-red-400">{errors.cvv}</Text>}
             </View>
           </View>
+        </View>
 
-          <View className="mb-6 rounded-xl bg-gray-900 p-4">
-            <Text className="mb-2 text-white">Información de Seguridad</Text>
-            <Text className="text-sm text-gray-400">
-              Tus datos de pago están protegidos con encriptación de 256 bits. No almacenamos los
-              datos completos de tu tarjeta.
+        {/* Información de seguridad */}
+        <View className="mx-4 mb-8">
+          <View className="rounded-3xl bg-gray-800/50 p-6">
+            <View className="mb-3 flex-row items-center">
+              <Shield size={20} color="#10B981" />
+              <Text className="ml-3 text-lg font-bold text-white">Pago Seguro</Text>
+            </View>
+            <Text className="text-base leading-6 text-gray-300">
+              Tus datos están protegidos con encriptación de 256 bits. No almacenamos información
+              completa de tu tarjeta.
             </Text>
           </View>
         </View>
       </ScrollView>
 
       {/* Footer */}
-      <View className="border-t border-gray-800 bg-gray-900 px-6 py-4">
-        <TouchableOpacity onPress={handleContinue} className="rounded-xl bg-blue-600 py-4">
-          <Text className="text-center font-bold text-white">
+      <View className="border-t border-gray-800/50 bg-black px-4 py-6">
+        <TouchableOpacity
+          onPress={handleContinue}
+          className="rounded-full bg-white px-6 py-4"
+          activeOpacity={0.8}>
+          <Text className="text-center text-lg font-bold text-black">
             Pagar S/ {(totalPagar || 0).toFixed(2)}
           </Text>
         </TouchableOpacity>

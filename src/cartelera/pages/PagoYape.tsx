@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, TextInput, Image } from 'react-native';
-import { ArrowLeft, Smartphone, QrCode } from 'lucide-react-native';
+import { View, Text, TouchableOpacity, ScrollView, TextInput } from 'react-native';
+import { ChevronLeft, Smartphone, Shield } from 'lucide-react-native';
 
 interface PagoYapeProps {
   peliculaId: string;
@@ -36,11 +36,11 @@ export default function PagoYape({
   subtotalComidas,
   totalPagar,
   onBack,
-  onContinue
+  onContinue,
 }: PagoYapeProps) {
   const [telefono, setTelefono] = useState('');
   const [codigoCompra, setCodigoCompra] = useState('');
-  const [errors, setErrors] = useState<{[key: string]: string}>({});
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   const formatTelefono = (text: string) => {
     // Eliminar caracteres no numéricos
@@ -55,15 +55,15 @@ export default function PagoYape({
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-    
+
     if (!telefono || telefono.length !== 9) {
       newErrors.telefono = 'Ingresa un número de teléfono válido (9 dígitos)';
     }
-    
+
     if (!codigoCompra || codigoCompra.length < 6) {
-      newErrors.codigoCompra = 'Ingresa el código de compra';
+      newErrors.codigoCompra = 'Ingresa un código de compra válido';
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -72,120 +72,115 @@ export default function PagoYape({
     if (validateForm() && onContinue) {
       onContinue({
         telefono,
-        codigoCompra
+        codigoCompra,
       });
     }
   };
 
   // Generar un código QR ficticio para la demostración
-  const qrCodeUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=YAPE_CINE_ESTELAR_' + totalPagar.toFixed(2);
+  const qrCodeUrl =
+    'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=YAPE_CINE_ESTELAR_' +
+    totalPagar.toFixed(2);
 
   return (
     <View className="flex-1 bg-black">
       {/* Header */}
-      <View className="bg-gray-900 pb-6 pt-12 px-6 border-b border-gray-800">
-        <View className="flex-row items-center mb-4">
-          <TouchableOpacity
-            onPress={onBack}
-            className="bg-gray-800 rounded-full w-10 h-10 items-center justify-center mr-4"
-          >
-            <ArrowLeft size={24} color="#FFFFFF" />
-          </TouchableOpacity>
-          <View>
-            <Text className="text-white text-xl font-bold">Pago con Yape</Text>
-            <Text className="text-gray-400 text-sm">Escanea el código QR con tu app</Text>
+      <View className="px-4 pb-6 pt-14">
+        <View className="flex-row items-center justify-between">
+          <View className="flex-row items-center">
+            <TouchableOpacity
+              onPress={onBack}
+              className="mr-4 h-10 w-10 items-center justify-center rounded-full bg-gray-800/50"
+              activeOpacity={0.7}>
+              <ChevronLeft size={20} color="#9CA3AF" />
+            </TouchableOpacity>
+            <View>
+              <Text className="text-sm font-medium text-gray-400">Pago con Yape</Text>
+              <Text className="text-2xl font-bold text-white">Escanea y paga</Text>
+            </View>
           </View>
         </View>
       </View>
 
       <ScrollView className="flex-1">
-        <View className="p-6">
-          {/* Resumen de la compra */}
-          <View className="bg-gray-900 rounded-xl p-4 mb-6">
-            <View className="flex-row justify-between mb-2">
-              <Text className="text-gray-400">Total a Pagar</Text>
-              <Text className="text-white font-bold">S/ {(totalPagar || 0).toFixed(2)}</Text>
+        {/* Total a pagar */}
+        <View className="mx-4 mb-8">
+          <View className="rounded-3xl bg-gray-800/50 p-6">
+            <Text className="mb-2 text-lg font-bold text-white">Total a Pagar</Text>
+            <Text className="text-3xl font-bold text-white">S/ {(totalPagar || 0).toFixed(2)}</Text>
+          </View>
+        </View>
+
+        {/* Formulario de pago */}
+        <View className="px-4">
+          <Text className="mb-4 text-2xl font-bold text-white">Datos de Yape</Text>
+          <Text className="mb-6 text-base text-gray-400">
+            Ingresa tu número de Yape y el código de compra para procesar el pago:
+          </Text>
+
+          <View className="mb-6">
+            <Text className="mb-3 text-base font-medium text-white">Número de teléfono</Text>
+            <View className="flex-row items-center rounded-3xl bg-gray-800/50 px-6 py-4">
+              <Smartphone size={20} color="#9CA3AF" />
+              <TextInput
+                className="ml-3 flex-1 text-lg text-white"
+                placeholder="Número registrado en Yape"
+                placeholderTextColor="#6B7280"
+                value={telefono}
+                onChangeText={handleTelefonoChange}
+                keyboardType="numeric"
+                maxLength={9}
+              />
             </View>
+            {errors.telefono && (
+              <Text className="mt-2 text-sm text-red-400">{errors.telefono}</Text>
+            )}
           </View>
 
-          {/* Código QR */}
-          <View className="bg-gray-900 rounded-xl p-6 mb-6 items-center">
-            <Text className="text-white text-lg font-bold mb-4">Escanea este código QR</Text>
-            <View className="bg-white p-4 rounded-lg mb-4">
-              <QrCode size={200} color="#000000" />
+          <View className="mb-8">
+            <Text className="mb-3 text-base font-medium text-white">Código de compra</Text>
+            <View className="rounded-3xl bg-gray-800/50 px-6 py-4">
+              <TextInput
+                className="text-lg text-white"
+                placeholder="Código de compra de Yape"
+                placeholderTextColor="#6B7280"
+                value={codigoCompra}
+                onChangeText={setCodigoCompra}
+              />
             </View>
-            <Text className="text-gray-400 text-center">
-              Abre tu app de Yape, escanea el código y completa el pago
-            </Text>
+            {errors.codigoCompra && (
+              <Text className="mt-2 text-sm text-red-400">{errors.codigoCompra}</Text>
+            )}
           </View>
+        </View>
 
-          {/* Formulario de confirmación */}
-          <View className="bg-gray-900 rounded-xl p-4 mb-6">
-            <Text className="text-white text-lg font-bold mb-4">Confirma tu pago</Text>
-            
-            <View className="mb-4">
-              <Text className="text-white mb-2">Número de teléfono</Text>
-              <View className="flex-row items-center bg-gray-800 rounded-lg px-4 py-3">
-                <Smartphone size={20} color="#9CA3AF" />
-                <TextInput
-                  className="flex-1 text-white ml-2"
-                  placeholder="Ingresa tu número de Yape"
-                  placeholderTextColor="#6B7280"
-                  value={telefono}
-                  onChangeText={handleTelefonoChange}
-                  keyboardType="numeric"
-                  maxLength={9}
-                />
-              </View>
-              {errors.telefono && (
-                <Text className="text-red-500 mt-1">{errors.telefono}</Text>
-              )}
+        {/* Instrucciones */}
+        <View className="mx-4 mb-8">
+          <View className="rounded-3xl bg-gray-800/50 p-6">
+            <View className="mb-4 flex-row items-center">
+              <Shield size={20} color="#10B981" />
+              <Text className="ml-3 text-lg font-bold text-white">Información de Pago</Text>
             </View>
-
-            <View className="mb-4">
-              <Text className="text-white mb-2">Código de compra</Text>
-              <View className="flex-row items-center bg-gray-800 rounded-lg px-4 py-3">
-                <TextInput
-                  className="flex-1 text-white"
-                  placeholder="Ingresa el código que recibiste en Yape"
-                  placeholderTextColor="#6B7280"
-                  value={codigoCompra}
-                  onChangeText={setCodigoCompra}
-                />
-              </View>
-              {errors.codigoCompra && (
-                <Text className="text-red-500 mt-1">{errors.codigoCompra}</Text>
-              )}
-            </View>
-          </View>
-
-          <View className="bg-gray-900 rounded-xl p-4 mb-6">
-            <Text className="text-white mb-2">Instrucciones</Text>
-            <Text className="text-gray-400 text-sm mb-2">
-              1. Escanea el código QR con tu app de Yape
+            <Text className="mb-3 text-base text-gray-300">
+              • Ingresa tu número de teléfono registrado en Yape
             </Text>
-            <Text className="text-gray-400 text-sm mb-2">
-              2. Confirma el monto a pagar: S/ {(totalPagar || 0).toFixed(2)}
+            <Text className="mb-3 text-base text-gray-300">
+              • Proporciona el código de compra válido
             </Text>
-            <Text className="text-gray-400 text-sm mb-2">
-              3. Completa el pago en tu app
-            </Text>
-            <Text className="text-gray-400 text-sm">
-              4. Ingresa tu número y el código de compra para confirmar
+            <Text className="text-base text-gray-300">
+              • El pago se procesará automáticamente por S/ {(totalPagar || 0).toFixed(2)}
             </Text>
           </View>
         </View>
       </ScrollView>
 
       {/* Footer */}
-      <View className="px-6 py-4 bg-gray-900 border-t border-gray-800">
+      <View className="border-t border-gray-800/50 bg-black px-4 py-6">
         <TouchableOpacity
           onPress={handleContinue}
-          className="py-4 rounded-xl bg-blue-600"
-        >
-          <Text className="text-white font-bold text-center">
-            Confirmar Pago
-          </Text>
+          className="rounded-full bg-white px-6 py-4"
+          activeOpacity={0.8}>
+          <Text className="text-center text-lg font-bold text-black">Confirmar Pago</Text>
         </TouchableOpacity>
       </View>
     </View>

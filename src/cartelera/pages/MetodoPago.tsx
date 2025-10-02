@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Image } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { CreditCard, Smartphone, ChevronRight, ArrowLeft } from 'lucide-react-native';
+import { CreditCard, Smartphone, ChevronLeft, MapPin, Clock, Calendar } from 'lucide-react-native';
 import { RootStackParamList } from '~/shared/types/navigation';
 import PagoTarjeta from './PagoTarjeta';
 import PagoYape from './PagoYape';

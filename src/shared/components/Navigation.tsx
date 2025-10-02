@@ -1,63 +1,55 @@
-import React, { useState } from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
-import { User, Home, MapPin, Ticket, User2, Film } from 'lucide-react-native';
+import React from 'react';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Home, Film, User2 } from 'lucide-react-native';
+import { MainTabParamList } from '~/shared/types/navigation';
 
-export interface NavItem {
-  id: string;
-  name: string;
-  icon: ({ color, size }: { color: string; size: number }) => React.ReactNode;
-  label: string;
-  page?: React.ReactNode;
-}
+import HomeScreen from '~/home/page/Home';
+import CarteleraScreen from '~/cartelera/pages/Cartelera';
+import PerfilScreen from '~/home/page/Perfil';
 
-interface NavigationProps {
-  onTabChange?: (tabId: string) => void;
-  initialTab?: string;
-}
+const Tab = createBottomTabNavigator<MainTabParamList>();
 
-export default function Navigation({ onTabChange, initialTab = 'home' }: NavigationProps) {
-  const [activeTab, setActiveTab] = useState<string>(initialTab);
-
-  const navItems: NavItem[] = [
-    { id: 'home', name: 'Home', icon: (props) => <Home {...props} />, label: 'Inicio' },
-    {
-      id: 'cartelera',
-      name: 'Cartelera',
-      icon: (props) => <Film {...props} />,
-      label: 'Cartelera',
-    },
-    { id: 'Cines', name: 'Cines', icon: (props) => <MapPin {...props} />, label: 'Cines' },
-    { id: 'entries', name: 'Entries', icon: (props) => <Ticket {...props} />, label: 'Entradas' },
-    { id: 'auth', name: 'Auth', icon: (props) => <User {...props} />, label: 'Acceso' },
-    { id: 'profile', name: 'Profile', icon: (props) => <User2 {...props} />, label: 'Perfil' },
-    // Boton temporal realizado por james para el crud de peliculas
-      { id: 'Admin', name: 'Admin', icon: (props) => <Film {...props} />, label: 'Admin' },
-  ];
-
-  const handleTabPress = (tabId: string) => {
-    setActiveTab(tabId);
-    if (onTabChange) {
-      onTabChange(tabId);
-    }
-  };
-
+export default function MainTabNavigator() {
   return (
-    <View className="flex-row border-t border-gray-700 bg-gray-900 px-4 py-2">
-      {navItems.map((item) => (
-        <TouchableOpacity
-          key={item.id}
-          className="flex-1 items-center justify-center py-2"
-          onPress={() => handleTabPress(item.id)}
-          activeOpacity={0.7}>
-          {item.icon({ color: activeTab === item.id ? 'white' : 'gray', size: 24 })}
-          <Text
-            className={`mt-1 text-xs font-semibold ${
-              activeTab === item.id ? 'text-white' : 'text-gray-400'
-            }`}>
-            {item.label}
-          </Text>
-        </TouchableOpacity>
-      ))}
-    </View>
+    <Tab.Navigator
+      screenOptions={{
+        headerShown: false,
+        tabBarStyle: {
+          backgroundColor: '#111827',
+          borderTopColor: '#374151',
+          borderTopWidth: 1,
+          paddingVertical: 8,
+          height: 70,
+        },
+        tabBarActiveTintColor: '#ffffff',
+        tabBarInactiveTintColor: '#9CA3AF',
+        tabBarLabelStyle: {
+          fontSize: 12,
+          fontWeight: '600',
+          marginTop: 4,
+        },
+      }}>
+      <Tab.Screen
+        name="Inicio"
+        component={HomeScreen}
+        options={{
+          tabBarIcon: ({ color, size }) => <Home color={color} size={size} />,
+        }}
+      />
+      <Tab.Screen
+        name="Cartelera"
+        component={CarteleraScreen}
+        options={{
+          tabBarIcon: ({ color, size }) => <Film color={color} size={size} />,
+        }}
+      />
+      <Tab.Screen
+        name="Perfil"
+        component={PerfilScreen}
+        options={{
+          tabBarIcon: ({ color, size }) => <User2 color={color} size={size} />,
+        }}
+      />
+    </Tab.Navigator>
   );
 }

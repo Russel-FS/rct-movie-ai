@@ -1,31 +1,40 @@
 import { useMemo, useState } from 'react';
 import { Text, View, TouchableOpacity, ScrollView } from 'react-native';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Fila, Asiento } from '~/shared/types/cinema';
+import { RootStackParamList } from '~/shared/types/navigation';
 
-interface SeleccionButacasProps {
-  peliculaId: string;
-  cinemaName: string;
-  fecha: string;
-  hora: string;
-  sala: string;
-  formato: string;
-  precio: number;
-  onBack?: () => void;
-  onContinue?: (asientos: string[]) => void;
-}
+type SeleccionButacasRouteProp = RouteProp<RootStackParamList, 'SeleccionButacas'>;
+type SeleccionButacasNavigationProp = NativeStackNavigationProp<
+  RootStackParamList,
+  'SeleccionButacas'
+>;
 
-export default function SeleccionButacas({
-  peliculaId,
-  cinemaName,
-  fecha,
-  hora,
-  sala,
-  formato,
-  precio,
-  onBack,
-  onContinue
-}: SeleccionButacasProps) {
+export default function SeleccionButacas() {
+  const navigation = useNavigation<SeleccionButacasNavigationProp>();
+  const route = useRoute<SeleccionButacasRouteProp>();
+  const { peliculaId, cinemaName, fecha, hora, sala, formato, precio } = route.params;
   const [asientosSeleccionados, setAsientosSeleccionados] = useState<string[]>([]);
+
+  const handleContinue = () => {
+    if (asientosSeleccionados.length > 0) {
+      navigation.navigate('SeleccionComidas', {
+        peliculaId,
+        cinemaName,
+        fecha,
+        hora,
+        sala,
+        formato,
+        precio,
+        asientosSeleccionados,
+      });
+    }
+  };
+
+  const handleBack = () => {
+    navigation.goBack();
+  };
 
   const filasData: Fila[] = [
     {
@@ -205,10 +214,10 @@ export default function SeleccionButacas({
 
   const formatFecha = (fechaStr: string) => {
     const fecha = new Date(fechaStr);
-    return fecha.toLocaleDateString('es-ES', { 
-      weekday: 'long', 
-      day: 'numeric', 
-      month: 'short' 
+    return fecha.toLocaleDateString('es-ES', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'short',
     });
   };
 
@@ -323,7 +332,7 @@ export default function SeleccionButacas({
         {/* Header con botón de regreso */}
         <View style={{ paddingHorizontal: 28, paddingTop: 48, paddingBottom: 24 }}>
           <TouchableOpacity
-            onPress={() => onBack && onBack()}
+            onPress={handleBack}
             style={{
               width: 40,
               height: 40,
@@ -347,9 +356,7 @@ export default function SeleccionButacas({
               borderWidth: 1,
               borderColor: '#2c2c2e',
             }}>
-            <Text style={{ fontSize: 14, color: '#8e8e93', marginBottom: 8 }}>
-              {cinemaName}
-            </Text>
+            <Text style={{ fontSize: 14, color: '#8e8e93', marginBottom: 8 }}>{cinemaName}</Text>
             <Text style={{ fontSize: 18, fontWeight: '600', color: '#fff', marginBottom: 12 }}>
               {sala} • {formato}
             </Text>
@@ -397,7 +404,9 @@ export default function SeleccionButacas({
                 Lugar
               </Text>
             </View>
-            <View style={{ flex: 1, height: 1.5, backgroundColor: '#10B981', marginHorizontal: 8 }} />
+            <View
+              style={{ flex: 1, height: 1.5, backgroundColor: '#10B981', marginHorizontal: 8 }}
+            />
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <View
                 style={{
@@ -414,7 +423,9 @@ export default function SeleccionButacas({
                 Horario
               </Text>
             </View>
-            <View style={{ flex: 1, height: 1.5, backgroundColor: '#007AFF', marginHorizontal: 8 }} />
+            <View
+              style={{ flex: 1, height: 1.5, backgroundColor: '#007AFF', marginHorizontal: 8 }}
+            />
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <View
                 style={{
@@ -652,7 +663,7 @@ export default function SeleccionButacas({
                   shadowOpacity: 0.1,
                   shadowRadius: 4,
                 }}
-                onPress={() => onContinue && onContinue(asientosSeleccionados)}
+                onPress={handleContinue}
                 activeOpacity={0.8}>
                 <Text
                   style={{

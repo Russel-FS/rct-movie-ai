@@ -9,19 +9,21 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Search, Star, Clock, Users, Film, RefreshCw } from 'lucide-react-native';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { usePeliculas } from '../hooks/usePeliculas';
 import { Pelicula } from '~/shared/types/pelicula';
+import { RootStackParamList } from '~/shared/types/navigation';
 
 interface MovieCardProps {
   pelicula: Pelicula;
   onPress: () => void;
 }
 
-interface HomeProps {
-  onMoviePress?: (peliculaId: string) => void;
-}
+type HomeNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
-export default function Home({ onMoviePress }: HomeProps) {
+export default function Home() {
+  const navigation = useNavigation<HomeNavigationProp>();
   const {
     filteredPeliculas,
     peliculasDestacadas,
@@ -33,11 +35,7 @@ export default function Home({ onMoviePress }: HomeProps) {
   } = usePeliculas();
 
   const handleMoviePress = (peliculaId: string) => {
-    if (onMoviePress) {
-      onMoviePress(peliculaId);
-    } else {
-      console.log('Película seleccionada:', peliculaId);
-    }
+    navigation.navigate('SeleccionLugar', { peliculaId });
   };
 
   const formatDuration = (minutos: number): string => {
@@ -47,11 +45,10 @@ export default function Home({ onMoviePress }: HomeProps) {
   };
 
   const FeaturedMovieCard: React.FC<MovieCardProps> = ({ pelicula, onPress }) => (
-    <TouchableOpacity 
+    <TouchableOpacity
       className="mr-3 w-48 rounded-lg bg-gray-800 p-3"
       onPress={onPress}
-      activeOpacity={0.7}
-    >
+      activeOpacity={0.7}>
       <Image
         source={{
           uri: pelicula.poster_url || 'https://via.placeholder.com/300x450?text=Sin+Imagen',
@@ -90,11 +87,10 @@ export default function Home({ onMoviePress }: HomeProps) {
   );
 
   const MovieCard: React.FC<MovieCardProps> = ({ pelicula, onPress }) => (
-    <TouchableOpacity 
+    <TouchableOpacity
       className="mx-2 mb-4 flex-1 rounded-lg bg-gray-800 p-4"
       onPress={onPress}
-      activeOpacity={0.7}
-    >
+      activeOpacity={0.7}>
       <Image
         source={{
           uri: pelicula.poster_url || 'https://via.placeholder.com/300x450?text=Sin+Imagen',
@@ -205,8 +201,8 @@ export default function Home({ onMoviePress }: HomeProps) {
               contentContainerStyle={{ paddingLeft: 16, paddingRight: 16 }}
               nestedScrollEnabled={true}>
               {peliculasDestacadas.map((pelicula) => (
-                <FeaturedMovieCard 
-                  key={pelicula.id} 
+                <FeaturedMovieCard
+                  key={pelicula.id}
                   pelicula={pelicula}
                   onPress={() => handleMoviePress(pelicula.id)}
                 />
@@ -234,10 +230,7 @@ export default function Home({ onMoviePress }: HomeProps) {
           <View className="flex-row flex-wrap justify-between px-2">
             {filteredPeliculas.map((pelicula) => (
               <View key={pelicula.id} className="w-1/2">
-                <MovieCard 
-                  pelicula={pelicula}
-                  onPress={() => handleMoviePress(pelicula.id)}
-                />
+                <MovieCard pelicula={pelicula} onPress={() => handleMoviePress(pelicula.id)} />
               </View>
             ))}
           </View>

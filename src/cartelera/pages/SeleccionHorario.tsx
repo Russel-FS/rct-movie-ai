@@ -231,7 +231,7 @@ export default function SeleccionHorario({
                   <Text className="text-white text-xl font-bold ml-3">{funcion.hora}</Text>
                 </View>
                 <View className="bg-blue-600 rounded-lg px-3 py-1">
-                  <Text className="text-white font-bold">${funcion.precio.toFixed(2)}</Text>
+                  <Text className="text-white font-bold">${funcion.precio?.toFixed(2) || '0.00'}</Text>
                 </View>
               </View>
 

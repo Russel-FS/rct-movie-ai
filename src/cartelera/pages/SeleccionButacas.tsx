@@ -367,7 +367,7 @@ export default function SeleccionButacas({
               <View>
                 <Text style={{ fontSize: 12, color: '#8e8e93', marginBottom: 4 }}>Precio</Text>
                 <Text style={{ fontSize: 14, fontWeight: '500', color: '#fff' }}>
-                  S/ {precio.toFixed(2)}
+                  S/ {(precio || 0).toFixed(2)}
                 </Text>
               </View>
             </View>

@@ -21,6 +21,8 @@ import SeleccionLugar from '~/cartelera/pages/SeleccionLugar';
 import SeleccionHorario from '~/cartelera/pages/SeleccionHorario';
 import SeleccionButacas from '~/cartelera/pages/SeleccionButacas';
 import SeleccionComidas from '~/cartelera/pages/SeleccionComidas';
+import MetodoPago from '~/cartelera/pages/MetodoPago';
+import ResumenPago from '~/cartelera/pages/ResumenPago';
 
 // Tipo para la información de selección
 interface SeleccionInfo {
@@ -34,6 +36,17 @@ interface SeleccionInfo {
   formato?: string;
   precio?: number;
   asientosSeleccionados?: string[];
+  comidas?: {
+    id: number;
+    nombre: string;
+    cantidad: number;
+    precio: number;
+  }[];
+  subtotalEntradas?: number;
+  subtotalComidas?: number;
+  totalPagar?: number;
+  metodoPago?: string;
+  codigoOperacion?: string;
 }
 
 export default function App() {
@@ -89,6 +102,36 @@ export default function App() {
         asientosSeleccionados: asientos
       });
       setActiveTab('seleccionComidas');
+    }
+  };
+
+  // ✅ Manejar la selección de comidas
+  const handleComidasSelected = (comidas: any[], subtotalComidas: number) => {
+    if (seleccionInfo) {
+      const subtotalEntradas = (seleccionInfo.precio || 0) * (seleccionInfo.asientosSeleccionados?.length || 0);
+      const totalPagar = subtotalEntradas + subtotalComidas;
+      
+      setSeleccionInfo({
+        ...seleccionInfo,
+        comidas,
+        subtotalEntradas,
+        subtotalComidas,
+        totalPagar
+      });
+      setActiveTab('metodoPago');
+    }
+  };
+
+  // ✅ Manejar la selección del método de pago
+  const handleMetodoPagoSelected = (metodoPago: string) => {
+    if (seleccionInfo) {
+      const codigoOperacion = Math.random().toString(36).substring(2, 10).toUpperCase();
+      setSeleccionInfo({
+        ...seleccionInfo,
+        metodoPago,
+        codigoOperacion
+      });
+      setActiveTab('resumenPago');
     }
   };
 
@@ -252,6 +295,52 @@ export default function App() {
             precio={seleccionInfo.precio || 0}
             asientosSeleccionados={seleccionInfo.asientosSeleccionados}
             onBack={() => setActiveTab('seleccionButacas')}
+            onContinue={handleComidasSelected}
+          />
+        ) : (
+          <Home onMoviePress={handleMoviePress} />
+        );
+      case 'metodoPago':
+        return seleccionInfo && seleccionInfo.totalPagar ? (
+          <MetodoPago
+            peliculaId={seleccionInfo.peliculaId}
+            cinemaName={seleccionInfo.cinemaName || ''}
+            fecha={seleccionInfo.fecha || ''}
+            hora={seleccionInfo.horario || ''}
+            sala={seleccionInfo.sala || ''}
+            formato={seleccionInfo.formato || ''}
+            asientosSeleccionados={seleccionInfo.asientosSeleccionados || []}
+            comidas={seleccionInfo.comidas}
+            subtotalEntradas={seleccionInfo.subtotalEntradas || 0}
+            subtotalComidas={seleccionInfo.subtotalComidas || 0}
+            totalPagar={seleccionInfo.totalPagar}
+            onBack={() => setActiveTab('seleccionComidas')}
+            onContinue={handleMetodoPagoSelected}
+          />
+        ) : (
+          <Home onMoviePress={handleMoviePress} />
+        );
+      case 'resumenPago':
+        return seleccionInfo && seleccionInfo.codigoOperacion ? (
+          <ResumenPago
+            peliculaId={seleccionInfo.peliculaId}
+            cinemaName={seleccionInfo.cinemaName || ''}
+            fecha={seleccionInfo.fecha || ''}
+            hora={seleccionInfo.horario || ''}
+            sala={seleccionInfo.sala || ''}
+            formato={seleccionInfo.formato || ''}
+            asientosSeleccionados={seleccionInfo.asientosSeleccionados || []}
+            comidas={seleccionInfo.comidas}
+            metodoPago={seleccionInfo.metodoPago || ''}
+            codigoOperacion={seleccionInfo.codigoOperacion}
+            subtotalEntradas={seleccionInfo.subtotalEntradas || 0}
+            subtotalComidas={seleccionInfo.subtotalComidas || 0}
+            totalPagado={seleccionInfo.totalPagar || 0}
+            onBack={() => setActiveTab('metodoPago')}
+            onFinish={() => {
+              setSeleccionInfo(null);
+              setActiveTab('entries');
+            }}
           />
         ) : (
           <Home onMoviePress={handleMoviePress} />
@@ -269,7 +358,9 @@ export default function App() {
         {activeTab !== 'seleccionLugar' && 
          activeTab !== 'seleccionHorario' && 
          activeTab !== 'seleccionButacas' && 
-         activeTab !== 'seleccionComidas' && (
+         activeTab !== 'seleccionComidas' &&
+         activeTab !== 'metodoPago' &&
+         activeTab !== 'resumenPago' && (
           <Navigation onTabChange={setActiveTab} initialTab={activeTab} />
         )}
       </Container>

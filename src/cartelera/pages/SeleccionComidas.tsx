@@ -20,6 +20,7 @@ interface SeleccionComidasProps {
   precio: number;
   asientosSeleccionados: string[];
   onBack?: () => void;
+  onContinue?: (comidas: Producto[], subtotalComidas: number) => void;
 }
 
 export default function SeleccionComidas({
@@ -31,7 +32,8 @@ export default function SeleccionComidas({
   formato,
   precio,
   asientosSeleccionados,
-  onBack
+  onBack,
+  onContinue
 }: SeleccionComidasProps) {
   const { width, height } = Dimensions.get('window');
   const tGrande = width * 0.07;
@@ -196,15 +198,17 @@ export default function SeleccionComidas({
   };
 
   const calcularTotalCarrito = () => {
-    return carrito.reduce((total, p) => total + (p.price * (p.cantidad || 1)), 0);
+    return carrito.reduce((total, p) => total + ((p.price || 0) * (p.cantidad || 1)), 0);
   };
 
   const calcularTotalEntradas = () => {
-    return precio * asientosSeleccionados.length;
+    return (precio || 0) * (asientosSeleccionados?.length || 0);
   };
 
   const calcularTotalGeneral = () => {
-    return calcularTotalEntradas() + calcularTotalCarrito();
+    const totalEntradas = calcularTotalEntradas() || 0;
+    const totalCarrito = calcularTotalCarrito() || 0;
+    return totalEntradas + totalCarrito;
   };
 
   const formatFecha = (fechaStr: string) => {
@@ -437,7 +441,7 @@ export default function SeleccionComidas({
                 </Text>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Text style={{ fontSize: tMedio + 2, fontWeight: '700', color: '#007AFF' }}>
-                    S/ {p.price.toFixed(2)}
+                    S/ {(p.price || 0).toFixed(2)}
                   </Text>
                   <TouchableOpacity
                     onPress={() => agregarCarrito(p)}
@@ -571,7 +575,7 @@ export default function SeleccionComidas({
                 borderRadius: 12,
                 paddingVertical: 16,
               }}
-              onPress={() => console.log('Continuar al pago')}
+              onPress={() => onContinue && onContinue(carrito, calcularTotalCarrito())}
               activeOpacity={0.8}
             >
               <Text style={{
@@ -604,7 +608,7 @@ export default function SeleccionComidas({
               borderRadius: 12,
               alignItems: 'center'
             }}
-            onPress={() => console.log('Omitir dulcería')}
+            onPress={() => onContinue && onContinue([], 0)}
           >
             <Text style={{ color: '#8e8e93', fontSize: 16, fontWeight: '600' }}>
               Continuar sin dulcería

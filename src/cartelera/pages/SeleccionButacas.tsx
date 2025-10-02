@@ -4,6 +4,7 @@ import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Fila, Asiento } from '~/shared/types/cinema';
 import { RootStackParamList } from '~/shared/types/navigation';
+import { ChevronLeft, MapPin, Clock } from 'lucide-react-native';
 
 type SeleccionButacasRouteProp = RouteProp<RootStackParamList, 'SeleccionButacas'>;
 type SeleccionButacasNavigationProp = NativeStackNavigationProp<

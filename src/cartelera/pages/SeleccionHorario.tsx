@@ -5,7 +5,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Pelicula } from '~/shared/types/pelicula';
 import { PeliculaService } from '~/home/services/pelicula.service';
 import { RootStackParamList } from '~/shared/types/navigation';
-import { Clock, Star, MapPin, ChevronRight } from 'lucide-react-native';
+import { Clock, Star, MapPin, ChevronLeft, Calendar } from 'lucide-react-native';
 
 type SeleccionHorarioRouteProp = RouteProp<RootStackParamList, 'SeleccionHorario'>;
 type SeleccionHorarioNavigationProp = NativeStackNavigationProp<
@@ -115,148 +115,155 @@ export default function SeleccionHorario() {
   return (
     <View className="flex-1 bg-black">
       {/* Header */}
-      <View className="border-b border-gray-800 bg-gray-900 px-6 pb-6 pt-12">
-        <View className="mb-4 flex-row items-center">
-          <TouchableOpacity
-            onPress={handleBack}
-            className="mr-4 h-10 w-10 items-center justify-center rounded-full bg-gray-800"
-            activeOpacity={0.7}>
-            <Text className="text-2xl text-white">{'‹'}</Text>
-          </TouchableOpacity>
-          <View className="flex-1">
-            <Text className="text-xl font-bold text-white">Seleccionar Horario</Text>
-            <Text className="mt-1 text-sm text-gray-400">{pelicula.titulo}</Text>
-          </View>
-        </View>
-
-        {/* Progreso de pasos */}
-        <View className="mt-2 flex-row items-center justify-between">
+      <View className="px-4 pb-6 pt-14">
+        <View className="flex-row items-center justify-between">
           <View className="flex-row items-center">
-            <View className="h-8 w-8 items-center justify-center rounded-full bg-green-600">
-              <Text className="text-xs font-bold text-white">✓</Text>
+            <TouchableOpacity
+              onPress={handleBack}
+              className="mr-4 h-10 w-10 items-center justify-center rounded-full bg-gray-800/50"
+              activeOpacity={0.7}>
+              <ChevronLeft size={20} color="#9CA3AF" />
+            </TouchableOpacity>
+            <View>
+              <Text className="text-sm font-medium text-gray-400">Seleccionar horario</Text>
+              <Text className="text-2xl font-bold text-white">¿Cuándo la vemos?</Text>
             </View>
-            <Text className="ml-2 text-xs text-green-400">Lugar</Text>
-          </View>
-          <View className="mx-2 h-0.5 flex-1 bg-blue-600" />
-          <View className="flex-row items-center">
-            <View className="h-8 w-8 items-center justify-center rounded-full bg-blue-600">
-              <Text className="text-xs font-bold text-white">2</Text>
-            </View>
-            <Text className="ml-2 text-xs text-white">Horario</Text>
-          </View>
-          <View className="mx-2 h-0.5 flex-1 bg-gray-700" />
-          <View className="flex-row items-center">
-            <View className="h-8 w-8 items-center justify-center rounded-full bg-gray-700">
-              <Text className="text-xs font-bold text-gray-400">3</Text>
-            </View>
-            <Text className="ml-2 text-xs text-gray-400">Asientos</Text>
           </View>
         </View>
       </View>
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        {/* Info de película y cine seleccionado */}
-        <View className="mx-6 mt-6">
-          <View className="mb-6 rounded-2xl bg-gray-900 p-5">
-            <View className="mb-3 flex-row items-center">
-              <Star size={18} color="#EAB308" fill="#EAB308" />
-              <Text className="ml-2 text-lg font-bold text-white">{pelicula.titulo}</Text>
-            </View>
+        {/* Info de película y cine */}
+        <View className="mx-4 mb-8">
+          <View className="rounded-3xl bg-gray-800/50 p-6">
+            <Text className="mb-2 text-xl font-bold text-white">{pelicula.titulo}</Text>
 
-            <View className="mb-2 flex-row items-center">
-              <Clock size={16} color="#9CA3AF" />
-              <Text className="ml-2 text-sm text-gray-300">
-                {formatDuration(pelicula.duracion)} • {pelicula.clasificacion}
-              </Text>
+            <View className="mb-3 flex-row items-center space-x-4">
+              <View className="flex-row items-center">
+                <Star size={14} color="#FFD700" fill="#FFD700" />
+                <Text className="ml-1 font-semibold text-white">
+                  {pelicula.calificacion?.toFixed(1) || 'N/A'}
+                </Text>
+              </View>
+
+              <View className="flex-row items-center">
+                <Clock size={14} color="#9CA3AF" />
+                <Text className="ml-1 text-gray-300">{formatDuration(pelicula.duracion)}</Text>
+              </View>
+
+              <View className="rounded bg-gray-700/80 px-2 py-1">
+                <Text className="text-xs font-semibold text-white">{pelicula.clasificacion}</Text>
+              </View>
             </View>
 
             <View className="flex-row items-center">
-              <MapPin size={16} color="#3B82F6" />
-              <Text className="ml-2 text-sm text-blue-400">{cinemaName}</Text>
+              <MapPin size={16} color="#9CA3AF" />
+              <Text className="ml-2 text-gray-300">{cinemaName}</Text>
             </View>
           </View>
+        </View>
 
-          {/* Selector de fecha */}
-          <Text className="mb-4 text-lg font-bold text-white">Selecciona la fecha</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-6">
+        {/* Selector de fecha */}
+        <View className="mb-8 px-4">
+          <Text className="mb-4 text-2xl font-bold text-white">Fechas Disponibles</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             {fechasDisponibles.map((fecha) => (
               <TouchableOpacity
                 key={fecha.id}
                 onPress={() => setSelectedFecha(fecha.id)}
-                className={`mr-3 min-w-[80px] items-center rounded-xl p-4 ${
-                  selectedFecha === fecha.id
-                    ? 'border-2 border-blue-400 bg-blue-600'
-                    : 'bg-gray-800'
+                className={`mr-4 min-w-[90px] items-center rounded-3xl p-4 ${
+                  selectedFecha === fecha.id ? 'bg-white' : 'bg-gray-800/50'
                 }`}
-                activeOpacity={0.7}>
+                activeOpacity={0.8}>
                 <Text
-                  className={`mb-1 text-xs font-semibold ${
-                    selectedFecha === fecha.id ? 'text-blue-100' : 'text-gray-400'
+                  className={`mb-1 text-xs font-medium ${
+                    selectedFecha === fecha.id ? 'text-gray-600' : 'text-gray-400'
                   }`}>
                   {fecha.diaSemana}
                 </Text>
                 <Text
                   className={`text-2xl font-bold ${
-                    selectedFecha === fecha.id ? 'text-white' : 'text-gray-300'
+                    selectedFecha === fecha.id ? 'text-black' : 'text-white'
                   }`}>
                   {fecha.dia}
                 </Text>
                 <Text
-                  className={`text-xs ${
-                    selectedFecha === fecha.id ? 'text-blue-100' : 'text-gray-400'
+                  className={`text-xs font-medium ${
+                    selectedFecha === fecha.id ? 'text-gray-600' : 'text-gray-400'
                   }`}>
                   {fecha.mes}
                 </Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
+        </View>
 
-          {/* Funciones disponibles */}
-          <Text className="mb-4 text-lg font-bold text-white">Funciones disponibles</Text>
+        {/* Funciones disponibles */}
+        <View className="px-4">
+          <Text className="mb-6 text-2xl font-bold text-white">Horarios Disponibles</Text>
 
           {funcionesDisponibles.map((funcion) => (
             <TouchableOpacity
               key={funcion.id}
               onPress={() => setSelectedFuncion(funcion.id)}
-              className={`mb-4 rounded-2xl p-5 ${
-                selectedFuncion === funcion.id
-                  ? 'border-2 border-blue-500 bg-gray-800'
-                  : 'bg-gray-900'
+              className={`mb-4 overflow-hidden rounded-3xl ${
+                selectedFuncion === funcion.id ? 'bg-white' : 'bg-gray-800/50'
               }`}
-              activeOpacity={0.7}>
-              <View className="mb-3 flex-row items-center justify-between">
-                <View className="flex-row items-center">
-                  <Clock size={20} color="#3B82F6" />
-                  <Text className="ml-3 text-xl font-bold text-white">{funcion.hora}</Text>
-                </View>
-                <View className="rounded-lg bg-blue-600 px-3 py-1">
-                  <Text className="font-bold text-white">
-                    ${funcion.precio?.toFixed(2) || '0.00'}
-                  </Text>
-                </View>
-              </View>
-
-              <View className="flex-row items-center justify-between">
-                <View>
-                  <Text className="mb-1 text-sm text-gray-300">
-                    {funcion.sala} • {funcion.formato}
-                  </Text>
-                  <Text
-                    className={`text-xs ${
-                      funcion.asientosDisponibles > 20
-                        ? 'text-green-400'
-                        : funcion.asientosDisponibles > 10
-                          ? 'text-yellow-400'
-                          : 'text-red-400'
-                    }`}>
-                    {funcion.asientosDisponibles} asientos disponibles
-                  </Text>
-                </View>
-                {selectedFuncion === funcion.id && (
-                  <View className="h-8 w-8 items-center justify-center rounded-full bg-blue-600">
-                    <Text className="font-bold text-white">✓</Text>
+              activeOpacity={0.8}>
+              <View className="p-6">
+                <View className="mb-4 flex-row items-center justify-between">
+                  <View className="flex-row items-center">
+                    <Clock size={20} color={selectedFuncion === funcion.id ? '#000' : '#3B82F6'} />
+                    <Text
+                      className={`ml-3 text-2xl font-bold ${
+                        selectedFuncion === funcion.id ? 'text-black' : 'text-white'
+                      }`}>
+                      {funcion.hora}
+                    </Text>
                   </View>
-                )}
+
+                  <View
+                    className={`rounded-full px-4 py-2 ${
+                      selectedFuncion === funcion.id ? 'bg-black' : 'bg-gray-700/80'
+                    }`}>
+                    <Text className="font-bold text-white">
+                      ${funcion.precio?.toFixed(2) || '0.00'}
+                    </Text>
+                  </View>
+                </View>
+
+                <View className="flex-row items-center justify-between">
+                  <View>
+                    <Text
+                      className={`mb-1 text-base font-medium ${
+                        selectedFuncion === funcion.id ? 'text-gray-700' : 'text-gray-300'
+                      }`}>
+                      {funcion.sala} • {funcion.formato}
+                    </Text>
+                    <Text
+                      className={`text-sm font-medium ${
+                        funcion.asientosDisponibles > 20
+                          ? selectedFuncion === funcion.id
+                            ? 'text-green-600'
+                            : 'text-green-400'
+                          : funcion.asientosDisponibles > 10
+                            ? selectedFuncion === funcion.id
+                              ? 'text-yellow-600'
+                              : 'text-yellow-400'
+                            : selectedFuncion === funcion.id
+                              ? 'text-red-600'
+                              : 'text-red-400'
+                      }`}>
+                      {funcion.asientosDisponibles} asientos disponibles
+                    </Text>
+                  </View>
+
+                  {selectedFuncion === funcion.id && (
+                    <View className="h-8 w-8 items-center justify-center rounded-full bg-black">
+                      <Text className="font-bold text-white">✓</Text>
+                    </View>
+                  )}
+                </View>
               </View>
             </TouchableOpacity>
           ))}
@@ -266,50 +273,21 @@ export default function SeleccionHorario() {
         <View className="h-32" />
       </ScrollView>
 
-      {/* Footer con resumen */}
-      <View className="border-t border-gray-800 bg-gray-900 px-6 py-5">
+      {/* Footer */}
+      <View className="border-t border-gray-800/50 bg-black px-4 py-6">
         {selectedFuncion !== null ? (
-          <View>
-            <View className="mb-3">
-              <Text className="mb-2 text-xs text-gray-400">Resumen de selección:</Text>
-              <View className="mb-1 flex-row items-center justify-between">
-                <Text className="text-sm text-gray-300">Película:</Text>
-                <Text className="text-sm font-semibold text-white">{pelicula.titulo}</Text>
-              </View>
-              <View className="mb-1 flex-row items-center justify-between">
-                <Text className="text-sm text-gray-300">Cine:</Text>
-                <Text className="text-sm font-semibold text-white">{cinemaName}</Text>
-              </View>
-              <View className="mb-1 flex-row items-center justify-between">
-                <Text className="text-sm text-gray-300">Fecha:</Text>
-                <Text className="text-sm font-semibold text-white">
-                  {fechasDisponibles.find((f) => f.id === selectedFecha)?.diaSemana}{' '}
-                  {fechasDisponibles.find((f) => f.id === selectedFecha)?.dia}{' '}
-                  {fechasDisponibles.find((f) => f.id === selectedFecha)?.mes}
-                </Text>
-              </View>
-              <View className="flex-row items-center justify-between">
-                <Text className="text-sm text-gray-300">Función:</Text>
-                <Text className="text-sm font-semibold text-white">
-                  {funcionesDisponibles.find((f) => f.id === selectedFuncion)?.hora} -{' '}
-                  {funcionesDisponibles.find((f) => f.id === selectedFuncion)?.sala}
-                </Text>
-              </View>
-            </View>
-            <TouchableOpacity
-              className="flex-row items-center justify-center rounded-xl bg-blue-600 px-6 py-4"
-              onPress={handleContinue}
-              activeOpacity={0.8}>
-              <Text className="mr-2 text-center text-base font-bold text-white">
-                Continuar a Selección de Asientos
-              </Text>
-              <ChevronRight size={20} color="#FFFFFF" />
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity
+            className="rounded-full bg-white px-6 py-4"
+            onPress={handleContinue}
+            activeOpacity={0.8}>
+            <Text className="text-center text-lg font-bold text-black">
+              Continuar con {funcionesDisponibles.find((f) => f.id === selectedFuncion)?.hora}
+            </Text>
+          </TouchableOpacity>
         ) : (
-          <View className="rounded-xl bg-gray-800 px-4 py-4">
-            <Text className="text-center text-sm text-gray-400">
-              Selecciona una función para continuar
+          <View className="rounded-full bg-gray-800/50 px-6 py-4">
+            <Text className="text-center text-lg font-medium text-gray-400">
+              Selecciona un horario para continuar
             </Text>
           </View>
         )}

@@ -6,6 +6,14 @@ interface Usuario {
   email: string;
   nombre: string;
   apellido: string;
+  telefono?: string;
+  fecha_nacimiento?: string;
+  genero?: string;
+  rol_id: number;
+  activo: boolean;
+  email_verificado: boolean;
+  preferencias?: Record<string, any>;
+  isAdmin: boolean;
 }
 
 interface AuthContextType {
@@ -15,6 +23,8 @@ interface AuthContextType {
   logout: () => void;
   register: (email: string, password: string, nombre: string, apellido: string) => Promise<boolean>;
   resendConfirmation: (email: string) => Promise<boolean>;
+  updateUsuario: (updateData: any) => Promise<boolean>;
+  refreshUsuario: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -28,7 +38,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session?.user) {
         await loadUserProfile(session.user.id);
       } else {
@@ -59,18 +69,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const { data, error } = await supabase
         .from('usuarios')
-        .select('id, email, nombre, apellido')
+        .select(
+          `
+          id, email, nombre, apellido, telefono, fecha_nacimiento, 
+          genero, rol_id, activo, email_verificado, preferencias,
+          roles(id, nombre, descripcion, permisos)
+        `
+        )
         .eq('id', userId)
         .single();
 
       if (error) throw error;
 
       if (data) {
+        const rol = Array.isArray(data.roles) && data.roles.length > 0 ? data.roles[0] : null;
+
+        const isAdmin =
+          rol?.nombre === 'Administrador' ||
+          data.rol_id === 1 ||
+          (rol?.permisos as any)?.admin === true;
+
         setUsuario({
           id: data.id,
           email: data.email,
           nombre: data.nombre,
           apellido: data.apellido,
+          telefono: data.telefono,
+          fecha_nacimiento: data.fecha_nacimiento,
+          genero: data.genero,
+          rol_id: data.rol_id,
+          activo: data.activo,
+          email_verificado: data.email_verificado,
+          preferencias: data.preferencias || {},
+          isAdmin,
         });
       }
     } catch (error) {
@@ -202,8 +233,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const updateUsuario = async (updateData: any): Promise<boolean> => {
+    try {
+      if (!usuario) return false;
+
+      const { error } = await supabase.from('usuarios').update(updateData).eq('id', usuario.id);
+
+      if (error) throw error;
+
+      await loadUserProfile(usuario.id);
+      return true;
+    } catch (error) {
+      console.error('Error updating user:', error);
+      return false;
+    }
+  };
+
+  const refreshUsuario = async (): Promise<void> => {
+    if (usuario) {
+      await loadUserProfile(usuario.id);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ usuario, loading, login, logout, register, resendConfirmation }}>
+    <AuthContext.Provider
+      value={{
+        usuario,
+        loading,
+        login,
+        logout,
+        register,
+        resendConfirmation,
+        updateUsuario,
+        refreshUsuario,
+      }}>
       {children}
     </AuthContext.Provider>
   );

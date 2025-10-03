@@ -218,43 +218,48 @@ export class SalaService {
 
       if (!response.data || response.data.length === 0) return null;
 
-      if (filas) {
+      if (filas && filas.length > 0) {
+        console.log('Actualizando filas para sala:', id);
+
         // Desactivar filas existentes
         await HttpClient.patch(`/filas?sala_id=eq.${id}`, { activa: false });
 
         // Eliminar asientos de filas existentes
         await HttpClient.delete(`/asientos?filas.sala_id=eq.${id}`);
 
-        if (filas.length > 0) {
-          const filasConSalaId = filas.map((fila, index) => ({
-            ...fila,
-            sala_id: id,
-            numero_fila: index + 1,
-            activa: true,
-          }));
+        const filasConSalaId = filas.map((fila, index) => ({
+          ...fila,
+          sala_id: id,
+          numero_fila: fila.numero_fila || index + 1,
+          activa: true,
+        }));
 
-          await HttpClient.post('/filas', filasConSalaId, {
-            headers: {
-              Prefer: 'return=representation',
-            },
-          });
+        console.log('Creando nuevas filas:', filasConSalaId);
 
-          // Crear asientos para cada fila nueva
-          for (const fila of filasConSalaId) {
-            const filaCreada = await HttpClient.get<SupabaseFila[]>(
-              `/filas?sala_id=eq.${id}&letra=eq.${fila.letra}&activa=eq.true`
-            );
+        const filasResponse = await HttpClient.post('/filas', filasConSalaId, {
+          headers: {
+            Prefer: 'return=representation',
+          },
+        });
 
-            if (filaCreada.data.length > 0) {
-              const asientos = Array.from({ length: fila.cantidad_asientos }, (_, i) => ({
-                fila_id: filaCreada.data[0].id,
-                numero: i + 1,
-                tipo: 'Normal',
-                activo: true,
-              }));
+        console.log('Filas creadas:', filasResponse.data);
 
-              await HttpClient.post('/asientos', asientos);
-            }
+        // Crear asientos para cada fila nueva
+        for (const fila of filasConSalaId) {
+          const filaCreada = await HttpClient.get<SupabaseFila[]>(
+            `/filas?sala_id=eq.${id}&letra=eq.${fila.letra}&activa=eq.true`
+          );
+
+          if (filaCreada.data.length > 0) {
+            const asientos = Array.from({ length: fila.cantidad_asientos }, (_, i) => ({
+              fila_id: filaCreada.data[0].id,
+              numero: i + 1,
+              tipo: 'Normal',
+              activo: true,
+            }));
+
+            await HttpClient.post('/asientos', asientos);
+            console.log(`Asientos creados para fila ${fila.letra}:`, asientos.length);
           }
         }
       }

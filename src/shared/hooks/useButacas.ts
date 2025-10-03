@@ -26,14 +26,16 @@ export function useButacas({ funcionId, salaId, precioBase }: UseButacasProps): 
   const [asientosSeleccionados, setAsientosSeleccionados] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [hasLoaded, setHasLoaded] = useState(false);
 
   useEffect(() => {
-    if (funcionId && salaId && precioBase > 0) {
+    // Solo
+    if (funcionId && salaId && precioBase > 0 && !hasLoaded) {
       loadButacas();
-    } else {
+    } else if (!funcionId || !salaId || precioBase <= 0) {
       setLoading(false);
     }
-  }, [funcionId, salaId, precioBase]);
+  }, [funcionId, salaId, precioBase, hasLoaded]);
 
   const loadButacas = async () => {
     try {
@@ -44,6 +46,7 @@ export function useButacas({ funcionId, salaId, precioBase }: UseButacasProps): 
         const result = await SalaService.getButacasParaFuncion(funcionId, salaId);
         setSala(result.sala);
         setAsientosOcupados(result.asientosOcupados);
+        setHasLoaded(true);
       } else {
         setError('Datos insuficientes para cargar las butacas');
       }

@@ -22,7 +22,11 @@ export default function SeleccionButacas() {
   const [funcion, setFuncion] = useState<Funcion | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Hook para manejar las butacas
+  useEffect(() => {
+    loadFuncion();
+  }, [funcionId]);
+
+  // Hook para manejar las butacas -
   const {
     filasData,
     asientosSeleccionados,
@@ -38,14 +42,12 @@ export default function SeleccionButacas() {
     precioBase: funcion?.precio_base || 0,
   });
 
-  useEffect(() => {
-    loadFuncion();
-  }, [funcionId]);
-
   const loadFuncion = async () => {
     try {
       setLoading(true);
+      console.log('Cargando función con ID:', funcionId);
       const funcionData = await FuncionService.getFuncionById(funcionId);
+      console.log('Función cargada:', funcionData);
       setFuncion(funcionData);
     } catch (error) {
       console.error('Error al cargar función:', error);
@@ -142,13 +144,18 @@ export default function SeleccionButacas() {
     );
   };
 
-  if (loading || loadingButacas) {
+  if (loading || loadingButacas || !funcion) {
     return (
       <View className="flex-1 items-center justify-center bg-black">
         <ActivityIndicator size="large" color="#3B82F6" />
         <Text className="mt-4 text-base text-white">
           {loading ? 'Cargando información de la función...' : 'Cargando butacas...'}
         </Text>
+        {funcion && (
+          <Text className="mt-2 text-sm text-gray-400">
+            Sala ID: {funcion.sala_id} | Precio: S/ {funcion.precio_base}
+          </Text>
+        )}
       </View>
     );
   }
@@ -230,7 +237,16 @@ export default function SeleccionButacas() {
 
         {/* Mapa de asientos */}
         <View className="mx-4 mb-8 rounded-3xl bg-gray-800/50 p-5">
-          {filasData.map(renderFila)}
+          {filasData.length > 0 ? (
+            filasData.map(renderFila)
+          ) : (
+            <View className="items-center py-8">
+              <Text className="text-center text-white">No hay filas disponibles</Text>
+              <Text className="mt-2 text-center text-sm text-gray-400">
+                {errorButacas || 'Verificando configuración de la sala...'}
+              </Text>
+            </View>
+          )}
         </View>
 
         {/* Leyenda */}

@@ -193,7 +193,25 @@ export default function SalaCRUD() {
       setFormLoading(true);
 
       if (editingSala) {
-        await SalaService.updateSala(editingSala.id, formData as UpdateSalaDto, filas);
+        const filasOriginales = await SalaService.getFilasBySala(editingSala.id);
+        const filasHanCambiado =
+          filasOriginales.length !== filas.length ||
+          filasOriginales.some((filaOriginal, index) => {
+            const filaNueva = filas[index];
+            return (
+              !filaNueva ||
+              filaOriginal.letra !== filaNueva.letra ||
+              filaOriginal.cantidad_asientos !== filaNueva.cantidad_asientos ||
+              filaOriginal.tipo_fila !== filaNueva.tipo_fila ||
+              filaOriginal.precio_multiplicador !== filaNueva.precio_multiplicador
+            );
+          });
+
+        await SalaService.updateSala(
+          editingSala.id,
+          formData as UpdateSalaDto,
+          filasHanCambiado ? filas : undefined
+        );
         Alert.alert('Éxito', 'Sala actualizada correctamente');
       } else {
         await SalaService.createSala(formData, filas);

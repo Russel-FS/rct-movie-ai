@@ -256,7 +256,17 @@ export class FuncionService {
       const response = await HttpClient.get<SupabaseFuncion[]>(
         `/funciones?pelicula_id=eq.${peliculaId}&salas.cine_id=eq.${cineId}&activa=eq.true&select=*,peliculas(id,titulo,poster_url,duracion,clasificacion),salas(id,nombre,capacidad,tipo,cines(id,nombre,direccion,latitud,longitud))&order=fecha_hora.asc`
       );
-      return response.data.map(mapSupabaseToFuncion);
+
+      if (response.data.length > 0) {
+        return response.data.map(mapSupabaseToFuncion);
+      }
+
+      const todasLasFunciones = await this.getFuncionesByPelicula(peliculaId, false);
+      const funcionesFiltradas = todasLasFunciones.filter((funcion) => {
+        return funcion.sala?.cine?.id === cineId;
+      });
+
+      return funcionesFiltradas;
     } catch (error) {
       console.error('Error al obtener funciones por película y cine:', error);
       throw new Error('No se pudieron cargar las funciones');

@@ -1,11 +1,20 @@
 import { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Pelicula } from '~/shared/types/pelicula';
-import { PeliculaService } from '~/home/services/pelicula.service';
 import { RootStackParamList } from '~/shared/types/navigation';
-import { Clock, Star, MapPin, ChevronLeft, Calendar } from 'lucide-react-native';
+import {
+  ChevronLeft,
+  Calendar,
+  Clock,
+  DollarSign,
+  Star,
+  MapPin,
+  Users,
+  Film,
+} from 'lucide-react-native';
+import { FuncionService } from '~/shared/services/funcion.service';
+import { Funcion } from '~/shared/types/funcion';
 
 type SeleccionHorarioRouteProp = RouteProp<RootStackParamList, 'SeleccionHorario'>;
 type SeleccionHorarioNavigationProp = NativeStackNavigationProp<
@@ -13,73 +22,50 @@ type SeleccionHorarioNavigationProp = NativeStackNavigationProp<
   'SeleccionHorario'
 >;
 
-// Datos de ejemplo de fechas y funciones
-const fechasDisponibles = [
-  { id: 1, fecha: '2025-10-01', diaSemana: 'Martes', dia: '01', mes: 'Oct' },
-  { id: 2, fecha: '2025-10-02', diaSemana: 'Miércoles', dia: '02', mes: 'Oct' },
-  { id: 3, fecha: '2025-10-03', diaSemana: 'Jueves', dia: '03', mes: 'Oct' },
-  { id: 4, fecha: '2025-10-04', diaSemana: 'Viernes', dia: '04', mes: 'Oct' },
-  { id: 5, fecha: '2025-10-05', diaSemana: 'Sábado', dia: '05', mes: 'Oct' },
-];
-
-const funcionesDisponibles = [
-  { id: 1, hora: '14:30', sala: 'Sala 1', formato: '2D', precio: 12.5, asientosDisponibles: 45 },
-  { id: 2, hora: '17:00', sala: 'Sala 2', formato: '2D', precio: 12.5, asientosDisponibles: 32 },
-  { id: 3, hora: '19:30', sala: 'Sala 1', formato: '3D', precio: 15.0, asientosDisponibles: 28 },
-  { id: 4, hora: '22:00', sala: 'Sala 3', formato: '2D', precio: 12.5, asientosDisponibles: 18 },
-];
-
 export default function SeleccionHorario() {
   const navigation = useNavigation<SeleccionHorarioNavigationProp>();
   const route = useRoute<SeleccionHorarioRouteProp>();
   const { peliculaId, cinemaId, cinemaName } = route.params;
-  const [pelicula, setPelicula] = useState<Pelicula | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [selectedFecha, setSelectedFecha] = useState<number>(1);
-  const [selectedFuncion, setSelectedFuncion] = useState<number | null>(null);
 
-  const formatDuration = (minutos: number): string => {
-    const horas = Math.floor(minutos / 60);
-    const mins = minutos % 60;
-    return `${horas}h ${mins}m`;
-  };
+  const [funciones, setFunciones] = useState<Funcion[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedFuncion, setSelectedFuncion] = useState<string | null>(null);
+  const [funcionesPorFecha, setFuncionesPorFecha] = useState<{ [key: string]: Funcion[] }>({});
 
   useEffect(() => {
-    const fetchPelicula = async () => {
-      try {
-        setLoading(true);
-        const data = await PeliculaService.getPeliculaById(peliculaId);
-        setPelicula(data);
-        setError(null);
-      } catch (err) {
-        console.error('Error al cargar película:', err);
-        setError('Error al cargar la información de la película');
-      } finally {
-        setLoading(false);
-      }
-    };
+    loadFunciones();
+  }, [peliculaId, cinemaId]);
 
-    fetchPelicula();
-  }, [peliculaId]);
+  const loadFunciones = async () => {
+    try {
+      setLoading(true);
+      const funcionesData = await FuncionService.getFuncionesByPeliculaYCine(peliculaId, cinemaId);
 
-  const handleContinue = () => {
-    if (selectedFuncion !== null) {
-      const funcion = funcionesDisponibles.find((f) => f.id === selectedFuncion);
-      const fecha = fechasDisponibles.find((f) => f.id === selectedFecha);
-      if (funcion && fecha) {
-        navigation.navigate('SeleccionButacas', {
-          peliculaId,
-          cinemaId,
-          cinemaName,
-          funcionId: funcion.id,
-          fecha: fecha.fecha,
-          hora: funcion.hora,
-          sala: funcion.sala,
-          formato: funcion.formato,
-          precio: funcion.precio,
-        });
-      }
+      const funcionesFuturas = funcionesData.filter((funcion) => {
+        const fechaFuncion = new Date(funcion.fecha_hora);
+        return fechaFuncion > new Date();
+      });
+
+      setFunciones(funcionesFuturas);
+
+      // Agrupar por fecha
+      const agrupadas = funcionesFuturas.reduce(
+        (acc, funcion) => {
+          const fecha = new Date(funcion.fecha_hora).toDateString();
+          if (!acc[fecha]) {
+            acc[fecha] = [];
+          }
+          acc[fecha].push(funcion);
+          return acc;
+        },
+        {} as { [key: string]: Funcion[] }
+      );
+
+      setFuncionesPorFecha(agrupadas);
+    } catch (error) {
+      Alert.alert('Error', 'No se pudieron cargar los horarios disponibles');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -87,27 +73,157 @@ export default function SeleccionHorario() {
     navigation.goBack();
   };
 
+  const handleContinue = () => {
+    if (selectedFuncion) {
+      const funcion = funciones.find((f) => f.id === selectedFuncion);
+      if (funcion) {
+        navigation.navigate('SeleccionAsientos', {
+          funcionId: funcion.id,
+          peliculaId,
+          cinemaId,
+          cinemaName,
+        });
+      }
+    }
+  };
+
+  const formatearFecha = (dateString: string) => {
+    const fecha = new Date(dateString);
+    const hoy = new Date();
+    const manana = new Date(hoy);
+    manana.setDate(hoy.getDate() + 1);
+
+    if (fecha.toDateString() === hoy.toDateString()) {
+      return 'Hoy';
+    } else if (fecha.toDateString() === manana.toDateString()) {
+      return 'Mañana';
+    } else {
+      return fecha.toLocaleDateString('es-ES', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'short',
+      });
+    }
+  };
+
+  const formatearHora = (fechaHora: string) => {
+    return new Date(fechaHora).toLocaleTimeString('es-ES', {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
+  const FuncionCard = ({ funcion }: { funcion: Funcion }) => {
+    const isSelected = selectedFuncion === funcion.id;
+
+    return (
+      <TouchableOpacity
+        onPress={() => setSelectedFuncion(funcion.id)}
+        className={`mb-3 overflow-hidden rounded-2xl ${isSelected ? 'bg-white' : 'bg-gray-800/50'}`}
+        activeOpacity={0.8}>
+        <View className="p-4">
+          <View className="flex-row items-center justify-between">
+            <View className="flex-1">
+              <View className="mb-2 flex-row items-center space-x-3">
+                <View className="flex-row items-center">
+                  <Clock size={16} color={isSelected ? '#374151' : '#9CA3AF'} />
+                  <Text
+                    className={`ml-2 text-lg font-bold ${
+                      isSelected ? 'text-black' : 'text-white'
+                    }`}>
+                    {formatearHora(funcion.fecha_hora)}
+                  </Text>
+                </View>
+
+                <View
+                  className={`rounded-full px-3 py-1 ${
+                    isSelected ? 'bg-blue-100' : 'bg-blue-500/10'
+                  }`}>
+                  <Text
+                    className={`text-xs font-medium ${
+                      isSelected ? 'text-blue-800' : 'text-blue-400'
+                    }`}>
+                    {funcion.formato}
+                  </Text>
+                </View>
+
+                {funcion.subtitulada && (
+                  <View
+                    className={`rounded-full px-2 py-1 ${
+                      isSelected ? 'bg-green-100' : 'bg-green-500/10'
+                    }`}>
+                    <Text
+                      className={`text-xs font-medium ${
+                        isSelected ? 'text-green-800' : 'text-green-400'
+                      }`}>
+                      SUB
+                    </Text>
+                  </View>
+                )}
+
+                {funcion.doblada && (
+                  <View
+                    className={`rounded-full px-2 py-1 ${
+                      isSelected ? 'bg-purple-100' : 'bg-purple-500/10'
+                    }`}>
+                    <Text
+                      className={`text-xs font-medium ${
+                        isSelected ? 'text-purple-800' : 'text-purple-400'
+                      }`}>
+                      DOB
+                    </Text>
+                  </View>
+                )}
+              </View>
+
+              <View className="mb-2 flex-row items-center">
+                <Users size={14} color={isSelected ? '#6B7280' : '#9CA3AF'} />
+                <Text className={`ml-2 text-sm ${isSelected ? 'text-gray-600' : 'text-gray-400'}`}>
+                  Sala {funcion.sala?.nombre} • {funcion.sala?.tipo}
+                </Text>
+              </View>
+
+              <View className="flex-row items-center space-x-4">
+                <View className="flex-row items-center">
+                  <DollarSign size={14} color="#10B981" />
+                  <Text className="ml-1 text-sm font-bold text-green-400">
+                    S/ {funcion.precio_base.toFixed(2)}
+                  </Text>
+                </View>
+
+                {funcion.precio_vip && funcion.precio_vip > 0 && (
+                  <View className="flex-row items-center">
+                    <Star size={14} color="#F59E0B" />
+                    <Text className="ml-1 text-sm font-bold text-yellow-400">
+                      VIP S/ {funcion.precio_vip.toFixed(2)}
+                    </Text>
+                  </View>
+                )}
+
+                {funcion.asientos_disponibles !== undefined && (
+                  <Text className={`text-xs ${isSelected ? 'text-gray-600' : 'text-gray-400'}`}>
+                    {funcion.asientos_disponibles} disponibles
+                  </Text>
+                )}
+              </View>
+            </View>
+
+            {isSelected && (
+              <View className="ml-4 h-6 w-6 items-center justify-center rounded-full bg-black">
+                <Text className="text-xs font-bold text-white">✓</Text>
+              </View>
+            )}
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
   if (loading) {
     return (
       <View className="flex-1 items-center justify-center bg-black">
         <ActivityIndicator size="large" color="#3B82F6" />
-        <Text className="mt-4 text-base text-white">Cargando información...</Text>
-      </View>
-    );
-  }
-
-  if (error || !pelicula) {
-    return (
-      <View className="flex-1 items-center justify-center bg-black px-6">
-        <Text className="mb-6 text-center text-base text-red-400">
-          {error || 'No se pudo cargar la película'}
-        </Text>
-        <TouchableOpacity
-          onPress={handleBack}
-          className="rounded-xl bg-blue-600 px-8 py-3"
-          activeOpacity={0.8}>
-          <Text className="text-base font-bold text-white">Volver</Text>
-        </TouchableOpacity>
+        <Text className="mt-4 text-base text-white">Cargando horarios...</Text>
       </View>
     );
   }
@@ -126,163 +242,66 @@ export default function SeleccionHorario() {
             </TouchableOpacity>
             <View>
               <Text className="text-sm font-medium text-gray-400">Seleccionar horario</Text>
-              <Text className="text-2xl font-bold text-white">¿Cuándo la vemos?</Text>
+              <Text className="text-2xl font-bold text-white">¿Cuándo quieres verla?</Text>
             </View>
+          </View>
+        </View>
+
+        {/* Info del cine */}
+        <View className="mt-6 rounded-2xl bg-gray-800/30 p-4">
+          <View className="flex-row items-center">
+            <MapPin size={16} color="#9CA3AF" />
+            <Text className="ml-2 text-base font-medium text-white">{cinemaName}</Text>
           </View>
         </View>
       </View>
 
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        {/* Info de película y cine */}
-        <View className="mx-4 mb-8">
-          <View className="rounded-3xl bg-gray-800/50 p-6">
-            <Text className="mb-2 text-xl font-bold text-white">{pelicula.titulo}</Text>
-
-            <View className="mb-3 flex-row items-center space-x-4">
-              <View className="flex-row items-center">
-                <Star size={14} color="#FFD700" fill="#FFD700" />
-                <Text className="ml-1 font-semibold text-white">
-                  {pelicula.calificacion?.toFixed(1) || 'N/A'}
-                </Text>
-              </View>
-
-              <View className="flex-row items-center">
-                <Clock size={14} color="#9CA3AF" />
-                <Text className="ml-1 text-gray-300">{formatDuration(pelicula.duracion)}</Text>
-              </View>
-
-              <View className="rounded bg-gray-700/80 px-2 py-1">
-                <Text className="text-xs font-semibold text-white">{pelicula.clasificacion}</Text>
-              </View>
+      <ScrollView className="flex-1 px-4" showsVerticalScrollIndicator={false}>
+        {Object.keys(funcionesPorFecha).length === 0 ? (
+          <View className="items-center py-8">
+            <View className="mb-4 h-20 w-20 items-center justify-center rounded-full bg-gray-700/50">
+              <Calendar size={32} color="#9CA3AF" />
             </View>
-
-            <View className="flex-row items-center">
-              <MapPin size={16} color="#9CA3AF" />
-              <Text className="ml-2 text-gray-300">{cinemaName}</Text>
-            </View>
+            <Text className="mb-2 text-xl font-bold text-white">No hay funciones disponibles</Text>
+            <Text className="text-center text-sm text-gray-400">
+              No se encontraron horarios disponibles para esta película en este cine
+            </Text>
           </View>
-        </View>
-
-        {/* Selector de fecha */}
-        <View className="mb-8 px-4">
-          <Text className="mb-4 text-2xl font-bold text-white">Fechas Disponibles</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {fechasDisponibles.map((fecha) => (
-              <TouchableOpacity
-                key={fecha.id}
-                onPress={() => setSelectedFecha(fecha.id)}
-                className={`mr-4 min-w-[90px] items-center rounded-3xl p-4 ${
-                  selectedFecha === fecha.id ? 'bg-white' : 'bg-gray-800/50'
-                }`}
-                activeOpacity={0.8}>
-                <Text
-                  className={`mb-1 text-xs font-medium ${
-                    selectedFecha === fecha.id ? 'text-gray-600' : 'text-gray-400'
-                  }`}>
-                  {fecha.diaSemana}
-                </Text>
-                <Text
-                  className={`text-2xl font-bold ${
-                    selectedFecha === fecha.id ? 'text-black' : 'text-white'
-                  }`}>
-                  {fecha.dia}
-                </Text>
-                <Text
-                  className={`text-xs font-medium ${
-                    selectedFecha === fecha.id ? 'text-gray-600' : 'text-gray-400'
-                  }`}>
-                  {fecha.mes}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
-
-        {/* Funciones disponibles */}
-        <View className="px-4">
-          <Text className="mb-6 text-2xl font-bold text-white">Horarios Disponibles</Text>
-
-          {funcionesDisponibles.map((funcion) => (
-            <TouchableOpacity
-              key={funcion.id}
-              onPress={() => setSelectedFuncion(funcion.id)}
-              className={`mb-4 overflow-hidden rounded-3xl ${
-                selectedFuncion === funcion.id ? 'bg-white' : 'bg-gray-800/50'
-              }`}
-              activeOpacity={0.8}>
-              <View className="p-6">
-                <View className="mb-4 flex-row items-center justify-between">
-                  <View className="flex-row items-center">
-                    <Clock size={20} color={selectedFuncion === funcion.id ? '#000' : '#3B82F6'} />
-                    <Text
-                      className={`ml-3 text-2xl font-bold ${
-                        selectedFuncion === funcion.id ? 'text-black' : 'text-white'
-                      }`}>
-                      {funcion.hora}
-                    </Text>
-                  </View>
-
-                  <View
-                    className={`rounded-full px-4 py-2 ${
-                      selectedFuncion === funcion.id ? 'bg-black' : 'bg-gray-700/80'
-                    }`}>
-                    <Text className="font-bold text-white">
-                      ${funcion.precio?.toFixed(2) || '0.00'}
-                    </Text>
-                  </View>
+        ) : (
+          Object.entries(funcionesPorFecha)
+            .sort(([a], [b]) => new Date(a).getTime() - new Date(b).getTime())
+            .map(([fecha, funcionesDia]) => (
+              <View key={fecha} className="mb-8">
+                <View className="mb-4 flex-row items-center">
+                  <Calendar size={18} color="#9CA3AF" />
+                  <Text className="ml-2 text-lg font-bold text-white">{formatearFecha(fecha)}</Text>
+                  <Text className="ml-2 text-sm text-gray-400">
+                    ({funcionesDia.length} función{funcionesDia.length !== 1 ? 'es' : ''})
+                  </Text>
                 </View>
 
-                <View className="flex-row items-center justify-between">
-                  <View>
-                    <Text
-                      className={`mb-1 text-base font-medium ${
-                        selectedFuncion === funcion.id ? 'text-gray-700' : 'text-gray-300'
-                      }`}>
-                      {funcion.sala} • {funcion.formato}
-                    </Text>
-                    <Text
-                      className={`text-sm font-medium ${
-                        funcion.asientosDisponibles > 20
-                          ? selectedFuncion === funcion.id
-                            ? 'text-green-600'
-                            : 'text-green-400'
-                          : funcion.asientosDisponibles > 10
-                            ? selectedFuncion === funcion.id
-                              ? 'text-yellow-600'
-                              : 'text-yellow-400'
-                            : selectedFuncion === funcion.id
-                              ? 'text-red-600'
-                              : 'text-red-400'
-                      }`}>
-                      {funcion.asientosDisponibles} asientos disponibles
-                    </Text>
-                  </View>
-
-                  {selectedFuncion === funcion.id && (
-                    <View className="h-8 w-8 items-center justify-center rounded-full bg-black">
-                      <Text className="font-bold text-white">✓</Text>
-                    </View>
-                  )}
-                </View>
+                {funcionesDia
+                  .sort(
+                    (a, b) => new Date(a.fecha_hora).getTime() - new Date(b.fecha_hora).getTime()
+                  )
+                  .map((funcion) => (
+                    <FuncionCard key={funcion.id} funcion={funcion} />
+                  ))}
               </View>
-            </TouchableOpacity>
-          ))}
-        </View>
+            ))
+        )}
 
-        {/* Espaciado inferior */}
-        <View className="h-32" />
+        <View className="h-20" />
       </ScrollView>
 
       {/* Footer */}
       <View className="border-t border-gray-800/50 bg-black px-4 py-6">
-        {selectedFuncion !== null ? (
+        {selectedFuncion ? (
           <TouchableOpacity
             className="rounded-full bg-white px-6 py-4"
             onPress={handleContinue}
             activeOpacity={0.8}>
-            <Text className="text-center text-lg font-bold text-black">
-              Continuar con {funcionesDisponibles.find((f) => f.id === selectedFuncion)?.hora}
-            </Text>
+            <Text className="text-center text-lg font-bold text-black">Seleccionar Asientos</Text>
           </TouchableOpacity>
         ) : (
           <View className="rounded-full bg-gray-800/50 px-6 py-4">

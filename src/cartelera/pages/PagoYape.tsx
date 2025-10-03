@@ -3,49 +3,18 @@ import { View, Text, TouchableOpacity, ScrollView, TextInput } from 'react-nativ
 import { ChevronLeft, Smartphone, Shield } from 'lucide-react-native';
 
 interface PagoYapeProps {
-  peliculaId: string;
-  cinemaName: string;
-  fecha: string;
-  hora: string;
-  sala: string;
-  formato: string;
-  asientosSeleccionados: string[];
-  comidas?: {
-    id: number;
-    nombre: string;
-    cantidad: number;
-    precio: number;
-  }[];
-  subtotalEntradas: number;
-  subtotalComidas: number;
   totalPagar: number;
   onBack?: () => void;
   onContinue?: (detallesPago: any) => void;
 }
 
-export default function PagoYape({
-  peliculaId,
-  cinemaName,
-  fecha,
-  hora,
-  sala,
-  formato,
-  asientosSeleccionados,
-  comidas,
-  subtotalEntradas,
-  subtotalComidas,
-  totalPagar,
-  onBack,
-  onContinue,
-}: PagoYapeProps) {
+export default function PagoYape({ totalPagar, onBack, onContinue }: PagoYapeProps) {
   const [telefono, setTelefono] = useState('');
   const [codigoCompra, setCodigoCompra] = useState('');
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   const formatTelefono = (text: string) => {
-    // Eliminar caracteres no numéricos
     const cleaned = text.replace(/\D/g, '');
-    // Limitar a 9 dígitos
     return cleaned.substring(0, 9);
   };
 

@@ -1,20 +1,24 @@
 import { useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { CreditCard, Smartphone, ChevronLeft, MapPin, Clock, Calendar } from 'lucide-react-native';
 import { RootStackParamList } from '~/shared/types/navigation';
+import { useReserva } from '~/shared/hooks/useReserva';
+import { useAuth } from '~/shared/contexts/AuthContext';
 import PagoTarjeta from './PagoTarjeta';
 import PagoYape from './PagoYape';
 
 type MetodoPagoRouteProp = RouteProp<RootStackParamList, 'MetodoPago'>;
 type MetodoPagoNavigationProp = NativeStackNavigationProp<RootStackParamList, 'MetodoPago'>;
 
-export default function MetodoPago() {
+function MetodoPagoContent() {
   const navigation = useNavigation<MetodoPagoNavigationProp>();
   const route = useRoute<MetodoPagoRouteProp>();
   const {
+    funcionId,
     peliculaId,
+    salaId,
     cinemaName,
     fecha,
     hora,
@@ -29,24 +33,57 @@ export default function MetodoPago() {
   const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
   const [showPaymentForm, setShowPaymentForm] = useState(false);
 
-  const handleContinue = (metodoPago: string, detallesPago?: any) => {
-    const codigoOperacion = Math.random().toString(36).substring(2, 10).toUpperCase();
+  // Hook para procesar reservas
+  const { procesarCompra, loading: procesandoCompra } = useReserva();
 
-    navigation.navigate('ResumenPago', {
-      peliculaId,
-      cinemaName,
-      fecha,
-      hora,
-      sala,
-      formato,
-      asientosSeleccionados,
-      comidas,
-      metodoPago,
-      codigoOperacion,
-      subtotalEntradas,
-      subtotalComidas,
-      totalPagado: totalPagar,
-    });
+  // Contexto de usuario
+  const { usuario } = useAuth();
+
+  const procesarPagoYGuardar = async (metodoPago: string, detallesPago?: any) => {
+    try {
+      const datosCompra = {
+        funcionId,
+        salaId,
+        asientosSeleccionados,
+        comidas,
+        metodoPago,
+        subtotalEntradas,
+        subtotalComidas,
+        totalPagado: totalPagar,
+      };
+
+      const resultado = await procesarCompra(datosCompra, usuario?.id);
+
+      if (resultado.success) {
+        navigation.navigate('ResumenPago', {
+          funcionId,
+          peliculaId,
+          cinemaName,
+          fecha,
+          hora,
+          sala,
+          formato,
+          asientosSeleccionados,
+          comidas,
+          metodoPago,
+          codigoOperacion: resultado.codigoOperacion || 'ERROR',
+          subtotalEntradas,
+          subtotalComidas,
+          totalPagado: totalPagar,
+        });
+      } else {
+        Alert.alert(
+          'Error en el Pago',
+          resultado.error || 'No se pudo procesar la compra. Intenta nuevamente.',
+          [{ text: 'OK' }]
+        );
+      }
+    } catch (error) {
+      console.error('Error al procesar pago:', error);
+      Alert.alert('Error', 'Hubo un problema al procesar tu pago. Intenta nuevamente.', [
+        { text: 'OK' },
+      ]);
+    }
   };
 
   const handleBack = () => {
@@ -74,9 +111,9 @@ export default function MetodoPago() {
     }
   };
 
-  const handlePaymentComplete = (detallesPago: any) => {
+  const handlePaymentComplete = async (detallesPago: any) => {
     if (selectedMethod) {
-      handleContinue(selectedMethod, detallesPago);
+      await procesarPagoYGuardar(selectedMethod, detallesPago);
     }
   };
 
@@ -112,16 +149,6 @@ export default function MetodoPago() {
     if (selectedMethod === 'tarjeta') {
       return (
         <PagoTarjeta
-          peliculaId={peliculaId}
-          cinemaName={cinemaName}
-          fecha={fecha}
-          hora={hora}
-          sala={sala}
-          formato={formato}
-          asientosSeleccionados={asientosSeleccionados}
-          comidas={comidas}
-          subtotalEntradas={subtotalEntradas}
-          subtotalComidas={subtotalComidas}
           totalPagar={totalPagar}
           onBack={handleBackFromPaymentForm}
           onContinue={handlePaymentComplete}
@@ -130,16 +157,6 @@ export default function MetodoPago() {
     } else if (selectedMethod === 'yape') {
       return (
         <PagoYape
-          peliculaId={peliculaId}
-          cinemaName={cinemaName}
-          fecha={fecha}
-          hora={hora}
-          sala={sala}
-          formato={formato}
-          asientosSeleccionados={asientosSeleccionados}
-          comidas={comidas}
-          subtotalEntradas={subtotalEntradas}
-          subtotalComidas={subtotalComidas}
           totalPagar={totalPagar}
           onBack={handleBackFromPaymentForm}
           onContinue={handlePaymentComplete}
@@ -282,11 +299,15 @@ export default function MetodoPago() {
       <View className="border-t border-gray-800/50 bg-black px-4 py-6">
         {selectedMethod ? (
           <TouchableOpacity
-            className="rounded-full bg-white px-6 py-4"
+            className={`rounded-full px-6 py-4 ${procesandoCompra ? 'bg-gray-400' : 'bg-white'}`}
             onPress={handleSelectMethod}
+            disabled={procesandoCompra}
             activeOpacity={0.8}>
-            <Text className="text-center text-lg font-bold text-black">
-              Continuar con {metodoPago.find((m) => m.id === selectedMethod)?.nombre}
+            <Text
+              className={`text-center text-lg font-bold ${procesandoCompra ? 'text-gray-600' : 'text-black'}`}>
+              {procesandoCompra
+                ? 'Procesando...'
+                : `Continuar con ${metodoPago.find((m) => m.id === selectedMethod)?.nombre}`}
             </Text>
           </TouchableOpacity>
         ) : (
@@ -299,4 +320,8 @@ export default function MetodoPago() {
       </View>
     </View>
   );
+}
+
+export default function MetodoPago() {
+  return <MetodoPagoContent />;
 }

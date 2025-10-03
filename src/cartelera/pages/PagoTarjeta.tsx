@@ -3,41 +3,12 @@ import { View, Text, TouchableOpacity, ScrollView, TextInput } from 'react-nativ
 import { ChevronLeft, CreditCard, Lock, Shield } from 'lucide-react-native';
 
 interface PagoTarjetaProps {
-  peliculaId: string;
-  cinemaName: string;
-  fecha: string;
-  hora: string;
-  sala: string;
-  formato: string;
-  asientosSeleccionados: string[];
-  comidas?: {
-    id: number;
-    nombre: string;
-    cantidad: number;
-    precio: number;
-  }[];
-  subtotalEntradas: number;
-  subtotalComidas: number;
   totalPagar: number;
   onBack?: () => void;
   onContinue?: (detallesPago: any) => void;
 }
 
-export default function PagoTarjeta({
-  peliculaId,
-  cinemaName,
-  fecha,
-  hora,
-  sala,
-  formato,
-  asientosSeleccionados,
-  comidas,
-  subtotalEntradas,
-  subtotalComidas,
-  totalPagar,
-  onBack,
-  onContinue,
-}: PagoTarjetaProps) {
+export default function PagoTarjeta({ totalPagar, onBack, onContinue }: PagoTarjetaProps) {
   const [numeroTarjeta, setNumeroTarjeta] = useState('');
   const [nombreTitular, setNombreTitular] = useState('');
   const [fechaExpiracion, setFechaExpiracion] = useState('');
@@ -45,21 +16,15 @@ export default function PagoTarjeta({
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   const formatNumeroTarjeta = (text: string) => {
-    // Eliminar espacios y caracteres no numéricos
     const cleaned = text.replace(/\D/g, '');
-    // Limitar a 16 dígitos
     const limited = cleaned.substring(0, 16);
-    // Formatear con espacios cada 4 dígitos
     const formatted = limited.replace(/(\d{4})(?=\d)/g, '$1 ');
     return formatted;
   };
 
   const formatFechaExpiracion = (text: string) => {
-    // Eliminar caracteres no numéricos
     const cleaned = text.replace(/\D/g, '');
-    // Limitar a 4 dígitos
     const limited = cleaned.substring(0, 4);
-    // Formatear como MM/YY
     if (limited.length > 2) {
       return `${limited.substring(0, 2)}/${limited.substring(2)}`;
     }

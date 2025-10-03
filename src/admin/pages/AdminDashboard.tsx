@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, SafeAreaView } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import {
   Film,
   Tag,
@@ -87,7 +87,7 @@ export default function AdminDashboard() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-black">
+    <View className="flex-1 bg-black">
       {/* Header */}
       <View className="border-b border-gray-800 bg-black px-4 pb-4 pt-2">
         <View className="mb-4 flex-row items-center">
@@ -136,6 +136,6 @@ export default function AdminDashboard() {
 
       {/* Content */}
       <View className="flex-1">{ActiveComponent && <ActiveComponent />}</View>
-    </SafeAreaView>
+    </View>
   );
 }

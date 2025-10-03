@@ -37,11 +37,16 @@ export default function Register() {
       return;
     }
 
-    const success = await register(email, password, nombre, apellido);
-    if (success) {
-      Alert.alert('Éxito', 'Cuenta creada exitosamente. Revisa tu email para verificar tu cuenta.');
-    } else {
-      Alert.alert('Error', 'No se pudo crear la cuenta. Verifica que el email no esté en uso.');
+    try {
+      const success = await register(email, password, nombre, apellido);
+      if (success) {
+        Alert.alert(
+          'Éxito',
+          'Cuenta creada exitosamente. Revisa tu email para verificar tu cuenta.'
+        );
+      }
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'No se pudo crear la cuenta');
     }
   };
 

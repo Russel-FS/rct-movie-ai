@@ -9,7 +9,7 @@ export default function Login() {
   const [remember, setRemember] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const { login, loading } = useAuth();
+  const { login, loading, resendConfirmation } = useAuth();
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -17,11 +17,30 @@ export default function Login() {
       return;
     }
 
-    const success = await login(email, password);
-    if (success) {
-      Alert.alert('Éxito', '¡Bienvenido de vuelta!');
-    } else {
-      Alert.alert('Error', 'Email o contraseña incorrectos');
+    try {
+      const success = await login(email, password);
+      if (success) {
+        Alert.alert('Éxito', '¡Bienvenido de vuelta!');
+      }
+    } catch (error: any) {
+      if (error.message?.includes('confirmar tu email')) {
+        Alert.alert('Email no confirmado', 'Debes confirmar tu email antes de iniciar sesión.', [
+          { text: 'Cancelar', style: 'cancel' },
+          {
+            text: 'Reenviar confirmación',
+            onPress: async () => {
+              const sent = await resendConfirmation(email);
+              if (sent) {
+                Alert.alert('Enviado', 'Revisa tu email para confirmar tu cuenta');
+              } else {
+                Alert.alert('Error', 'No se pudo enviar el email de confirmación');
+              }
+            },
+          },
+        ]);
+      } else {
+        Alert.alert('Error', error.message || 'Email o contraseña incorrectos');
+      }
     }
   };
 

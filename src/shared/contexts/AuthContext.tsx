@@ -14,6 +14,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   register: (email: string, password: string, nombre: string, apellido: string) => Promise<boolean>;
+  resendConfirmation: (email: string) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -86,7 +87,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         password,
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase Login Error:', error);
+
+        if (error.message?.includes('Email not confirmed')) {
+          throw new Error(
+            'Debes confirmar tu email antes de iniciar sesión. Revisa tu bandeja de entrada.'
+          );
+        }
+
+        throw error;
+      }
 
       if (data.user) {
         await loadUserProfile(data.user.id);
@@ -96,7 +107,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return false;
     } catch (error) {
       console.error('Error logging in:', error);
-      return false;
+      throw error; // Propagar el error para manejarlo en la UI
     } finally {
       setLoading(false);
     }
@@ -176,8 +187,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const resendConfirmation = async (email: string): Promise<boolean> => {
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: email,
+      });
+
+      if (error) throw error;
+      return true;
+    } catch (error) {
+      console.error('Error resending confirmation:', error);
+      return false;
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ usuario, loading, login, logout, register }}>
+    <AuthContext.Provider value={{ usuario, loading, login, logout, register, resendConfirmation }}>
       {children}
     </AuthContext.Provider>
   );

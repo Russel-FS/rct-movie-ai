@@ -9,6 +9,7 @@ import {
   Settings,
   ChevronLeft,
   Armchair,
+  Calendar,
 } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 
@@ -17,10 +18,18 @@ import PeliculaCRUD from './PeliculaCRUD';
 import GeneroCRUD from './GeneroCRUD';
 import CineCRUD from './CineCRUD';
 import SalaCRUD from './SalaCRUD';
+import FuncionCRUD from './FuncionCRUD';
 import UsuarioCRUD from './UsuarioCRUD';
 import EstadisticasAdmin from './EstadisticasAdmin';
 
-type TabType = 'peliculas' | 'generos' | 'cines' | 'salas' | 'usuarios' | 'estadisticas';
+type TabType =
+  | 'peliculas'
+  | 'generos'
+  | 'cines'
+  | 'salas'
+  | 'funciones'
+  | 'usuarios'
+  | 'estadisticas';
 
 interface TabConfig {
   id: TabType;
@@ -58,6 +67,13 @@ const tabs: TabConfig[] = [
     icon: Armchair,
     component: SalaCRUD,
     color: '#EC4899',
+  },
+  {
+    id: 'funciones',
+    label: 'Funciones',
+    icon: Calendar,
+    component: FuncionCRUD,
+    color: '#06B6D4',
   },
   {
     id: 'usuarios',

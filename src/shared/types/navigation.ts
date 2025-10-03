@@ -8,16 +8,11 @@ export type RootStackParamList = {
     cinemaId: number;
     cinemaName: string;
   };
-  SeleccionButacas: {
+  SeleccionAsientos: {
+    funcionId: string;
     peliculaId: string;
     cinemaId: number;
     cinemaName: string;
-    funcionId: number;
-    fecha: string;
-    hora: string;
-    sala: string;
-    formato: string;
-    precio: number;
   };
   SeleccionComidas: {
     peliculaId: string;

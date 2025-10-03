@@ -11,6 +11,7 @@ export interface Sala {
   cine?: {
     id: number;
     nombre: string;
+    direccion?: string;
   };
   filas?: Fila[];
 }

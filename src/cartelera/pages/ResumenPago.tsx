@@ -10,8 +10,10 @@ import {
   MapPin,
   Clock,
   Calendar,
+  QrCode,
 } from 'lucide-react-native';
 import { RootStackParamList } from '~/shared/types/navigation';
+import QRCode from '~/shared/components/QRCode';
 
 type ResumenPagoRouteProp = RouteProp<RootStackParamList, 'ResumenPago'>;
 type ResumenPagoNavigationProp = NativeStackNavigationProp<RootStackParamList, 'ResumenPago'>;
@@ -173,6 +175,25 @@ export default function ResumenPago() {
                 <Text className="text-sm font-medium text-white">{metodoPago}</Text>
               </View>
             </View>
+          </View>
+        </View>
+
+        {/* Código QR para entrada */}
+        <View className="mx-4 mb-8">
+          <View className="items-center rounded-3xl bg-gray-800/50 p-8">
+            <View className="mb-4 flex-row items-center">
+              <QrCode size={24} color="#9CA3AF" />
+              <Text className="ml-3 text-xl font-bold text-white">Tu Entrada Digital</Text>
+            </View>
+
+            <QRCode
+              value={`CINE_TICKET_${codigoOperacion}_${cinemaName}_${fecha}_${hora}_${asientosSeleccionados.join('-')}`}
+              size={180}
+            />
+
+            <Text className="mt-4 text-center text-sm text-gray-400">
+              Presenta este código QR en el cine para ingresar
+            </Text>
           </View>
         </View>
 

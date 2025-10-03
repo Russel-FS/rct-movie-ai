@@ -160,3 +160,39 @@ CREATE TABLE pagos (
     datos_pago JSONB, -- Información adicional del pago
     comprobante_url VARCHAR(500)
 );
+
+-- Tablas para productos de dulcería
+CREATE TABLE categorias_productos (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(100) UNIQUE NOT NULL,
+    descripcion TEXT,
+    icono VARCHAR(50), -- Nombre del icono para la UI
+    color VARCHAR(7), -- Color hex para la UI (#FFFFFF)
+    orden INTEGER DEFAULT 0, -- Para ordenar las categorías
+    activa BOOLEAN DEFAULT true,
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE productos (
+    id SERIAL PRIMARY KEY,
+    categoria_id INTEGER REFERENCES categorias_productos (id) ON DELETE CASCADE,
+    nombre VARCHAR(200) NOT NULL,
+    descripcion TEXT,
+    precio DECIMAL(8, 2) NOT NULL,
+    imagen_url VARCHAR(500),
+    disponible BOOLEAN DEFAULT true,
+    destacado BOOLEAN DEFAULT false, -- Para productos destacados
+    orden INTEGER DEFAULT 0, -- Para ordenar productos dentro de la categoría
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabla para items de reserva
+CREATE TABLE reserva_productos (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4 (),
+    reserva_id UUID REFERENCES reservas (id) ON DELETE CASCADE,
+    producto_id INTEGER REFERENCES productos (id) ON DELETE CASCADE,
+    cantidad INTEGER NOT NULL DEFAULT 1,
+    precio_unitario DECIMAL(8, 2) NOT NULL, -- Precio al momento de la compra
+    subtotal DECIMAL(8, 2) NOT NULL, -- cantidad * precio_unitario
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

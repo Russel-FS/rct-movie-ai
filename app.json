@@ -4,14 +4,20 @@
     "slug": "app-movieai",
     "version": "1.0.0",
     "scheme": "app-movieai",
-    "platforms": ["ios", "android", "web"],
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "experiments": {
       "tsconfigPaths": true
     },
-    "plugins": ["expo-router"],
+    "plugins": [
+      "expo-router"
+    ],
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -20,16 +26,25 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true
-      
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
+      },
+      "package": "com.russelfs.appmovieai"
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "d61fea09-323f-4581-95b3-75931c7bfe8a"
       }
-    }
+    },
+    "owner": "russelfs"
   }
 }

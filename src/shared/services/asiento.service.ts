@@ -11,6 +11,34 @@ interface AsientoInfo {
   tipo: string;
 }
 
+// Interfaces para las respuestas de Supabase
+interface SupabaseFuncion {
+  id: string;
+  precio_base: number;
+}
+
+interface SupabaseFilaInfo {
+  id: number;
+  letra: string;
+  precio_multiplicador: number;
+  sala_id: number;
+}
+
+interface SupabaseAsientoConFila {
+  id: number;
+  numero: number;
+  tipo: string;
+  filas: SupabaseFilaInfo;
+}
+
+interface SupabaseEntradaOcupada {
+  asiento_id: number;
+  reservas: {
+    funcion_id: string;
+    estado: string;
+  };
+}
+
 export class AsientoService {
   /**
    * Mapea los asientos seleccionados (formato "A1", "B2") a sus IDs reales en la base de datos
@@ -24,8 +52,7 @@ export class AsientoService {
     try {
       console.log('🎯 Mapeando asientos:', { asientosSeleccionados, funcionId, salaId });
 
-      // Obtener información de la función para el precio base
-      const funcionResponse = await HttpClient.get(
+      const funcionResponse = await HttpClient.get<SupabaseFuncion[]>(
         `/funciones?id=eq.${funcionId}&select=precio_base`
       );
 
@@ -35,8 +62,7 @@ export class AsientoService {
 
       const precioBase = funcionResponse.data[0].precio_base;
 
-      // Obtener todos los asientos de la sala con información de filas
-      const asientosResponse = await HttpClient.get(
+      const asientosResponse = await HttpClient.get<SupabaseAsientoConFila[]>(
         `/asientos?select=id,numero,tipo,filas!inner(id,letra,precio_multiplicador,sala_id)&filas.sala_id=eq.${salaId}`
       );
 
@@ -46,15 +72,12 @@ export class AsientoService {
 
       const asientosInfo: AsientoInfo[] = [];
 
-      // Mapear cada asiento seleccionado
       for (const asientoSeleccionado of asientosSeleccionados) {
-        // Extraer letra de fila y número (ej: "A1" -> letra="A", numero=1)
         const letra = asientoSeleccionado.charAt(0);
         const numero = parseInt(asientoSeleccionado.slice(1));
 
-        // Buscar el asiento en la respuesta
         const asientoEncontrado = asientosResponse.data.find(
-          (asiento: any) => asiento.filas.letra === letra && asiento.numero === numero
+          (asiento) => asiento.filas.letra === letra && asiento.numero === numero
         );
 
         if (!asientoEncontrado) {
@@ -92,13 +115,12 @@ export class AsientoService {
   ): Promise<{ disponible: boolean; asientosOcupados: number[] }> {
     try {
       // Obtener asientos ya reservados para esta función
-      const ocupadosResponse = await HttpClient.get(
+      const ocupadosResponse = await HttpClient.get<SupabaseEntradaOcupada[]>(
         `/entradas?select=asiento_id,reservas!inner(funcion_id,estado)&reservas.funcion_id=eq.${funcionId}&reservas.estado=in.(confirmada,pendiente)`
       );
 
-      const asientosOcupados = ocupadosResponse.data.map((entrada: any) => entrada.asiento_id);
+      const asientosOcupados = ocupadosResponse.data.map((entrada) => entrada.asiento_id);
 
-      // Verificar si alguno de los asientos solicitados está ocupado
       const conflictos = asientosIds.filter((id) => asientosOcupados.includes(id));
 
       return {
@@ -116,7 +138,7 @@ export class AsientoService {
    */
   static async getAsientoById(asientoId: number): Promise<any> {
     try {
-      const response = await HttpClient.get(
+      const response = await HttpClient.get<any[]>(
         `/asientos?id=eq.${asientoId}&select=*,filas(letra,numero_fila,tipo_fila,precio_multiplicador,salas(nombre,cines(nombre)))`
       );
 

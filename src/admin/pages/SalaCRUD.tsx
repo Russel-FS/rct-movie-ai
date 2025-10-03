@@ -9,6 +9,7 @@ import {
   Alert,
   Switch,
   Pressable,
+  TouchableOpacity,
 } from 'react-native';
 import {
   Plus,
@@ -227,75 +228,49 @@ export default function SalaCRUD() {
     const cine = cines.find((c) => c.id === sala.cine_id);
 
     return (
-      <Pressable
-        className="mx-4 mb-4 overflow-hidden rounded-2xl bg-gray-800"
-        onPress={() => openEditModal(sala)}>
-        <View className="p-5">
-          <View className="flex-row items-start">
-            <View className="mr-4 rounded-xl bg-gray-700 p-3">
-              <Building size={20} color="#9CA3AF" />
+      <TouchableOpacity
+        className="mb-4 overflow-hidden rounded-3xl bg-gray-800/50"
+        onPress={() => openEditModal(sala)}
+        activeOpacity={0.8}>
+        <View className="flex-row items-center p-6">
+          <View className="mr-4 rounded-full bg-gray-700/50 p-3">
+            <Building size={20} color="#9CA3AF" />
+          </View>
+          <View className="flex-1">
+            <View className="mb-1 flex-row items-center justify-between">
+              <Text className="text-base font-medium text-white" numberOfLines={1}>
+                {sala.nombre}
+              </Text>
+              <Text className="ml-3 text-xs text-gray-400">#{sala.id}</Text>
             </View>
 
-            <View className="flex-1">
-              <View className="mb-1 flex-row items-center justify-between">
-                <Text className="flex-1 text-base font-medium text-white" numberOfLines={1}>
-                  {sala.nombre}
-                </Text>
-                <Text className="ml-3 text-xs text-gray-400">ID: {sala.id}</Text>
-              </View>
-
-              <View className="mb-2 flex-row items-center">
-                <MapPin size={12} color="#6B7280" />
-                <Text className="ml-2 text-sm text-gray-400">
-                  {cine?.nombre || 'Cine no encontrado'}
-                </Text>
-              </View>
-
-              <View className="mb-3 flex-row items-center space-x-4">
-                <View className="flex-row items-center">
-                  <Users size={12} color="#6B7280" />
-                  <Text className="ml-2 text-sm text-gray-400">{sala.capacidad} asientos</Text>
-                </View>
-
-                <View className="rounded-full bg-blue-500/10 px-2 py-1">
-                  <Text className="text-xs font-medium text-blue-400">{sala.tipo}</Text>
-                </View>
-              </View>
-
-              {/* Badge de estado y botón de toggle */}
-              <View className="flex-row items-center justify-between">
-                {!sala.activa && (
-                  <View className="rounded-full bg-red-500/10 px-3 py-1">
-                    <Text className="text-xs font-medium text-red-400">Inactiva</Text>
-                  </View>
-                )}
-
-                <View className="flex-1" />
-
-                <Pressable
-                  onPress={(e) => {
-                    e.stopPropagation();
-                    toggleSalaStatus(sala);
-                  }}
-                  className={`rounded-full px-4 py-2 ${
-                    sala.activa ? 'bg-red-500/10' : 'bg-green-500/10'
-                  }`}>
-                  <Text
-                    className={`text-xs font-medium ${
-                      sala.activa ? 'text-red-400' : 'text-green-400'
-                    }`}>
-                    {sala.activa ? 'Desactivar' : 'Activar'}
-                  </Text>
-                </Pressable>
-              </View>
+            <View className="mb-1 flex-row items-center">
+              <MapPin size={12} color="#6B7280" />
+              <Text className="ml-2 text-sm text-gray-400">
+                {cine?.nombre || 'Cine no encontrado'}
+              </Text>
             </View>
 
-            <View className="ml-2">
-              <ChevronRight size={20} color="#6B7280" />
+            <View className="flex-row items-center space-x-4">
+              <View className="flex-row items-center">
+                <Users size={12} color="#6B7280" />
+                <Text className="ml-2 text-sm text-gray-400">{sala.capacidad} asientos</Text>
+              </View>
+
+              <View className="rounded-full bg-blue-500/10 px-3 py-1">
+                <Text className="text-xs font-medium text-blue-400">{sala.tipo}</Text>
+              </View>
+
+              {!sala.activa && (
+                <View className="rounded-full bg-red-500/10 px-3 py-1">
+                  <Text className="text-xs font-medium text-red-400">Inactiva</Text>
+                </View>
+              )}
             </View>
           </View>
+          <ChevronRight size={20} color="#6B7280" />
         </View>
-      </Pressable>
+      </TouchableOpacity>
     );
   };
 
@@ -310,60 +285,64 @@ export default function SalaCRUD() {
 
   return (
     <View className="flex-1 bg-black">
-      {/* Header */}
-      <View className="px-4 pb-6 pt-4">
-        <View className="flex-row items-center justify-between">
-          <View>
-            <Text className="text-sm font-medium text-gray-400">Administración</Text>
-            <Text className="text-2xl font-bold text-white">Salas</Text>
-          </View>
-          <Pressable onPress={loadData} className="rounded-full bg-gray-800 p-3">
-            <RotateCcw size={20} color="#9CA3AF" />
-          </Pressable>
-        </View>
-
-        {/* Filtro por cine */}
-        <View className="mt-6">
-          <Text className="mb-2 text-sm font-medium text-gray-400">Filtrar por cine</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row">
-            <Pressable
-              onPress={() => setSelectedCine(null)}
-              className={`mr-3 rounded-full px-4 py-2 ${
-                selectedCine === null ? 'bg-white' : 'bg-gray-800'
-              }`}>
-              <Text
-                className={`text-sm font-medium ${
-                  selectedCine === null ? 'text-black' : 'text-gray-300'
-                }`}>
-                Todos
-              </Text>
+      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+        {/* Header */}
+        <View className="px-4 pb-6 pt-14">
+          <View className="flex-row items-center justify-between">
+            <View>
+              <Text className="text-sm font-medium text-gray-400">Administración</Text>
+              <Text className="text-2xl font-bold text-white">Salas de Cine</Text>
+            </View>
+            <Pressable onPress={loadData} className="rounded-full bg-gray-800/50 p-3">
+              <RotateCcw size={20} color="#9CA3AF" />
             </Pressable>
-            {cines.map((cine) => (
+          </View>
+
+          {/* Filtro por cine */}
+          <View className="mt-6">
+            <Text className="mb-4 text-xl font-bold text-white">Filtrar por Cine</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row">
               <Pressable
-                key={cine.id}
-                onPress={() => setSelectedCine(cine.id)}
-                className={`mr-3 rounded-full px-4 py-2 ${
-                  selectedCine === cine.id ? 'bg-white' : 'bg-gray-800'
+                onPress={() => setSelectedCine(null)}
+                className={`mr-3 rounded-3xl px-5 py-3 ${
+                  selectedCine === null ? 'bg-white' : 'bg-gray-800/50'
                 }`}>
                 <Text
                   className={`text-sm font-medium ${
-                    selectedCine === cine.id ? 'text-black' : 'text-gray-300'
+                    selectedCine === null ? 'text-black' : 'text-gray-300'
                   }`}>
-                  {cine.nombre}
+                  Todos los cines
                 </Text>
               </Pressable>
-            ))}
-          </ScrollView>
-        </View>
+              {cines.map((cine) => (
+                <Pressable
+                  key={cine.id}
+                  onPress={() => setSelectedCine(cine.id)}
+                  className={`mr-3 rounded-3xl px-5 py-3 ${
+                    selectedCine === cine.id ? 'bg-white' : 'bg-gray-800/50'
+                  }`}>
+                  <Text
+                    className={`text-sm font-medium ${
+                      selectedCine === cine.id ? 'text-black' : 'text-gray-300'
+                    }`}>
+                    {cine.nombre}
+                  </Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+          </View>
 
-        {/* Stats y controles */}
-        <View className="mb-4 mt-6 flex-row items-center justify-between">
-          <Text className="text-sm text-gray-400">
-            {filteredSalas.length} sala{filteredSalas.length !== 1 ? 's' : ''} encontrada
-            {filteredSalas.length !== 1 ? 's' : ''}
-          </Text>
-          <View className="flex-row items-center">
-            <Text className="mr-3 text-sm font-medium text-gray-400">Mostrar inactivas</Text>
+          {/* Configuración */}
+          <Text className="mb-6 mt-8 text-xl font-bold text-white">Configuración</Text>
+
+          <View className="mb-4 flex-row items-center justify-between rounded-3xl bg-gray-800/50 p-6">
+            <View className="flex-1">
+              <Text className="text-base font-medium text-white">Mostrar salas inactivas</Text>
+              <Text className="text-sm text-gray-400">
+                {filteredSalas.length} sala{filteredSalas.length !== 1 ? 's' : ''} encontrada
+                {filteredSalas.length !== 1 ? 's' : ''}
+              </Text>
+            </View>
             <Switch
               value={showInactive}
               onValueChange={setShowInactive}
@@ -371,54 +350,61 @@ export default function SalaCRUD() {
               thumbColor={showInactive ? '#000000' : '#9CA3AF'}
             />
           </View>
+
+          {/* Barra de búsqueda y botón crear */}
+          <View className="mb-6 flex-row items-center gap-3">
+            <View className="flex-1 flex-row items-center rounded-3xl bg-gray-800/50 px-4 py-4">
+              <Search size={20} color="#9CA3AF" />
+              <TextInput
+                placeholder="Buscar salas por nombre o tipo..."
+                placeholderTextColor="#9CA3AF"
+                className="ml-3 flex-1 text-white"
+                value={searchTerm}
+                onChangeText={setSearchTerm}
+                returnKeyType="search"
+              />
+            </View>
+
+            <Pressable onPress={openCreateModal} className="rounded-3xl bg-gray-800/50 p-4">
+              <Plus size={20} color="#9CA3AF" />
+            </Pressable>
+          </View>
         </View>
 
-        {/* Barra de búsqueda y botón crear */}
-        <View className="flex-row items-center gap-2">
-          <View className="flex-1 flex-row items-center rounded-2xl bg-gray-800 px-4 py-3">
-            <Search size={20} color="#9CA3AF" />
-            <TextInput
-              placeholder="Buscar salas..."
-              placeholderTextColor="#9CA3AF"
-              className="ml-3 flex-1 text-white"
-              value={searchTerm}
-              onChangeText={setSearchTerm}
-              returnKeyType="search"
-            />
-          </View>
+        <View className="px-4">
+          {/* Lista de salas */}
+          <Text className="mb-6 text-xl font-bold text-white">Salas Disponibles</Text>
 
-          <Pressable onPress={openCreateModal} className="rounded-2xl bg-gray-800 p-3">
-            <Plus size={20} color="#9CA3AF" />
-          </Pressable>
+          {filteredSalas.length > 0 ? (
+            filteredSalas.map((sala) => <SalaCard key={sala.id} sala={sala} />)
+          ) : (
+            <View className="items-center rounded-3xl bg-gray-800/30 p-8">
+              <View className="mb-4 h-20 w-20 items-center justify-center rounded-full bg-gray-700/50">
+                <Building size={32} color="#9CA3AF" />
+              </View>
+              <Text className="mb-2 text-xl font-bold text-white">
+                {searchTerm ? 'No se encontraron salas' : 'No hay salas disponibles'}
+              </Text>
+              <Text className="mb-6 text-center text-sm text-gray-400">
+                {searchTerm
+                  ? 'Intenta con otro término de búsqueda o ajusta los filtros'
+                  : 'Comienza creando tu primera sala de cine'}
+              </Text>
+              {!searchTerm && (
+                <Pressable
+                  onPress={openCreateModal}
+                  className="overflow-hidden rounded-3xl bg-white px-6 py-3">
+                  <View className="flex-row items-center">
+                    <Plus size={20} color="#000000" />
+                    <Text className="ml-2 font-semibold text-black">Crear Primera Sala</Text>
+                  </View>
+                </Pressable>
+              )}
+            </View>
+          )}
+
+          <View className="h-20" />
         </View>
-      </View>
-
-      {/* Lista de salas */}
-      <ScrollView
-        className="flex-1"
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 20 }}>
-        {filteredSalas.length > 0 ? (
-          filteredSalas.map((sala) => <SalaCard key={sala.id} sala={sala} />)
-        ) : (
-          <View className="flex-1 items-center justify-center px-4 py-20">
-            <Building size={48} color="#6B7280" />
-            <Text className="mb-2 mt-4 text-lg text-gray-400">No se encontraron salas</Text>
-            <Text className="px-8 text-center text-sm text-gray-500">
-              {searchTerm ? 'Intenta con otro término de búsqueda' : 'No hay salas disponibles'}
-            </Text>
-            {!searchTerm && (
-              <Pressable
-                onPress={openCreateModal}
-                className="mt-6 overflow-hidden rounded-2xl bg-gray-800 px-6 py-3">
-                <View className="flex-row items-center">
-                  <Plus size={20} color="#9CA3AF" />
-                  <Text className="ml-2 font-medium text-white">Agregar Sala</Text>
-                </View>
-              </Pressable>
-            )}
-          </View>
-        )}
       </ScrollView>
 
       {/* Modal de formulario */}
@@ -428,7 +414,9 @@ export default function SalaCRUD() {
         visible={modalVisible}
         onRequestClose={() => setModalVisible(false)}>
         <View className="flex-1 bg-black/50">
-          <View className="mt-12 flex-1 rounded-t-3xl bg-black px-6 py-6">
+          <View
+            className="mt-12 flex-1 rounded-t-3xl bg-black px-6 py-6"
+            style={{ backgroundColor: '#000000' }}>
             {/* Header del modal */}
             <View className="mb-6 flex-row items-center justify-between">
               <Text className="text-xl font-bold text-white">
@@ -436,7 +424,7 @@ export default function SalaCRUD() {
               </Text>
               <Pressable
                 onPress={() => setModalVisible(false)}
-                className="rounded-full bg-gray-800 p-2">
+                className="rounded-full bg-gray-800/50 p-3">
                 <X size={20} color="#9CA3AF" />
               </Pressable>
             </View>
@@ -456,7 +444,7 @@ export default function SalaCRUD() {
                   <Text className="mb-2 text-sm font-bold text-white">Cine *</Text>
                   <Pressable
                     onPress={() => setShowCineSelector(!showCineSelector)}
-                    className="flex-row items-center justify-between rounded-2xl bg-gray-800 px-4 py-3">
+                    className="flex-row items-center justify-between rounded-3xl bg-gray-800/50 px-4 py-3">
                     <Text className="text-white">
                       {formData.cine_id
                         ? cines.find((c) => c.id === formData.cine_id)?.nombre
@@ -487,7 +475,7 @@ export default function SalaCRUD() {
                 <View className="flex-row gap-3">
                   <View className="flex-1">
                     <Text className="mb-2 text-sm font-bold text-white">Nombre *</Text>
-                    <View className="overflow-hidden rounded-2xl bg-gray-800">
+                    <View className="overflow-hidden rounded-3xl bg-gray-800/50">
                       <TextInput
                         value={formData.nombre}
                         onChangeText={(text) => setFormData({ ...formData, nombre: text })}
@@ -502,7 +490,7 @@ export default function SalaCRUD() {
                     <Text className="mb-2 text-sm font-bold text-white">Tipo *</Text>
                     <Pressable
                       onPress={() => setShowTipoSelector(!showTipoSelector)}
-                      className="flex-row items-center justify-between rounded-2xl bg-gray-800 px-4 py-3">
+                      className="flex-row items-center justify-between rounded-3xl bg-gray-800/50 px-4 py-3">
                       <Text className="text-white">{formData.tipo}</Text>
                       <ChevronDown size={20} color="#9CA3AF" />
                     </Pressable>
@@ -544,14 +532,14 @@ export default function SalaCRUD() {
                   Configuración de Filas
                 </Text>
 
-                <View className="rounded-2xl bg-gray-800/30 p-4">
+                <View className="rounded-3xl bg-gray-800/30 p-4">
                   <View className="mb-4 flex-row items-center justify-between">
                     <Text className="text-base font-semibold text-white">
                       Filas ({filas.length})
                     </Text>
                     <Pressable
                       onPress={addFila}
-                      className="flex-row items-center rounded-full bg-gray-700 px-3 py-2">
+                      className="flex-row items-center rounded-full bg-gray-700/50 px-3 py-2">
                       <Plus size={16} color="#9CA3AF" />
                       <Text className="ml-2 text-sm font-medium text-white">Agregar Fila</Text>
                     </Pressable>
@@ -678,8 +666,8 @@ export default function SalaCRUD() {
             <View className="mb-6 mt-6 flex-row gap-3">
               <Pressable
                 onPress={() => setModalVisible(false)}
-                className="flex-1 rounded-2xl bg-gray-800 px-4 py-3">
-                <Text className="text-center font-bold text-white">Cancelar</Text>
+                className="flex-1 rounded-3xl bg-gray-800/50 px-6 py-4">
+                <Text className="text-center text-base font-semibold text-white">Cancelar</Text>
               </Pressable>
 
               <Pressable
@@ -690,12 +678,12 @@ export default function SalaCRUD() {
                   formData.cine_id === 0 ||
                   filas.length === 0
                 }
-                className={`flex-1 rounded-2xl px-4 py-3 ${
+                className={`flex-1 rounded-3xl px-6 py-4 ${
                   formLoading ||
                   !formData.nombre.trim() ||
                   formData.cine_id === 0 ||
                   filas.length === 0
-                    ? 'bg-gray-600'
+                    ? 'bg-gray-600/50'
                     : 'bg-white'
                 }`}>
                 {formLoading ? (
@@ -714,8 +702,8 @@ export default function SalaCRUD() {
                       }
                     />
                     <Text
-                      className={`ml-2 font-bold ${formLoading || !formData.nombre.trim() || formData.cine_id === 0 || filas.length === 0 ? 'text-white' : 'text-black'}`}>
-                      {editingSala ? 'Actualizar' : 'Crear'}
+                      className={`ml-2 text-base font-semibold ${formLoading || !formData.nombre.trim() || formData.cine_id === 0 || filas.length === 0 ? 'text-white' : 'text-black'}`}>
+                      {editingSala ? 'Actualizar Sala' : 'Crear Sala'}
                     </Text>
                   </View>
                 )}

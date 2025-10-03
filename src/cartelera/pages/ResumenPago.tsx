@@ -1,7 +1,16 @@
 import { View, Text, TouchableOpacity, ScrollView, Share } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { ArrowLeft, Download, Share2, Ticket } from 'lucide-react-native';
+import {
+  ChevronLeft,
+  Download,
+  Share2,
+  Ticket,
+  CheckCircle,
+  MapPin,
+  Clock,
+  Calendar,
+} from 'lucide-react-native';
 import { RootStackParamList } from '~/shared/types/navigation';
 
 type ResumenPagoRouteProp = RouteProp<RootStackParamList, 'ResumenPago'>;
@@ -48,55 +57,93 @@ export default function ResumenPago() {
     }
   };
 
+  const formatFecha = (fechaStr: string) => {
+    const fecha = new Date(fechaStr);
+    return fecha.toLocaleDateString('es-ES', {
+      weekday: 'short',
+      day: 'numeric',
+      month: 'short',
+    });
+  };
+
   return (
     <View className="flex-1 bg-black">
       {/* Header */}
-      <View className="border-b border-gray-800 bg-gray-900 px-6 pb-6 pt-12">
-        <View className="mb-4 flex-row items-center">
-          <TouchableOpacity
-            onPress={handleBack}
-            className="mr-4 h-10 w-10 items-center justify-center rounded-full bg-gray-800">
-            <ArrowLeft size={24} color="#FFFFFF" />
-          </TouchableOpacity>
-          <View>
-            <Text className="text-xl font-bold text-white">¡Compra Exitosa!</Text>
-            <Text className="text-sm text-gray-400">Resumen de tu compra</Text>
+      <View className="px-4 pb-6 pt-14">
+        <View className="flex-row items-center justify-between">
+          <View className="flex-row items-center">
+            <TouchableOpacity
+              onPress={handleBack}
+              className="mr-4 h-10 w-10 items-center justify-center rounded-full bg-gray-800/50"
+              activeOpacity={0.7}>
+              <ChevronLeft size={20} color="#9CA3AF" />
+            </TouchableOpacity>
+            <View>
+              <Text className="text-sm font-medium text-gray-400">Compra exitosa</Text>
+              <Text className="text-2xl font-bold text-white">¡Todo listo!</Text>
+            </View>
           </View>
         </View>
       </View>
 
       <ScrollView className="flex-1">
-        <View className="p-6">
-          {/* Mensaje de éxito */}
-          <View className="mb-6 rounded-xl bg-green-600/20 p-4">
-            <Text className="mb-2 text-center text-base font-bold text-green-400">
-              ¡Tu compra se realizó con éxito!
+        {/* Mensaje de éxito */}
+        <View className="mx-4 mb-8">
+          <View className="items-center rounded-3xl bg-green-500/10 p-8">
+            <CheckCircle size={64} color="#10B981" />
+            <Text className="mb-2 mt-4 text-center text-2xl font-bold text-white">
+              ¡Pago Exitoso!
             </Text>
-            <Text className="text-center text-sm text-green-300">
-              Tu código de operación es: {codigoOperacion}
+            <Text className="mb-4 text-center text-base text-gray-300">
+              Tu compra se realizó correctamente
             </Text>
+            <View className="rounded-2xl bg-gray-800/50 px-6 py-3">
+              <Text className="text-center text-sm font-medium text-gray-400">
+                Código de operación
+              </Text>
+              <Text className="text-center text-lg font-bold text-white">{codigoOperacion}</Text>
+            </View>
           </View>
+        </View>
 
-          {/* Detalles de la compra */}
-          <View className="mb-6 rounded-xl bg-gray-900 p-4">
-            <View className="mb-4 border-b border-gray-800 pb-4">
-              <Text className="text-sm text-gray-400">Cinema</Text>
-              <Text className="font-bold text-white">{cinemaName}</Text>
-              <Text className="mt-1 text-sm text-gray-300">
-                {fecha} - {hora} • {sala} • {formato}
+        {/* Detalles de la compra */}
+        <View className="mx-4 mb-8">
+          <View className="rounded-3xl bg-gray-800/50 p-6">
+            <Text className="mb-6 text-xl font-bold text-white">Resumen de Compra</Text>
+
+            <View className="mb-6 flex-row items-center">
+              <MapPin size={16} color="#9CA3AF" />
+              <Text className="ml-2 text-lg font-bold text-white">{cinemaName}</Text>
+            </View>
+
+            <Text className="mb-4 text-base font-medium text-white">
+              {sala} • {formato}
+            </Text>
+
+            <View className="mb-6 flex-row items-center justify-between">
+              <View className="flex-row items-center">
+                <Calendar size={14} color="#9CA3AF" />
+                <Text className="ml-2 text-base font-medium text-white">{formatFecha(fecha)}</Text>
+              </View>
+
+              <View className="flex-row items-center">
+                <Clock size={14} color="#9CA3AF" />
+                <Text className="ml-1 text-base font-medium text-white">{hora}</Text>
+              </View>
+            </View>
+
+            <View className="mb-6 border-t border-gray-700 pt-4">
+              <Text className="mb-2 text-sm font-medium text-gray-400">Asientos seleccionados</Text>
+              <Text className="text-base font-medium text-white">
+                {asientosSeleccionados.join(', ')}
               </Text>
             </View>
 
-            <View key="asientos" className="mb-4 border-b border-gray-800 pb-4">
-              <Text className="text-sm text-gray-400">Asientos</Text>
-              <Text className="font-bold text-white">{asientosSeleccionados.join(', ')}</Text>
-            </View>
-
             {comidas && comidas.length > 0 && (
-              <View key="comidas" className="mb-4 border-b border-gray-800 pb-4">
-                <Text className="text-sm text-gray-400">Comidas y Bebidas</Text>
+              <View className="mb-6 border-t border-gray-700 pt-4">
+                <Text className="mb-3 text-sm font-medium text-gray-400">Dulcería</Text>
                 {comidas.map((item) => (
-                  <View key={`comida-${item.id}`} className="mt-2 flex-row justify-between">
+                  <View key={`comida-${item.id}`} className="mb-2 flex-row justify-between">
                     <Text className="text-white">
                       {item.cantidad}x {item.nombre}
                     </Text>
@@ -106,51 +153,56 @@ export default function ResumenPago() {
               </View>
             )}
 
-            <View key="totales" className="mb-4 border-b border-gray-800 pb-4">
-              <View key="subtotal-entradas" className="mb-2 flex-row justify-between">
-                <Text className="text-gray-400">Subtotal Entradas</Text>
+            <View className="border-t border-gray-700 pt-4">
+              <View className="mb-2 flex-row justify-between">
+                <Text className="text-gray-300">Entradas</Text>
                 <Text className="text-white">S/ {(subtotalEntradas || 0).toFixed(2)}</Text>
               </View>
-              <View className="mb-2 flex-row justify-between">
-                <Text className="text-gray-400">Subtotal Comidas</Text>
+              <View className="mb-4 flex-row justify-between">
+                <Text className="text-gray-300">Dulcería</Text>
                 <Text className="text-white">S/ {(subtotalComidas || 0).toFixed(2)}</Text>
               </View>
-              <View className="mt-3 flex-row justify-between">
-                <Text className="font-bold text-white">Total Pagado</Text>
-                <Text className="font-bold text-white">S/ {(totalPagado || 0).toFixed(2)}</Text>
+              <View className="mb-4 flex-row justify-between">
+                <Text className="text-xl font-bold text-white">Total Pagado</Text>
+                <Text className="text-xl font-bold text-white">
+                  S/ {(totalPagado || 0).toFixed(2)}
+                </Text>
+              </View>
+              <View className="flex-row justify-between">
+                <Text className="text-sm font-medium text-gray-400">Método de pago</Text>
+                <Text className="text-sm font-medium text-white">{metodoPago}</Text>
               </View>
             </View>
-
-            <View>
-              <Text className="text-sm text-gray-400">Método de pago</Text>
-              <Text className="mt-1 font-bold text-white">{metodoPago}</Text>
-            </View>
           </View>
+        </View>
 
-          {/* Botones de acción */}
-          <View className="space-y-4">
-            <TouchableOpacity
-              className="flex-row items-center justify-center rounded-xl bg-gray-900 px-6 py-4"
-              onPress={handleShare}>
-              <Share2 size={24} color="#FFFFFF" className="mr-2" />
-              <Text className="ml-2 font-bold text-white">Compartir tickets</Text>
-            </TouchableOpacity>
+        {/* Botones de acción */}
+        <View className="gap-2 space-y-4 px-4">
+          <TouchableOpacity
+            className="flex-row items-center justify-center rounded-3xl bg-gray-800/50 px-6 py-4"
+            onPress={handleShare}
+            activeOpacity={0.8}>
+            <Share2 size={20} color="#FFFFFF" />
+            <Text className="ml-3 text-base font-semibold text-white">Compartir tickets</Text>
+          </TouchableOpacity>
 
-            <TouchableOpacity className="flex-row items-center justify-center rounded-xl bg-gray-900 px-6 py-4">
-              <Download size={24} color="#FFFFFF" className="mr-2" />
-              <Text className="ml-2 font-bold text-white">Descargar tickets</Text>
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity
+            className="flex-row items-center justify-center rounded-3xl bg-gray-800/50 px-6 py-4"
+            activeOpacity={0.8}>
+            <Download size={20} color="#FFFFFF" />
+            <Text className="ml-3 text-base font-semibold text-white">Descargar tickets</Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
 
       {/* Footer */}
-      <View className="border-t border-gray-800 bg-gray-900 px-6 py-4">
+      <View className="border-t border-gray-800/50 bg-black px-4 py-6">
         <TouchableOpacity
           onPress={handleFinish}
-          className="flex-row items-center justify-center rounded-xl bg-blue-600 py-4">
-          <Ticket size={24} color="#FFFFFF" />
-          <Text className="ml-2 text-center font-bold text-white">Ver mis entradas</Text>
+          className="flex-row items-center justify-center rounded-full bg-white px-6 py-4"
+          activeOpacity={0.8}>
+          <Ticket size={20} color="#000" />
+          <Text className="ml-3 text-lg font-bold text-black">Ver mis entradas</Text>
         </TouchableOpacity>
       </View>
     </View>

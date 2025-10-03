@@ -66,6 +66,17 @@ export class CineService {
     }
   }
 
+  // Obtener todos los cines
+  static async getAllCines(userLat?: number, userLon?: number): Promise<Cine[]> {
+    try {
+      const response = await HttpClient.get<SupabaseCine[]>('/cines?order=nombre.asc');
+      return response.data.map((cine) => mapSupabaseToCine(cine, userLat, userLon));
+    } catch (error) {
+      console.error('Error al obtener todos los cines:', error);
+      throw new Error('No se pudieron cargar todos los cines');
+    }
+  }
+
   // Obtener cine por ID
   static async getCineById(id: number, userLat?: number, userLon?: number): Promise<Cine | null> {
     try {

@@ -171,9 +171,11 @@ export default function CineCRUD() {
       const userLat = location?.lat;
       const userLon = location?.lon;
 
-      const cinesData = await CineService.getCines(userLat, userLon);
-      const filteredCines = showInactive ? cinesData : cinesData.filter((c) => c.activo);
-      setCines(filteredCines);
+      const cinesData = showInactive
+        ? await CineService.getAllCines(userLat, userLon)
+        : await CineService.getCines(userLat, userLon);
+
+      setCines(cinesData);
     } catch (error) {
       Alert.alert('Error', 'No se pudieron cargar los cines');
     } finally {

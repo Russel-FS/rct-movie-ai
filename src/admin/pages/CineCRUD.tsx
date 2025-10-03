@@ -29,6 +29,7 @@ import {
 import { Cine, CreateCineDto, UpdateCineDto } from '~/shared/types/cine';
 import { CineService } from '~/shared/services/cine.service';
 import { useLocation } from '~/shared/hooks/useLocation';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 // Distritos de Lima con sus coordenadas
 const distritosLima = [
@@ -145,6 +146,8 @@ export default function CineCRUD() {
   });
   const [formLoading, setFormLoading] = useState(false);
   const [showMapSelector, setShowMapSelector] = useState(false);
+  const [showAperturaPicker, setShowAperturaPicker] = useState(false);
+  const [showCierrePicker, setShowCierrePicker] = useState(false);
 
   // Cargar datos iniciales
   useEffect(() => {
@@ -241,17 +244,48 @@ export default function CineCRUD() {
     try {
       setFormLoading(true);
 
+      const cleanedData: CreateCineDto = {
+        nombre: formData.nombre.trim(),
+        direccion: formData.direccion.trim(),
+      };
+
+      if (formData.telefono?.trim()) {
+        cleanedData.telefono = formData.telefono.trim();
+      }
+      if (formData.email?.trim()) {
+        cleanedData.email = formData.email.trim();
+      }
+      if (formData.latitud !== undefined) {
+        cleanedData.latitud = formData.latitud;
+      }
+      if (formData.longitud !== undefined) {
+        cleanedData.longitud = formData.longitud;
+      }
+      if (formData.horario_apertura?.trim()) {
+        cleanedData.horario_apertura = formData.horario_apertura.trim();
+      }
+      if (formData.horario_cierre?.trim()) {
+        cleanedData.horario_cierre = formData.horario_cierre.trim();
+      }
+      if (formData.imagen_url?.trim()) {
+        cleanedData.imagen_url = formData.imagen_url.trim();
+      }
+      if (formData.descripcion?.trim()) {
+        cleanedData.descripcion = formData.descripcion.trim();
+      }
+
       if (editingCine) {
-        await CineService.updateCine(editingCine.id, formData as UpdateCineDto);
+        await CineService.updateCine(editingCine.id, cleanedData as UpdateCineDto);
         Alert.alert('Éxito', 'Cine actualizado correctamente');
       } else {
-        await CineService.createCine(formData);
+        await CineService.createCine(cleanedData);
         Alert.alert('Éxito', 'Cine creado correctamente');
       }
 
       setModalVisible(false);
       loadData();
     } catch (error: any) {
+      console.error('Error al guardar cine:', error);
       Alert.alert(
         'Error',
         error.message || `No se pudo ${editingCine ? 'actualizar' : 'crear'} el cine`
@@ -606,31 +640,92 @@ export default function CineCRUD() {
                 <View className="flex-row space-x-3">
                   <View className="flex-1">
                     <Text className="mb-2 text-sm font-bold text-white">Apertura</Text>
-                    <View className="overflow-hidden rounded-3xl bg-gray-800/50">
-                      <TextInput
-                        value={formData.horario_apertura}
-                        onChangeText={(text) =>
-                          setFormData({ ...formData, horario_apertura: text })
-                        }
-                        placeholder="09:00"
-                        placeholderTextColor="#9CA3AF"
-                        className="px-4 py-3 text-white"
-                      />
-                    </View>
+                    <Pressable
+                      onPress={() => setShowAperturaPicker(true)}
+                      className="flex-row items-center rounded-3xl bg-gray-800/50 px-4 py-3">
+                      <Clock size={16} color="#9CA3AF" />
+                      <Text
+                        className={`ml-2 ${formData.horario_apertura ? 'text-white' : 'text-gray-400'}`}>
+                        {formData.horario_apertura
+                          ? formData.horario_apertura.substring(0, 5)
+                          : '09:00'}
+                      </Text>
+                    </Pressable>
                   </View>
                   <View className="flex-1">
                     <Text className="mb-2 text-sm font-bold text-white">Cierre</Text>
-                    <View className="overflow-hidden rounded-3xl bg-gray-800/50">
-                      <TextInput
-                        value={formData.horario_cierre}
-                        onChangeText={(text) => setFormData({ ...formData, horario_cierre: text })}
-                        placeholder="23:00"
-                        placeholderTextColor="#9CA3AF"
-                        className="px-4 py-3 text-white"
-                      />
-                    </View>
+                    <Pressable
+                      onPress={() => setShowCierrePicker(true)}
+                      className="flex-row items-center rounded-3xl bg-gray-800/50 px-4 py-3">
+                      <Clock size={16} color="#9CA3AF" />
+                      <Text
+                        className={`ml-2 ${formData.horario_cierre ? 'text-white' : 'text-gray-400'}`}>
+                        {formData.horario_cierre
+                          ? formData.horario_cierre.substring(0, 5)
+                          : '23:00'}
+                      </Text>
+                    </Pressable>
                   </View>
                 </View>
+
+                {/* DateTimePickers */}
+                {showAperturaPicker && (
+                  <DateTimePicker
+                    value={(() => {
+                      if (formData.horario_apertura) {
+                        const timeParts = formData.horario_apertura.split(':');
+                        const hours = parseInt(timeParts[0]) || 9;
+                        const minutes = parseInt(timeParts[1]) || 0;
+                        const date = new Date();
+                        date.setHours(hours, minutes, 0, 0);
+                        return date;
+                      }
+                      const date = new Date();
+                      date.setHours(9, 0, 0, 0);
+                      return date;
+                    })()}
+                    mode="time"
+                    is24Hour={true}
+                    display="default"
+                    onChange={(event, selectedTime) => {
+                      setShowAperturaPicker(false);
+                      if (selectedTime) {
+                        const hours = selectedTime.getHours().toString().padStart(2, '0');
+                        const minutes = selectedTime.getMinutes().toString().padStart(2, '0');
+                        setFormData({ ...formData, horario_apertura: `${hours}:${minutes}:00` });
+                      }
+                    }}
+                  />
+                )}
+
+                {showCierrePicker && (
+                  <DateTimePicker
+                    value={(() => {
+                      if (formData.horario_cierre) {
+                        const timeParts = formData.horario_cierre.split(':');
+                        const hours = parseInt(timeParts[0]) || 23;
+                        const minutes = parseInt(timeParts[1]) || 0;
+                        const date = new Date();
+                        date.setHours(hours, minutes, 0, 0);
+                        return date;
+                      }
+                      const date = new Date();
+                      date.setHours(23, 0, 0, 0);
+                      return date;
+                    })()}
+                    mode="time"
+                    is24Hour={true}
+                    display="default"
+                    onChange={(event, selectedTime) => {
+                      setShowCierrePicker(false);
+                      if (selectedTime) {
+                        const hours = selectedTime.getHours().toString().padStart(2, '0');
+                        const minutes = selectedTime.getMinutes().toString().padStart(2, '0');
+                        setFormData({ ...formData, horario_cierre: `${hours}:${minutes}:00` });
+                      }
+                    }}
+                  />
+                )}
 
                 {/* Multimedia */}
                 <Text className="mb-4 mt-6 text-lg font-bold text-white">Multimedia</Text>

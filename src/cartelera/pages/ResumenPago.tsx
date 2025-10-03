@@ -66,12 +66,26 @@ export default function ResumenPago() {
   };
 
   const formatFecha = (fechaStr: string) => {
-    const fecha = new Date(fechaStr);
-    return fecha.toLocaleDateString('es-ES', {
-      weekday: 'short',
-      day: 'numeric',
-      month: 'short',
-    });
+    if (!fechaStr) return '';
+
+    if (fechaStr.includes('/') || fechaStr.includes('-')) {
+      try {
+        const fecha = new Date(fechaStr);
+
+        if (isNaN(fecha.getTime())) {
+          return fechaStr;
+        }
+        return fecha.toLocaleDateString('es-ES', {
+          weekday: 'short',
+          day: 'numeric',
+          month: 'short',
+        });
+      } catch (error) {
+        return fechaStr;
+      }
+    }
+
+    return fechaStr;
   };
 
   // Guardar el ticket

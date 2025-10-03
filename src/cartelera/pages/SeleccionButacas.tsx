@@ -89,7 +89,6 @@ export default function SeleccionButacas() {
   const formatFecha = (fechaStr: string) => {
     if (!fechaStr) return '';
     const fecha = new Date(fechaStr);
-    // Verificar que la fecha sea válida
     if (isNaN(fecha.getTime())) return fechaStr;
 
     return fecha.toLocaleDateString('es-ES', {
@@ -199,17 +198,16 @@ export default function SeleccionButacas() {
               {sala} • {formato}
             </Text>
 
-            <View className="flex-row items-center space-x-6">
+            <View className="flex-row items-center gap-6">
               <View>
                 <Text className="text-sm font-medium text-gray-400">Fecha</Text>
                 <Text className="text-base font-medium text-white">
                   {funcion ? formatFecha(funcion.fecha_hora) : 'N/A'}
                 </Text>
-              </View>
-
-              <View className="flex-row items-center">
-                <Clock size={14} color="#9CA3AF" />
-                <Text className="ml-1 text-base font-medium text-white">{hora}</Text>
+                <View className="flex-row items-center">
+                  <Clock size={14} color="#9CA3AF" />
+                  <Text className="ml-1 text-base font-medium text-white">{hora}</Text>
+                </View>
               </View>
 
               <View>

@@ -131,7 +131,7 @@ export default function SeleccionHorario() {
                     className={`ml-2 text-lg font-bold ${
                       isSelected ? 'text-black' : 'text-white'
                     }`}>
-                    {formatearHora(funcion.fecha_hora)}
+                    {funcion.fecha_hora ? formatearHora(funcion.fecha_hora) : 'N/A'}
                   </Text>
                 </View>
 
@@ -143,7 +143,7 @@ export default function SeleccionHorario() {
                     className={`text-xs font-medium ${
                       isSelected ? 'text-blue-800' : 'text-blue-400'
                     }`}>
-                    {funcion.formato}
+                    {funcion.formato || 'N/A'}
                   </Text>
                 </View>
 
@@ -179,7 +179,7 @@ export default function SeleccionHorario() {
               <View className="mb-2 flex-row items-center">
                 <Users size={14} color={isSelected ? '#6B7280' : '#9CA3AF'} />
                 <Text className={`ml-2 text-sm ${isSelected ? 'text-gray-600' : 'text-gray-400'}`}>
-                  Sala {funcion.sala?.nombre} • {funcion.sala?.tipo}
+                  Sala {funcion.sala?.nombre || 'N/A'} • {funcion.sala?.tipo || 'N/A'}
                 </Text>
               </View>
 
@@ -187,7 +187,7 @@ export default function SeleccionHorario() {
                 <View className="flex-row items-center">
                   <DollarSign size={14} color="#10B981" />
                   <Text className="ml-1 text-sm font-bold text-green-400">
-                    S/ {funcion.precio_base.toFixed(2)}
+                    S/ {(funcion.precio_base || 0).toFixed(2)}
                   </Text>
                 </View>
 
@@ -195,7 +195,7 @@ export default function SeleccionHorario() {
                   <View className="flex-row items-center">
                     <Star size={14} color="#F59E0B" />
                     <Text className="ml-1 text-sm font-bold text-yellow-400">
-                      VIP S/ {funcion.precio_vip.toFixed(2)}
+                      VIP S/ {(funcion.precio_vip || 0).toFixed(2)}
                     </Text>
                   </View>
                 )}
@@ -274,7 +274,9 @@ export default function SeleccionHorario() {
               <View key={fecha} className="mb-8">
                 <View className="mb-4 flex-row items-center">
                   <Calendar size={18} color="#9CA3AF" />
-                  <Text className="ml-2 text-lg font-bold text-white">{formatearFecha(fecha)}</Text>
+                  <Text className="ml-2 text-lg font-bold text-white">
+                    {fecha ? formatearFecha(fecha) : 'N/A'}
+                  </Text>
                   <Text className="ml-2 text-sm text-gray-400">
                     ({funcionesDia.length} función{funcionesDia.length !== 1 ? 'es' : ''})
                   </Text>

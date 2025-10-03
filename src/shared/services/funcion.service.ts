@@ -31,11 +31,13 @@ interface SupabaseFuncion {
       id: number;
       nombre: string;
       direccion: string;
+      latitud?: number;
+      longitud?: number;
     };
   };
 }
 
-// Mapear función de Supabase a nuestro tipo
+// Mapea
 function mapSupabaseToFuncion(supabaseFuncion: SupabaseFuncion): Funcion {
   return {
     id: supabaseFuncion.id,
@@ -70,6 +72,8 @@ function mapSupabaseToFuncion(supabaseFuncion: SupabaseFuncion): Funcion {
                 id: supabaseFuncion.salas.cines.id,
                 nombre: supabaseFuncion.salas.cines.nombre,
                 direccion: supabaseFuncion.salas.cines.direccion,
+                latitud: supabaseFuncion.salas.cines.latitud,
+                longitud: supabaseFuncion.salas.cines.longitud,
               } as any)
             : undefined,
         } as any)
@@ -83,7 +87,7 @@ export class FuncionService {
     try {
       const filter = incluirInactivas ? '' : '&activa=eq.true';
       const response = await HttpClient.get<SupabaseFuncion[]>(
-        `/funciones?select=*,peliculas(id,titulo,poster_url,duracion,clasificacion),salas(id,nombre,capacidad,tipo,cines(id,nombre,direccion))&order=fecha_hora.desc${filter}`
+        `/funciones?select=*,peliculas(id,titulo,poster_url,duracion,clasificacion),salas(id,nombre,capacidad,tipo,cines(id,nombre,direccion,latitud,longitud))&order=fecha_hora.desc${filter}`
       );
       return response.data.map(mapSupabaseToFuncion);
     } catch (error) {
@@ -100,7 +104,7 @@ export class FuncionService {
     try {
       const filter = incluirInactivas ? '' : '&activa=eq.true';
       const response = await HttpClient.get<SupabaseFuncion[]>(
-        `/funciones?pelicula_id=eq.${peliculaId}&select=*,peliculas(id,titulo,poster_url,duracion,clasificacion),salas(id,nombre,capacidad,tipo,cines(id,nombre,direccion))&order=fecha_hora.asc${filter}`
+        `/funciones?pelicula_id=eq.${peliculaId}&select=*,peliculas(id,titulo,poster_url,duracion,clasificacion),salas(id,nombre,capacidad,tipo,cines(id,nombre,direccion,latitud,longitud))&order=fecha_hora.asc${filter}`
       );
       return response.data.map(mapSupabaseToFuncion);
     } catch (error) {
@@ -117,7 +121,7 @@ export class FuncionService {
     try {
       const filter = incluirInactivas ? '' : '&activa=eq.true';
       const response = await HttpClient.get<SupabaseFuncion[]>(
-        `/funciones?sala_id=eq.${salaId}&select=*,peliculas(id,titulo,poster_url,duracion,clasificacion),salas(id,nombre,capacidad,tipo,cines(id,nombre,direccion))&order=fecha_hora.asc${filter}`
+        `/funciones?sala_id=eq.${salaId}&select=*,peliculas(id,titulo,poster_url,duracion,clasificacion),salas(id,nombre,capacidad,tipo,cines(id,nombre,direccion,latitud,longitud))&order=fecha_hora.asc${filter}`
       );
       return response.data.map(mapSupabaseToFuncion);
     } catch (error) {
@@ -134,7 +138,7 @@ export class FuncionService {
     try {
       const filter = incluirInactivas ? '' : '&activa=eq.true';
       const response = await HttpClient.get<SupabaseFuncion[]>(
-        `/funciones?salas.cine_id=eq.${cineId}&select=*,peliculas(id,titulo,poster_url,duracion,clasificacion),salas(id,nombre,capacidad,tipo,cines(id,nombre,direccion))&order=fecha_hora.asc${filter}`
+        `/funciones?salas.cine_id=eq.${cineId}&select=*,peliculas(id,titulo,poster_url,duracion,clasificacion),salas(id,nombre,capacidad,tipo,cines(id,nombre,direccion,latitud,longitud))&order=fecha_hora.asc${filter}`
       );
       return response.data.map(mapSupabaseToFuncion);
     } catch (error) {
@@ -147,7 +151,7 @@ export class FuncionService {
   static async getFuncionById(id: string): Promise<Funcion | null> {
     try {
       const response = await HttpClient.get<SupabaseFuncion[]>(
-        `/funciones?id=eq.${id}&select=*,peliculas(id,titulo,poster_url,duracion,clasificacion),salas(id,nombre,capacidad,tipo,cines(id,nombre,direccion))`
+        `/funciones?id=eq.${id}&select=*,peliculas(id,titulo,poster_url,duracion,clasificacion),salas(id,nombre,capacidad,tipo,cines(id,nombre,direccion,latitud,longitud))`
       );
       if (response.data.length === 0) return null;
       return mapSupabaseToFuncion(response.data[0]);
@@ -212,7 +216,7 @@ export class FuncionService {
   static async buscarFunciones(termino: string): Promise<Funcion[]> {
     try {
       const response = await HttpClient.get<SupabaseFuncion[]>(
-        `/funciones?activa=eq.true&peliculas.titulo=ilike.*${termino}*&select=*,peliculas(id,titulo,poster_url,duracion,clasificacion),salas(id,nombre,capacidad,tipo,cines(id,nombre,direccion))&order=fecha_hora.asc`
+        `/funciones?activa=eq.true&peliculas.titulo=ilike.*${termino}*&select=*,peliculas(id,titulo,poster_url,duracion,clasificacion),salas(id,nombre,capacidad,tipo,cines(id,nombre,direccion,latitud,longitud))&order=fecha_hora.asc`
       );
       return response.data.map(mapSupabaseToFuncion);
     } catch (error) {
@@ -250,7 +254,7 @@ export class FuncionService {
   static async getFuncionesByPeliculaYCine(peliculaId: string, cineId: number): Promise<Funcion[]> {
     try {
       const response = await HttpClient.get<SupabaseFuncion[]>(
-        `/funciones?pelicula_id=eq.${peliculaId}&salas.cine_id=eq.${cineId}&activa=eq.true&select=*,peliculas(id,titulo,poster_url,duracion,clasificacion),salas(id,nombre,capacidad,tipo,cines(id,nombre,direccion))&order=fecha_hora.asc`
+        `/funciones?pelicula_id=eq.${peliculaId}&salas.cine_id=eq.${cineId}&activa=eq.true&select=*,peliculas(id,titulo,poster_url,duracion,clasificacion),salas(id,nombre,capacidad,tipo,cines(id,nombre,direccion,latitud,longitud))&order=fecha_hora.asc`
       );
       return response.data.map(mapSupabaseToFuncion);
     } catch (error) {

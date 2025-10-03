@@ -18,8 +18,9 @@ import { PeliculaService } from '~/home/services/pelicula.service';
 import { GeneroService } from '~/home/services/genero.service';
 import { RootStackParamList } from '~/shared/types/navigation';
 import { Calendar, Clock, Star, Film, Users, Play, MapPin, ChevronLeft } from 'lucide-react-native';
-import { useCines } from '~/shared/hooks/useCines';
 import { usePelicula } from '~/shared/hooks/usePeliculas';
+import { useLocation } from '~/shared/hooks/useLocation';
+import { SeleccionLugarService, CineDisponible } from '~/shared/services/seleccionLugar.service';
 import { MOVIE_CONFIG, ERROR_MESSAGES } from '~/shared/constants/app.constants';
 import {
   formatearDuracion,
@@ -36,9 +37,43 @@ export default function SeleccionLugar() {
   const { peliculaId } = route.params;
   const [selectedCinema, setSelectedCinema] = useState<number | null>(null);
   const [showFullSynopsis, setShowFullSynopsis] = useState(false);
+  const [cines, setCines] = useState<CineDisponible[]>([]);
+  const [loadingCines, setLoadingCines] = useState(true);
 
-  const { cines, loading: loadingCines } = useCines({ incluirUbicacion: true, radio: 20 });
   const { pelicula, generos, loading, error } = usePelicula(peliculaId);
+  const { location, loading: locationLoading, requestLocation, hasPermission } = useLocation();
+
+  // Cargar cines disponibles para la película
+  useEffect(() => {
+    const loadCinesDisponibles = async () => {
+      if (peliculaId) {
+        try {
+          setLoadingCines(true);
+          const cinesDisponibles = await SeleccionLugarService.getCinesConDistancia(
+            peliculaId,
+            location?.lat,
+            location?.lon
+          );
+
+          setCines(cinesDisponibles);
+        } catch (error) {
+          console.error('Error al cargar cines disponibles:', error);
+          setCines([]);
+        } finally {
+          setLoadingCines(false);
+        }
+      }
+    };
+
+    loadCinesDisponibles();
+  }, [peliculaId, location]);
+
+  // Solicitar ubicación al cargar la página
+  useEffect(() => {
+    if (!location && hasPermission) {
+      requestLocation();
+    }
+  }, [hasPermission]);
 
   const getGeneros = (): string => {
     if (generos && generos.length > 0) {
@@ -209,11 +244,36 @@ export default function SeleccionLugar() {
 
         {/* Lista de cines */}
         <View className="px-4 pb-8">
-          <Text className="mb-6 text-2xl font-bold text-white">Cines Disponibles</Text>
+          <View className="mb-6 flex-row items-center justify-between">
+            <Text className="text-2xl font-bold text-white">Cines Disponibles</Text>
+
+            {/* Botón de ubicación */}
+            {!location && (
+              <TouchableOpacity
+                onPress={requestLocation}
+                disabled={locationLoading}
+                className="flex-row items-center rounded-full bg-blue-600/20 px-4 py-2"
+                activeOpacity={0.8}>
+                <MapPin size={16} color="#3B82F6" />
+                <Text className="ml-2 text-sm font-medium text-blue-400">
+                  {locationLoading ? 'Obteniendo...' : 'Obtener ubicación'}
+                </Text>
+              </TouchableOpacity>
+            )}
+
+            {location && (
+              <View className="flex-row items-center rounded-full bg-green-600/20 px-4 py-2">
+                <MapPin size={16} color="#10B981" />
+                <Text className="ml-2 text-sm font-medium text-green-400">Ubicación obtenida</Text>
+              </View>
+            )}
+          </View>
 
           {cines.length === 0 ? (
             <View className="items-center py-8">
-              <Text className="text-base text-gray-400">{ERROR_MESSAGES.CINEMAS_NOT_FOUND}</Text>
+              <Text className="text-base text-gray-400">
+                No hay funciones disponibles para esta película en este momento
+              </Text>
             </View>
           ) : (
             cines.map((cine) => (
@@ -250,14 +310,57 @@ export default function SeleccionLugar() {
                   </View>
 
                   {/* Footer con distancia */}
-                  <View className="flex-row items-center">
-                    <MapPin size={16} color={selectedCinema === cine.id ? '#6B7280' : '#9CA3AF'} />
-                    <Text
-                      className={`ml-2 text-sm font-medium ${
-                        selectedCinema === cine.id ? 'text-gray-600' : 'text-gray-400'
-                      }`}>
-                      {cine.distance || 'Distancia no disponible'}
-                    </Text>
+                  <View className="flex-row items-center justify-between">
+                    <View className="flex-row items-center">
+                      <MapPin
+                        size={16}
+                        color={selectedCinema === cine.id ? '#6B7280' : '#9CA3AF'}
+                      />
+                      <Text
+                        className={`ml-2 text-sm font-medium ${
+                          selectedCinema === cine.id ? 'text-gray-600' : 'text-gray-400'
+                        }`}>
+                        {cine.distance || (location ? 'Calculando...' : 'Ubicación no disponible')}
+                      </Text>
+                    </View>
+
+                    <View className="flex-row items-center space-x-3">
+                      <View className="flex-row items-center">
+                        <Film
+                          size={14}
+                          color={selectedCinema === cine.id ? '#6B7280' : '#9CA3AF'}
+                        />
+                        <Text
+                          className={`ml-1 text-sm font-medium ${
+                            selectedCinema === cine.id ? 'text-gray-600' : 'text-gray-400'
+                          }`}>
+                          {cine.funcionesDisponibles} función
+                          {cine.funcionesDisponibles !== 1 ? 'es' : ''}
+                        </Text>
+                      </View>
+
+                      {/* Indicador de proximidad */}
+                      {cine.distance &&
+                        cine.distance !== 'Distancia no disponible' &&
+                        cine.distance !== 'Ubicación no disponibles' &&
+                        cine.distance !== 'Calculando...' &&
+                        ((cine.distance.includes('m') &&
+                          parseFloat(cine.distance.replace(' m', '')) <= 1000) ||
+                          (cine.distance.includes('km') &&
+                            parseFloat(cine.distance.replace(' km', '')) <= 5)) && (
+                          <View
+                            className={`rounded-full px-2 py-1 ${
+                              selectedCinema === cine.id ? 'bg-green-100' : 'bg-green-500/10'
+                            }`}>
+                            <Text
+                              className={`text-xs font-medium ${
+                                selectedCinema === cine.id ? 'text-green-800' : 'text-green-400'
+                              }`}>
+                              Cerca
+                            </Text>
+                          </View>
+                        )}
+                    </View>
                   </View>
                 </View>
               </TouchableOpacity>

@@ -55,8 +55,19 @@ export class SalaService {
   static async getAllSalas(incluirInactivas: boolean = false): Promise<Sala[]> {
     try {
       const filter = incluirInactivas ? '' : '&activa=eq.true';
-      const response = await HttpClient.get<SupabaseSala[]>(`/salas?order=nombre.asc${filter}`);
-      return response.data.map(mapSupabaseToSala);
+      const response = await HttpClient.get<any[]>(
+        `/salas?select=*,cines(id,nombre,direccion)&order=nombre.asc${filter}`
+      );
+      return response.data.map((sala) => ({
+        ...mapSupabaseToSala(sala),
+        cine: sala.cines
+          ? {
+              id: sala.cines.id,
+              nombre: sala.cines.nombre,
+              direccion: sala.cines.direccion,
+            }
+          : undefined,
+      }));
     } catch (error) {
       console.error('Error al obtener salas:', error);
       throw new Error('No se pudieron cargar las salas');

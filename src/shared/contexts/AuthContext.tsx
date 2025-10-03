@@ -138,7 +138,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return false;
     } catch (error) {
       console.error('Error logging in:', error);
-      throw error; // Propagar el error para manejarlo en la UI
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -153,7 +153,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       setLoading(true);
 
-      // Verificar si el email ya existe
       const { data: existingUser } = await supabase
         .from('usuarios')
         .select('email')

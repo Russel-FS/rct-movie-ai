@@ -12,12 +12,20 @@ import {
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Pelicula } from '~/shared/types/pelicula';
-import { GeneroMovie } from '~/shared/types/genero';
-import { PeliculaService } from '~/home/services/pelicula.service';
-import { GeneroService } from '~/home/services/genero.service';
+
 import { RootStackParamList } from '~/shared/types/navigation';
-import { Calendar, Clock, Star, Film, Users, Play, MapPin, ChevronLeft } from 'lucide-react-native';
+import {
+  Calendar,
+  Clock,
+  Star,
+  Film,
+  Users,
+  Play,
+  MapPin,
+  ChevronLeft,
+  User,
+  Globe,
+} from 'lucide-react-native';
 import { usePelicula } from '~/shared/hooks/usePeliculas';
 import { useLocation } from '~/shared/hooks/useLocation';
 import { SeleccionLugarService, CineDisponible } from '~/shared/services/seleccionLugar.service';
@@ -211,6 +219,9 @@ export default function SeleccionLugar() {
                   <Text className="ml-1 font-semibold text-white">
                     {formatearCalificacion(pelicula.calificacion)}
                   </Text>
+                  {pelicula.votos && pelicula.votos > 0 && (
+                    <Text className="ml-1 text-xs text-gray-300">({pelicula.votos})</Text>
+                  )}
                 </View>
 
                 <View className="flex-row items-center">
@@ -226,6 +237,21 @@ export default function SeleccionLugar() {
               {/* Géneros */}
               <Text className="mb-4 text-sm text-gray-200 opacity-90">{getGeneros()}</Text>
 
+              {/* Estadísticas rápidas */}
+              <View className="mb-4 flex-row space-x-4">
+                {pelicula.votos && pelicula.votos > 0 && (
+                  <View className="flex-row items-center rounded-full bg-white/10 px-3 py-1">
+                    <Users size={12} color="#9CA3AF" />
+                    <Text className="ml-1 text-xs text-gray-300">{pelicula.votos} votos</Text>
+                  </View>
+                )}
+
+                <View className="flex-row items-center rounded-full bg-white/10 px-3 py-1">
+                  <Film size={12} color="#9CA3AF" />
+                  <Text className="ml-1 text-xs text-gray-300">{cines.length} cines</Text>
+                </View>
+              </View>
+
               {/* Botones de acción */}
               <View className="flex-row space-x-3">
                 {pelicula.trailer_url && (
@@ -240,6 +266,172 @@ export default function SeleccionLugar() {
               </View>
             </View>
           </ImageBackground>
+        </View>
+
+        {/* Información Detallada de la Película */}
+        <View className="mx-4 mb-8 rounded-3xl bg-gray-800/50 p-6">
+          {/* Sinopsis */}
+          {pelicula.sinopsis && (
+            <View className="mb-6">
+              <Text className="mb-3 text-xl font-bold text-white">Sinopsis</Text>
+              <Text
+                className="text-base leading-6 text-gray-300"
+                numberOfLines={showFullSynopsis ? undefined : 4}>
+                {pelicula.sinopsis}
+              </Text>
+              {pelicula.sinopsis.length > 200 && (
+                <TouchableOpacity
+                  onPress={() => setShowFullSynopsis(!showFullSynopsis)}
+                  className="mt-2"
+                  activeOpacity={0.7}>
+                  <Text className="text-sm font-medium text-blue-400">
+                    {showFullSynopsis ? 'Ver menos' : 'Ver más'}
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
+
+          {/* Información del Equipo */}
+          <View className="space-y-4">
+            {pelicula.director && (
+              <View className="flex-row items-start">
+                <View className="mr-3 mt-0.5 rounded-full bg-blue-500/10 p-2">
+                  <User size={14} color="#3B82F6" />
+                </View>
+                <View className="flex-1">
+                  <Text className="text-sm font-medium text-gray-400">Director</Text>
+                  <Text className="text-sm text-white">{pelicula.director}</Text>
+                </View>
+              </View>
+            )}
+
+            {pelicula.reparto && (
+              <View className="flex-row items-start">
+                <View className="mr-3 mt-0.5 rounded-full bg-purple-500/10 p-2">
+                  <Users size={14} color="#8B5CF6" />
+                </View>
+                <View className="flex-1">
+                  <Text className="text-sm font-medium text-gray-400">Reparto Principal</Text>
+                  <Text className="text-sm text-white" numberOfLines={3}>
+                    {pelicula.reparto}
+                  </Text>
+                </View>
+              </View>
+            )}
+
+            {pelicula.idioma_original && (
+              <View className="flex-row items-start">
+                <View className="mr-3 mt-0.5 rounded-full bg-green-500/10 p-2">
+                  <Globe size={14} color="#10B981" />
+                </View>
+                <View className="flex-1">
+                  <Text className="text-sm font-medium text-gray-400">Idioma Original</Text>
+                  <Text className="text-sm text-white">{pelicula.idioma_original}</Text>
+                </View>
+              </View>
+            )}
+
+            {pelicula.subtitulos && (
+              <View className="flex-row items-start">
+                <View className="mr-3 mt-0.5 rounded-full bg-yellow-500/10 p-2">
+                  <Film size={14} color="#F59E0B" />
+                </View>
+                <View className="flex-1">
+                  <Text className="text-sm font-medium text-gray-400">Subtítulos Disponibles</Text>
+                  <Text className="text-sm text-white">{pelicula.subtitulos}</Text>
+                </View>
+              </View>
+            )}
+
+            {/* Fechas de exhibición */}
+            <View className="mt-6 border-t border-gray-700 pt-4">
+              <Text className="mb-4 text-base font-semibold text-white">
+                Información de Exhibición
+              </Text>
+
+              <View className="space-y-3">
+                <View className="flex-row items-center">
+                  <View className="mr-3 rounded-full bg-indigo-500/10 p-2">
+                    <Calendar size={14} color="#6366F1" />
+                  </View>
+                  <View className="flex-1">
+                    <Text className="text-sm font-medium text-gray-400">Fecha de Estreno</Text>
+                    <Text className="text-sm text-white">
+                      {pelicula.fecha_estreno
+                        ? formatearFecha(pelicula.fecha_estreno)
+                        : 'Fecha no disponible'}
+                    </Text>
+                  </View>
+                </View>
+
+                {pelicula.fecha_fin_exhibicion && (
+                  <View className="flex-row items-center">
+                    <View className="mr-3 rounded-full bg-red-500/10 p-2">
+                      <Calendar size={14} color="#EF4444" />
+                    </View>
+                    <View className="flex-1">
+                      <Text className="text-sm font-medium text-gray-400">Última Función</Text>
+                      <Text className="text-sm text-white">
+                        {formatearFecha(pelicula.fecha_fin_exhibicion)}
+                      </Text>
+                    </View>
+                  </View>
+                )}
+
+                {/* Tiempo restante en cartelera */}
+                {pelicula.fecha_fin_exhibicion && (
+                  <View className="mt-2 rounded-2xl bg-orange-500/10 p-3">
+                    <Text className="text-center text-xs font-medium text-orange-400">
+                      {(() => {
+                        const hoy = new Date();
+                        const fin = new Date(pelicula.fecha_fin_exhibicion);
+                        const diasRestantes = Math.ceil(
+                          (fin.getTime() - hoy.getTime()) / (1000 * 60 * 60 * 24)
+                        );
+
+                        if (diasRestantes > 0) {
+                          return `⏰ Quedan ${diasRestantes} día${diasRestantes !== 1 ? 's' : ''} en cartelera`;
+                        } else if (diasRestantes === 0) {
+                          return '⏰ Último día en cartelera';
+                        } else {
+                          return '⏰ Ya no está en cartelera';
+                        }
+                      })()}
+                    </Text>
+                  </View>
+                )}
+              </View>
+            </View>
+
+            {/* Badges adicionales */}
+            <View className="mt-4 flex-row flex-wrap gap-2">
+              {pelicula.activa && (
+                <View className="rounded-full bg-green-500/10 px-3 py-1">
+                  <Text className="text-xs font-medium text-green-400">En cartelera</Text>
+                </View>
+              )}
+
+              {pelicula.destacada && (
+                <View className="rounded-full bg-yellow-500/10 px-3 py-1">
+                  <Text className="text-xs font-medium text-yellow-400">Destacada</Text>
+                </View>
+              )}
+
+              {pelicula.calificacion && pelicula.calificacion >= 8.0 && (
+                <View className="rounded-full bg-purple-500/10 px-3 py-1">
+                  <Text className="text-xs font-medium text-purple-400">Muy bien valorada</Text>
+                </View>
+              )}
+
+              {/* Badge de duración */}
+              {pelicula.duracion >= 150 && (
+                <View className="rounded-full bg-orange-500/10 px-3 py-1">
+                  <Text className="text-xs font-medium text-orange-400">Película larga</Text>
+                </View>
+              )}
+            </View>
+          </View>
         </View>
 
         {/* Lista de cines */}

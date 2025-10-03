@@ -14,6 +14,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '~/shared/types/navigation';
+import { useAuth } from '~/shared/contexts/AuthContext';
 
 type PerfilNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 

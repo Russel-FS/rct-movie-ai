@@ -62,24 +62,47 @@ export default function Register() {
       <View style={styles.row}>
         <View style={[styles.inputWrapper, { marginRight: 8 }]}>
           <Text style={styles.label}>Nombre</Text>
-          <TextInput style={styles.input} placeholderTextColor="#999" />
+          <TextInput
+            style={styles.input}
+            placeholderTextColor="#999"
+            value={nombre}
+            onChangeText={setNombre}
+          />
         </View>
         <View style={[styles.inputWrapper, { marginLeft: 8 }]}>
           <Text style={styles.label}>Apellido</Text>
-          <TextInput style={styles.input} placeholderTextColor="#999" />
+          <TextInput
+            style={styles.input}
+            placeholderTextColor="#999"
+            value={apellido}
+            onChangeText={setApellido}
+          />
         </View>
       </View>
 
       {/* Correo */}
       <View style={styles.inputWrapper}>
         <Text style={styles.label}>Correo Electrónico</Text>
-        <TextInput style={styles.input} keyboardType="email-address" placeholderTextColor="#999" />
+        <TextInput
+          style={styles.input}
+          keyboardType="email-address"
+          placeholderTextColor="#999"
+          value={email}
+          onChangeText={setEmail}
+          autoCapitalize="none"
+        />
       </View>
 
       {/* Teléfono */}
       <View style={styles.inputWrapper}>
         <Text style={styles.label}>Número de Teléfono</Text>
-        <TextInput style={styles.input} keyboardType="phone-pad" placeholderTextColor="#999" />
+        <TextInput
+          style={styles.input}
+          keyboardType="phone-pad"
+          placeholderTextColor="#999"
+          value={telefono}
+          onChangeText={setTelefono}
+        />
       </View>
 
       {/* Contraseña */}
@@ -91,6 +114,8 @@ export default function Register() {
             placeholder="Mínimo 8 caracteres"
             placeholderTextColor="#999"
             secureTextEntry={!showPassword}
+            value={password}
+            onChangeText={setPassword}
           />
           <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
             <Ionicons
@@ -111,6 +136,8 @@ export default function Register() {
             placeholder="Repite tu contraseña"
             placeholderTextColor="#999"
             secureTextEntry={!showConfirm}
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
           />
           <TouchableOpacity onPress={() => setShowConfirm(!showConfirm)}>
             <Ionicons
@@ -135,8 +162,11 @@ export default function Register() {
       </TouchableOpacity>
 
       {/* Botón Crear Cuenta */}
-      <TouchableOpacity style={styles.button}>
-        <Text style={styles.buttonText}>Crear Cuenta</Text>
+      <TouchableOpacity
+        style={[styles.button, loading && { backgroundColor: '#9CA3AF' }]}
+        onPress={handleRegister}
+        disabled={loading}>
+        <Text style={styles.buttonText}>{loading ? 'Creando cuenta...' : 'Crear Cuenta'}</Text>
       </TouchableOpacity>
     </View>
   );

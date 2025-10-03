@@ -8,6 +8,7 @@ import HomeScreen from '~/home/page/Home';
 import CarteleraScreen from '~/cartelera/pages/Cartelera';
 import MisEntradasScreen from '~/tickets/pages/MisEntradas';
 import PerfilScreen from '~/home/page/Perfil';
+import AuthRequired from './AuthRequired';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
@@ -74,23 +75,31 @@ export default function MainTabNavigator() {
       />
       <Tab.Screen
         name="MisEntradas"
-        component={MisEntradasScreen}
         options={{
           tabBarLabel: 'Entradas',
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon focused={focused} icon={Ticket} color={color} />
           ),
-        }}
-      />
+        }}>
+        {() => (
+          <AuthRequired>
+            <MisEntradasScreen />
+          </AuthRequired>
+        )}
+      </Tab.Screen>
       <Tab.Screen
         name="Perfil"
-        component={PerfilScreen}
         options={{
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon focused={focused} icon={User} color={color} />
           ),
-        }}
-      />
+        }}>
+        {() => (
+          <AuthRequired>
+            <PerfilScreen />
+          </AuthRequired>
+        )}
+      </Tab.Screen>
     </Tab.Navigator>
   );
 }

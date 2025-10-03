@@ -36,8 +36,18 @@ type SeleccionComidasNavigationProp = NativeStackNavigationProp<
 export default function SeleccionComidas() {
   const navigation = useNavigation<SeleccionComidasNavigationProp>();
   const route = useRoute<SeleccionComidasRouteProp>();
-  const { peliculaId, cinemaName, fecha, hora, sala, formato, precio, asientosSeleccionados } =
-    route.params;
+  const {
+    funcionId,
+    salaId,
+    peliculaId,
+    cinemaName,
+    fecha,
+    hora,
+    sala,
+    formato,
+    precio,
+    asientosSeleccionados,
+  } = route.params;
   const { width, height } = Dimensions.get('window');
 
   // Estados para datos de la BD
@@ -82,7 +92,9 @@ export default function SeleccionComidas() {
     const totalPagar = subtotalEntradas + subtotalComidas;
 
     navigation.navigate('MetodoPago', {
+      funcionId,
       peliculaId,
+      salaId,
       cinemaName,
       fecha,
       hora,

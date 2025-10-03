@@ -70,6 +70,8 @@ export default function SeleccionButacas() {
   const handleContinue = () => {
     if (asientosSeleccionados.length > 0) {
       navigation.navigate('SeleccionComidas', {
+        funcionId,
+        salaId: funcion?.sala_id || 0,
         peliculaId,
         cinemaName,
         fecha,

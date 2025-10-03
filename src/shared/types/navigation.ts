@@ -71,7 +71,7 @@ export type RootStackParamList = {
 export type MainTabParamList = {
   Inicio: undefined;
   Cartelera: undefined;
-  Perfil: undefined;
+  MisEntradas: undefined;
 };
 
 declare global {

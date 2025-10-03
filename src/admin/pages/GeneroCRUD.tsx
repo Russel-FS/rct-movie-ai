@@ -3,27 +3,30 @@ import {
   Text,
   View,
   ScrollView,
-  TouchableOpacity,
   TextInput,
   ActivityIndicator,
   Modal,
   Alert,
   Switch,
+  Pressable,
 } from 'react-native';
 import {
   Plus,
-  Edit,
   Search,
   X,
   Save,
-  RefreshCw,
+  RotateCcw,
   Eye,
   EyeOff,
   Tag,
   Film,
+  ChevronRight,
 } from 'lucide-react-native';
 import { GeneroMovie, CreateGeneroDto, UpdateGeneroDto } from '~/shared/types/genero';
 import { GeneroService } from '~/home/services/genero.service';
+import { Dimensions } from 'react-native';
+
+const { width } = Dimensions.get('window');
 
 export default function GeneroCRUD() {
   // Estados principales
@@ -128,72 +131,71 @@ export default function GeneroCRUD() {
     }
   };
 
-  // Componente de tarjeta de género
+  // Componente de tarjeta de género estilo Perfil
   const GeneroCard = ({ genero }: { genero: GeneroMovie }) => (
-    <View className="mx-2 mb-4 rounded-lg bg-gray-800 p-4">
-      <View className="mb-3 flex-row items-start">
-        <View className="mr-3 rounded-full bg-green-600 p-3">
-          <Tag size={20} color="#ffffff" />
-        </View>
-
-        <View className="flex-1">
-          <View className="mb-2 flex-row items-center justify-between">
-            <Text className="text-lg font-bold text-white" numberOfLines={1}>
-              {genero.nombre}
-            </Text>
-            <Text className="text-xs text-gray-400">ID: {genero.id}</Text>
+    <Pressable
+      className="mx-4 mb-4 overflow-hidden rounded-3xl bg-gray-800/50"
+      onPress={() => openEditModal(genero)}
+      style={{ opacity: 1 }}>
+      <View className="p-6">
+        <View className="flex-row items-start">
+          <View className="mr-4 rounded-full bg-gray-700/50 p-3">
+            <Tag size={20} color="#9CA3AF" />
           </View>
 
-          {genero.descripcion && (
-            <Text className="mb-2 text-sm text-gray-300" numberOfLines={3}>
-              {genero.descripcion}
-            </Text>
-          )}
+          <View className="flex-1">
+            <View className="mb-1 flex-row items-center justify-between">
+              <Text className="flex-1 text-base font-medium text-white" numberOfLines={1}>
+                {genero.nombre}
+              </Text>
+              <Text className="ml-3 text-xs text-gray-400">ID: {genero.id}</Text>
+            </View>
 
-          <View className="flex-row items-center">
-            <Film size={12} color="#9CA3AF" />
-            <Text className="ml-1 text-xs text-gray-400">Género de películas</Text>
+            {genero.descripcion && (
+              <Text className="mb-2 text-sm text-gray-400" numberOfLines={2}>
+                {genero.descripcion}
+              </Text>
+            )}
+
+            <View className="mb-3 flex-row items-center">
+              <Film size={12} color="#6B7280" />
+              <Text className="ml-2 text-xs text-gray-500">Categoría de películas</Text>
+            </View>
+
+            {/* Badge de estado y botón de toggle */}
+            <View className="flex-row items-center justify-between">
+              {!genero.activo && (
+                <View className="rounded-full bg-red-500/10 px-3 py-1">
+                  <Text className="text-xs font-medium text-red-400">Inactivo</Text>
+                </View>
+              )}
+
+              <View className="flex-1" />
+
+              <Pressable
+                onPress={(e) => {
+                  e.stopPropagation();
+                  toggleGeneroStatus(genero);
+                }}
+                className={`rounded-full px-4 py-2 ${
+                  genero.activo ? 'bg-red-500/10' : 'bg-green-500/10'
+                }`}>
+                <Text
+                  className={`text-xs font-medium ${
+                    genero.activo ? 'text-red-400' : 'text-green-400'
+                  }`}>
+                  {genero.activo ? 'Desactivar' : 'Activar'}
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+
+          <View className="ml-2">
+            <ChevronRight size={20} color="#6B7280" />
           </View>
         </View>
       </View>
-
-      {/* Badge de estado */}
-      {!genero.activo && (
-        <View className="mb-3">
-          <View className="inline-flex self-start rounded bg-red-600 px-2 py-1">
-            <Text className="text-xs font-bold text-white">Inactivo</Text>
-          </View>
-        </View>
-      )}
-
-      {/* Botones de acción */}
-      <View className="flex-row justify-between">
-        <TouchableOpacity
-          onPress={() => openEditModal(genero)}
-          className="mr-2 flex-1 flex-row items-center justify-center rounded-lg bg-blue-600 px-4 py-2">
-          <Edit size={16} color="#ffffff" />
-          <Text className="ml-2 font-bold text-white">Editar</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          onPress={() => toggleGeneroStatus(genero)}
-          className={`flex-row items-center justify-center rounded-lg px-4 py-2 ${
-            genero.activo ? 'bg-red-600' : 'bg-green-600'
-          }`}>
-          {genero.activo ? (
-            <>
-              <EyeOff size={16} color="#ffffff" />
-              <Text className="ml-2 font-bold text-white">Desactivar</Text>
-            </>
-          ) : (
-            <>
-              <Eye size={16} color="#ffffff" />
-              <Text className="ml-2 font-bold text-white">Activar</Text>
-            </>
-          )}
-        </TouchableOpacity>
-      </View>
-    </View>
+    </Pressable>
   );
 
   if (loading) {
@@ -207,27 +209,38 @@ export default function GeneroCRUD() {
 
   return (
     <View className="flex-1 bg-black">
-      {/* Header */}
-      <View className="px-4 pb-4 pt-4">
-        {/* Stats */}
-        <View className="mb-4 flex-row items-center justify-between">
+      {/* Header estilo Perfil */}
+      <View className="px-4 pb-6 pt-14">
+        <View className="flex-row items-center justify-between">
+          <View>
+            <Text className="text-sm font-medium text-gray-400">Administración</Text>
+            <Text className="text-2xl font-bold text-white">Géneros</Text>
+          </View>
+          <Pressable onPress={loadData} className="rounded-full bg-gray-800/50 p-3">
+            <RotateCcw size={20} color="#9CA3AF" />
+          </Pressable>
+        </View>
+
+        {/* Stats y controles */}
+        <View className="mb-4 mt-6 flex-row items-center justify-between">
           <Text className="text-sm text-gray-400">
-            {filteredGeneros.length} género{filteredGeneros.length !== 1 ? 's' : ''}
+            {filteredGeneros.length} género{filteredGeneros.length !== 1 ? 's' : ''} encontrado
+            {filteredGeneros.length !== 1 ? 's' : ''}
           </Text>
           <View className="flex-row items-center">
-            <Text className="mr-2 text-sm text-gray-400">Mostrar inactivos</Text>
+            <Text className="mr-3 text-sm font-medium text-gray-400">Mostrar inactivos</Text>
             <Switch
               value={showInactive}
               onValueChange={setShowInactive}
-              trackColor={{ false: '#374151', true: '#3B82F6' }}
-              thumbColor="#ffffff"
+              trackColor={{ false: '#374151', true: '#FFFFFF' }}
+              thumbColor={showInactive ? '#000000' : '#9CA3AF'}
             />
           </View>
         </View>
 
-        {/* Barra de búsqueda y botones */}
+        {/* Barra de búsqueda y botón crear */}
         <View className="flex-row items-center space-x-3">
-          <View className="flex-1 flex-row items-center rounded-lg bg-gray-800 px-4 py-3">
+          <View className="flex-1 flex-row items-center rounded-3xl bg-gray-800/50 px-4 py-3">
             <Search size={20} color="#9CA3AF" />
             <TextInput
               placeholder="Buscar géneros..."
@@ -235,25 +248,21 @@ export default function GeneroCRUD() {
               className="ml-3 flex-1 text-white"
               value={searchTerm}
               onChangeText={setSearchTerm}
+              returnKeyType="search"
             />
           </View>
 
-          <TouchableOpacity
-            onPress={openCreateModal}
-            className="flex-row items-center rounded-lg bg-green-600 px-4 py-3">
-            <Plus size={20} color="#ffffff" />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={loadData}
-            className="flex-row items-center rounded-lg bg-blue-600 px-4 py-3">
-            <RefreshCw size={20} color="#ffffff" />
-          </TouchableOpacity>
+          <Pressable onPress={openCreateModal} className="rounded-full bg-gray-800/50 p-3">
+            <Plus size={20} color="#9CA3AF" />
+          </Pressable>
         </View>
       </View>
 
       {/* Lista de géneros */}
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+      <ScrollView
+        className="flex-1"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 20 }}>
         {filteredGeneros.length > 0 ? (
           filteredGeneros.map((genero) => <GeneroCard key={genero.id} genero={genero} />)
         ) : (
@@ -263,26 +272,38 @@ export default function GeneroCRUD() {
             <Text className="px-8 text-center text-sm text-gray-500">
               {searchTerm ? 'Intenta con otro término de búsqueda' : 'No hay géneros disponibles'}
             </Text>
+            {!searchTerm && (
+              <Pressable
+                onPress={openCreateModal}
+                className="mt-6 overflow-hidden rounded-3xl bg-gray-800/50 px-6 py-3">
+                <View className="flex-row items-center">
+                  <Plus size={20} color="#9CA3AF" />
+                  <Text className="ml-2 font-medium text-white">Agregar Género</Text>
+                </View>
+              </Pressable>
+            )}
           </View>
         )}
       </ScrollView>
 
-      {/* Modal de formulario */}
+      {/* Modal de formulario estilo Apple */}
       <Modal
         animationType="slide"
         transparent={true}
         visible={modalVisible}
         onRequestClose={() => setModalVisible(false)}>
         <View className="flex-1 justify-end bg-black/50">
-          <View className="rounded-t-3xl bg-gray-900 px-6 py-6">
+          <View className="rounded-t-3xl bg-black px-6 py-6">
             {/* Header del modal */}
-            <View className="mb-4 flex-row items-center justify-between">
+            <View className="mb-6 flex-row items-center justify-between">
               <Text className="text-xl font-bold text-white">
                 {editingGenero ? 'Editar Género' : 'Nuevo Género'}
               </Text>
-              <TouchableOpacity onPress={() => setModalVisible(false)}>
-                <X size={24} color="#ffffff" />
-              </TouchableOpacity>
+              <Pressable
+                onPress={() => setModalVisible(false)}
+                className="rounded-full bg-gray-800/50 p-2">
+                <X size={20} color="#9CA3AF" />
+              </Pressable>
             </View>
 
             {/* Formulario */}
@@ -290,14 +311,16 @@ export default function GeneroCRUD() {
               {/* Nombre */}
               <View>
                 <Text className="mb-2 text-sm font-bold text-white">Nombre *</Text>
-                <TextInput
-                  value={formData.nombre}
-                  onChangeText={(text) => setFormData({ ...formData, nombre: text })}
-                  placeholder="Ej: Acción, Comedia, Drama..."
-                  placeholderTextColor="#9CA3AF"
-                  className="rounded-lg bg-gray-800 px-4 py-3 text-white"
-                  maxLength={50}
-                />
+                <View className="overflow-hidden rounded-3xl bg-gray-800/50">
+                  <TextInput
+                    value={formData.nombre}
+                    onChangeText={(text) => setFormData({ ...formData, nombre: text })}
+                    placeholder="Ej: Acción, Comedia, Drama..."
+                    placeholderTextColor="#9CA3AF"
+                    className="px-4 py-3 text-white"
+                    maxLength={50}
+                  />
+                </View>
                 <Text className="mt-1 text-xs text-gray-400">
                   {formData.nombre.length}/50 caracteres
                 </Text>
@@ -306,17 +329,19 @@ export default function GeneroCRUD() {
               {/* Descripción */}
               <View>
                 <Text className="mb-2 text-sm font-bold text-white">Descripción</Text>
-                <TextInput
-                  value={formData.descripcion}
-                  onChangeText={(text) => setFormData({ ...formData, descripcion: text })}
-                  placeholder="Descripción opcional del género..."
-                  placeholderTextColor="#9CA3AF"
-                  className="rounded-lg bg-gray-800 px-4 py-3 text-white"
-                  multiline
-                  numberOfLines={3}
-                  textAlignVertical="top"
-                  maxLength={200}
-                />
+                <View className="overflow-hidden rounded-3xl bg-gray-800/50">
+                  <TextInput
+                    value={formData.descripcion}
+                    onChangeText={(text) => setFormData({ ...formData, descripcion: text })}
+                    placeholder="Descripción opcional del género..."
+                    placeholderTextColor="#9CA3AF"
+                    className="px-4 py-3 text-white"
+                    multiline
+                    numberOfLines={3}
+                    textAlignVertical="top"
+                    maxLength={200}
+                  />
+                </View>
                 <Text className="mt-1 text-xs text-gray-400">
                   {(formData.descripcion || '').length}/200 caracteres
                 </Text>
@@ -324,8 +349,8 @@ export default function GeneroCRUD() {
 
               {/* Información adicional para edición */}
               {editingGenero && (
-                <View className="rounded-lg bg-gray-800 p-4">
-                  <Text className="mb-2 text-sm font-bold text-yellow-400">
+                <View className="rounded-3xl bg-gray-800/30 p-4">
+                  <Text className="mb-2 text-sm font-bold text-gray-400">
                     Información del Género
                   </Text>
                   <Text className="text-xs text-gray-300">ID: {editingGenero.id}</Text>
@@ -338,17 +363,17 @@ export default function GeneroCRUD() {
 
             {/* Botones */}
             <View className="mt-6 flex-row space-x-3">
-              <TouchableOpacity
+              <Pressable
                 onPress={() => setModalVisible(false)}
-                className="flex-1 rounded-lg bg-gray-600 px-4 py-3">
+                className="flex-1 rounded-3xl bg-gray-800/50 px-4 py-3">
                 <Text className="text-center font-bold text-white">Cancelar</Text>
-              </TouchableOpacity>
+              </Pressable>
 
-              <TouchableOpacity
+              <Pressable
                 onPress={handleSave}
                 disabled={formLoading || !formData.nombre.trim()}
-                className={`flex-1 rounded-lg px-4 py-3 ${
-                  formLoading || !formData.nombre.trim() ? 'bg-gray-500' : 'bg-green-600'
+                className={`flex-1 rounded-3xl px-4 py-3 ${
+                  formLoading || !formData.nombre.trim() ? 'bg-gray-600/50' : 'bg-gray-800/50'
                 }`}>
                 {formLoading ? (
                   <ActivityIndicator size="small" color="#ffffff" />
@@ -360,7 +385,7 @@ export default function GeneroCRUD() {
                     </Text>
                   </View>
                 )}
-              </TouchableOpacity>
+              </Pressable>
             </View>
           </View>
         </View>

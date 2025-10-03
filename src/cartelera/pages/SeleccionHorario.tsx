@@ -3,16 +3,7 @@ import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, Alert } fr
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '~/shared/types/navigation';
-import {
-  ChevronLeft,
-  Calendar,
-  Clock,
-  DollarSign,
-  Star,
-  MapPin,
-  Users,
-  Film,
-} from 'lucide-react-native';
+import { ChevronLeft, Calendar, Clock, DollarSign, Star, MapPin, Users } from 'lucide-react-native';
 import { FuncionService } from '~/shared/services/funcion.service';
 import { Funcion } from '~/shared/types/funcion';
 
@@ -124,7 +115,7 @@ export default function SeleccionHorario() {
         <View className="p-4">
           <View className="flex-row items-center justify-between">
             <View className="flex-1">
-              <View className="mb-2 flex-row items-center space-x-3">
+              <View className="mb-2 flex-row items-center">
                 <View className="flex-row items-center">
                   <Clock size={16} color={isSelected ? '#374151' : '#9CA3AF'} />
                   <Text
@@ -136,7 +127,7 @@ export default function SeleccionHorario() {
                 </View>
 
                 <View
-                  className={`rounded-full px-3 py-1 ${
+                  className={`ml-3 rounded-full px-3 py-1 ${
                     isSelected ? 'bg-blue-100' : 'bg-blue-500/10'
                   }`}>
                   <Text
@@ -149,7 +140,7 @@ export default function SeleccionHorario() {
 
                 {funcion.subtitulada && (
                   <View
-                    className={`rounded-full px-2 py-1 ${
+                    className={`ml-2 rounded-full px-2 py-1 ${
                       isSelected ? 'bg-green-100' : 'bg-green-500/10'
                     }`}>
                     <Text
@@ -163,7 +154,7 @@ export default function SeleccionHorario() {
 
                 {funcion.doblada && (
                   <View
-                    className={`rounded-full px-2 py-1 ${
+                    className={`ml-2 rounded-full px-2 py-1 ${
                       isSelected ? 'bg-purple-100' : 'bg-purple-500/10'
                     }`}>
                     <Text
@@ -179,11 +170,11 @@ export default function SeleccionHorario() {
               <View className="mb-2 flex-row items-center">
                 <Users size={14} color={isSelected ? '#6B7280' : '#9CA3AF'} />
                 <Text className={`ml-2 text-sm ${isSelected ? 'text-gray-600' : 'text-gray-400'}`}>
-                  Sala {funcion.sala?.nombre || 'N/A'} • {funcion.sala?.tipo || 'N/A'}
+                  Sala {funcion.sala?.nombre || 'N/A'} - {funcion.sala?.tipo || 'N/A'}
                 </Text>
               </View>
 
-              <View className="flex-row items-center space-x-4">
+              <View className="flex-row items-center">
                 <View className="flex-row items-center">
                   <DollarSign size={14} color="#10B981" />
                   <Text className="ml-1 text-sm font-bold text-green-400">
@@ -192,7 +183,7 @@ export default function SeleccionHorario() {
                 </View>
 
                 {funcion.precio_vip && funcion.precio_vip > 0 && (
-                  <View className="flex-row items-center">
+                  <View className="ml-4 flex-row items-center">
                     <Star size={14} color="#F59E0B" />
                     <Text className="ml-1 text-sm font-bold text-yellow-400">
                       VIP S/ {(funcion.precio_vip || 0).toFixed(2)}
@@ -201,8 +192,9 @@ export default function SeleccionHorario() {
                 )}
 
                 {funcion.asientos_disponibles !== undefined && (
-                  <Text className={`text-xs ${isSelected ? 'text-gray-600' : 'text-gray-400'}`}>
-                    {funcion.asientos_disponibles} disponibles
+                  <Text
+                    className={`ml-4 text-xs ${isSelected ? 'text-gray-600' : 'text-gray-400'}`}>
+                    {funcion.asientos_disponibles || 0} disponibles
                   </Text>
                 )}
               </View>
@@ -251,7 +243,7 @@ export default function SeleccionHorario() {
         <View className="mt-6 rounded-2xl bg-gray-800/30 p-4">
           <View className="flex-row items-center">
             <MapPin size={16} color="#9CA3AF" />
-            <Text className="ml-2 text-base font-medium text-white">{cinemaName}</Text>
+            <Text className="ml-2 text-base font-medium text-white">{cinemaName || 'Cine'}</Text>
           </View>
         </View>
       </View>
@@ -278,7 +270,8 @@ export default function SeleccionHorario() {
                     {fecha ? formatearFecha(fecha) : 'N/A'}
                   </Text>
                   <Text className="ml-2 text-sm text-gray-400">
-                    ({funcionesDia.length} función{funcionesDia.length !== 1 ? 'es' : ''})
+                    ({funcionesDia?.length || 0}{' '}
+                    {(funcionesDia?.length || 0) === 1 ? 'función' : 'funciones'})
                   </Text>
                 </View>
 

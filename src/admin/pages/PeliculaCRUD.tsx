@@ -11,6 +11,8 @@ import {
   Switch,
   Pressable,
   Dimensions,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import {
   Plus,
@@ -494,8 +496,10 @@ export default function PeliculaCRUD() {
         transparent={true}
         visible={modalVisible}
         onRequestClose={() => setModalVisible(false)}>
-        <View className="flex-1 justify-end bg-black/50">
-          <View className="max-h-[90%] rounded-t-3xl bg-black px-6 py-6">
+        <KeyboardAvoidingView
+          className="flex-1 bg-black/50"
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+          <View className="mt-12 flex-1 rounded-t-3xl bg-black px-6 py-6">
             {/* Header del modal */}
             <View className="mb-6 flex-row items-center justify-between">
               <Text className="text-xl font-bold text-white">
@@ -509,7 +513,11 @@ export default function PeliculaCRUD() {
             </View>
 
             {/* Formulario */}
-            <ScrollView showsVerticalScrollIndicator={false} className="flex-1">
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              className="flex-1"
+              contentContainerStyle={{ paddingBottom: 20 }}
+              keyboardShouldPersistTaps="handled">
               <View className="space-y-4">
                 {/* Información Básica */}
                 <Text className="mb-4 text-lg font-bold text-white">Información Básica</Text>
@@ -802,7 +810,7 @@ export default function PeliculaCRUD() {
             </ScrollView>
 
             {/* Botones */}
-            <View className="mt-6 flex-row space-x-3">
+            <View className="mb-6 mt-6 flex-row space-x-3" style={{ paddingBottom: 20 }}>
               <Pressable
                 onPress={() => setModalVisible(false)}
                 className="flex-1 rounded-3xl bg-gray-800/50 px-4 py-3">
@@ -840,7 +848,7 @@ export default function PeliculaCRUD() {
               </Pressable>
             </View>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
 
       {/* Modal de Calendario */}

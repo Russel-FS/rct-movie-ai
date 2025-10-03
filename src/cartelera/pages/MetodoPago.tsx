@@ -45,16 +45,16 @@ function MetodoPagoContent() {
         funcionId,
         salaId,
         asientosSeleccionados,
-        comidas,
+        comidas: comidas || [],
         metodoPago,
-        subtotalEntradas,
-        subtotalComidas,
-        totalPagado: totalPagar,
+        subtotalEntradas: subtotalEntradas || 0,
+        subtotalComidas: subtotalComidas || 0,
+        totalPagado: totalPagar || 0,
       };
 
       const resultado = await procesarCompra(datosCompra, usuario?.id);
 
-      if (resultado.success) {
+      if (resultado.success && resultado.reserva) {
         navigation.navigate('ResumenPago', {
           funcionId,
           peliculaId,
@@ -64,25 +64,50 @@ function MetodoPagoContent() {
           sala,
           formato,
           asientosSeleccionados,
-          comidas,
+          comidas: comidas || [],
           metodoPago,
-          codigoOperacion: resultado.codigoOperacion || 'ERROR',
-          subtotalEntradas,
-          subtotalComidas,
-          totalPagado: totalPagar,
+          codigoOperacion: resultado.codigoOperacion || resultado.reserva.codigo_reserva,
+          subtotalEntradas: subtotalEntradas || 0,
+          subtotalComidas: subtotalComidas || 0,
+          totalPagado: totalPagar || 0,
+          reservaId: resultado.reserva.id,
         });
       } else {
         Alert.alert(
           'Error en el Pago',
           resultado.error || 'No se pudo procesar la compra. Intenta nuevamente.',
-          [{ text: 'OK' }]
+          [
+            {
+              text: 'Reintentar',
+              onPress: () => setShowPaymentForm(false),
+            },
+            {
+              text: 'Cancelar',
+              style: 'cancel',
+              onPress: () => {
+                setShowPaymentForm(false);
+                setSelectedMethod(null);
+              },
+            },
+          ]
         );
       }
     } catch (error) {
-      console.error('Error al procesar pago:', error);
-      Alert.alert('Error', 'Hubo un problema al procesar tu pago. Intenta nuevamente.', [
-        { text: 'OK' },
-      ]);
+      Alert.alert(
+        'Error Crítico',
+        'Hubo un problema grave al procesar tu pago. Por favor, contacta con soporte si el problema persiste.',
+        [
+          {
+            text: 'Reintentar',
+            onPress: () => setShowPaymentForm(false),
+          },
+          {
+            text: 'Volver',
+            style: 'cancel',
+            onPress: () => navigation.goBack(),
+          },
+        ]
+      );
     }
   };
 

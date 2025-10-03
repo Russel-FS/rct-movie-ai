@@ -67,6 +67,7 @@ export type RootStackParamList = {
     subtotalEntradas: number;
     subtotalComidas: number;
     totalPagado: number;
+    reservaId?: string;
   };
 };
 

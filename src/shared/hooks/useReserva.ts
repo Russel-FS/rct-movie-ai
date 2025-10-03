@@ -25,15 +25,6 @@ interface AsientoConId {
   precio: number;
 }
 
-// Función para generar UUID válido
-function generarUUID(): string {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-    const r = (Math.random() * 16) | 0;
-    const v = c === 'x' ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
-  });
-}
-
 export function useReserva() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -63,7 +54,7 @@ export function useReserva() {
 
   const procesarCompra = async (
     datosCompra: DatosCompra,
-    usuarioId?: string // Ahora es opcional
+    usuarioId?: string
   ): Promise<{
     success: boolean;
     reserva?: Reserva;
@@ -74,26 +65,42 @@ export function useReserva() {
       setLoading(true);
       setError(null);
 
-      console.log('🛒 Procesando compra (versión simplificada):', datosCompra);
+      console.log('🛒 Procesando compra completa:', datosCompra);
 
+      // Mapear asientos seleccionados a IDs reales
       const asientosConIds = await mapearAsientosAIds(
         datosCompra.asientosSeleccionados,
         datosCompra.funcionId,
         datosCompra.salaId
       );
 
+      //  Verificar disponibilidad de asientos
+      const asientosIds = asientosConIds.map((a) => a.asiento_id);
+      const disponibilidad = await AsientoService.verificarDisponibilidad(
+        asientosIds,
+        datosCompra.funcionId
+      );
+
+      if (!disponibilidad.disponible) {
+        throw new Error(
+          `Los siguientes asientos ya no están disponibles: ${disponibilidad.asientosOcupados.join(', ')}`
+        );
+      }
+
+      //  Preparar datos para la reserva completa
       const datosReserva: any = {
         funcion_id: datosCompra.funcionId,
         metodo_pago: datosCompra.metodoPago,
-        transaccion_id: `TXN-${Date.now()}`,
-        notas: `Compra desde app - ${datosCompra.asientosSeleccionados.join(', ')}`,
+        transaccion_id: `TXN-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`,
+        notas: `Compra desde app móvil - Asientos: ${datosCompra.asientosSeleccionados.join(', ')}`,
 
-        // Asientos
+        // Asientos con precios calculados
         asientos: asientosConIds.map((asiento) => ({
           asiento_id: asiento.asiento_id,
           precio: asiento.precio,
         })),
 
+        // Productos de dulcería
         productos:
           datosCompra.comidas?.map((comida) => ({
             producto_id: comida.id,
@@ -102,18 +109,15 @@ export function useReserva() {
           })) || [],
       };
 
-      if (usuarioId) {
+      // Agregar usuario si existe
+      if (usuarioId && usuarioId !== '00000000-0000-0000-0000-000000000000') {
         datosReserva.usuario_id = usuarioId;
-      } else {
-        // usuario anonimo
-        datosReserva.usuario_id = '00000000-0000-0000-0000-000000000000';
       }
 
-      console.log('📤 Enviando datos de reserva:', datosReserva);
+      console.log('📤 Enviando datos de reserva completa:', datosReserva);
 
+      //   Crear reserva completa con todo el flujo
       const resultado = await ReservaService.crearReservaCompleta(datosReserva);
-
-      console.log('✅ Reserva procesada exitosamente:', resultado);
 
       return {
         success: true,

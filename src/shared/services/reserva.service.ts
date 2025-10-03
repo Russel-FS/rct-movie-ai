@@ -64,40 +64,41 @@ export class ReservaService {
     return `RES-${timestamp}-${random}`.toUpperCase();
   }
 
-  // Crear reserva completa (versión simplificada)
+  // Crear reserva completa con todo el flujo
   static async crearReservaCompleta(data: CreateReservaCompleta): Promise<{
     reserva: Reserva;
     entradas: any[];
     productos: any[];
+    pago: any;
   }> {
     try {
-      console.log('📝 Iniciando creación de reserva con datos:', data);
+      console.log('📝 Iniciando creación de reserva completa con datos:', data);
 
-      // 1. Calcular total
+      //  Calcular totales
       const totalAsientos = data.asientos.reduce((sum, a) => sum + a.precio, 0);
       const totalProductos =
         data.productos?.reduce((sum, p) => sum + p.precio_unitario * p.cantidad, 0) || 0;
       const total = totalAsientos + totalProductos;
 
-      // 2. Crear reserva principal - SOLO campos básicos
+      //   Crear reserva principal con estado 'pendiente'
       const codigoReserva = this.generarCodigoReserva();
+      const fechaExpiracion = new Date();
+      fechaExpiracion.setMinutes(fechaExpiracion.getMinutes() + 15);
 
       const reservaData: any = {
         funcion_id: data.funcion_id,
         codigo_reserva: codigoReserva,
-        estado: 'confirmada',
+        estado: 'pendiente',
         total: total,
+        fecha_expiracion: fechaExpiracion.toISOString(),
         metodo_pago: data.metodo_pago || 'yape',
         transaccion_id: data.transaccion_id || `TXN-${Date.now()}`,
         notas: data.notas || 'Compra desde app móvil',
       };
 
-      // Solo agregar usuario_id si existe
-      if (data.usuario_id) {
+      if (data.usuario_id && data.usuario_id !== '00000000-0000-0000-0000-000000000000') {
         reservaData.usuario_id = data.usuario_id;
       }
-
-      console.log('📤 Enviando datos de reserva:', reservaData);
 
       const reservaResponse = await HttpClient.post<SupabaseReserva[]>('/reservas', reservaData, {
         headers: { Prefer: 'return=representation' },
@@ -110,15 +111,77 @@ export class ReservaService {
       const reserva = mapSupabaseToReserva(reservaResponse.data[0]);
       console.log('✅ Reserva creada:', reserva);
 
-      // Por ahora, retornamos solo la reserva sin entradas ni productos
-      // TODO: Implementar creación de entradas y productos después
+      const entradas = [];
+      for (const asiento of data.asientos) {
+        const entradaData = {
+          reserva_id: reserva.id,
+          asiento_id: asiento.asiento_id,
+          precio: asiento.precio,
+          codigo_qr: `QR-${reserva.codigo_reserva}-${asiento.asiento_id}`,
+          usado: false,
+        };
+
+        const entradaResponse = await HttpClient.post('/entradas', entradaData, {
+          headers: { Prefer: 'return=representation' },
+        });
+
+        if (entradaResponse.data) {
+          entradas.push(entradaResponse.data);
+        }
+      }
+
+      const productos = [];
+      if (data.productos && data.productos.length > 0) {
+        for (const producto of data.productos) {
+          const productoData = {
+            reserva_id: reserva.id,
+            producto_id: producto.producto_id,
+            cantidad: producto.cantidad,
+            precio_unitario: producto.precio_unitario,
+            subtotal: producto.precio_unitario * producto.cantidad,
+          };
+
+          const productoResponse = await HttpClient.post('/reserva_productos', productoData, {
+            headers: { Prefer: 'return=representation' },
+          });
+
+          if (productoResponse.data) {
+            productos.push(productoResponse.data);
+          }
+        }
+      }
+
+      const pagoData = {
+        reserva_id: reserva.id,
+        monto: total,
+        metodo: data.metodo_pago,
+        estado: 'completado',
+        transaccion_externa_id: data.transaccion_id,
+        datos_pago: {
+          metodo: data.metodo_pago,
+          fecha_procesamiento: new Date().toISOString(),
+          app_version: '1.0.0',
+        },
+      };
+
+      const pagoResponse = await HttpClient.post('/pagos', pagoData, {
+        headers: { Prefer: 'return=representation' },
+      });
+
+      await HttpClient.patch(`/reservas?id=eq.${reserva.id}`, {
+        estado: 'confirmada',
+      });
+
+      reserva.estado = 'confirmada';
+
       return {
         reserva,
-        entradas: [],
-        productos: [],
+        entradas,
+        productos,
+        pago: pagoResponse.data,
       };
     } catch (error: any) {
-      console.error('❌ Error detallado al crear reserva:', error);
+      console.error('❌ Error detallado al crear reserva completa:', error);
       if (error.response) {
         console.error('📄 Respuesta del servidor:', error.response.data);
         console.error('📊 Status:', error.response.status);

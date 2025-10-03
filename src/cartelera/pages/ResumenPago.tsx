@@ -14,6 +14,8 @@ import {
 } from 'lucide-react-native';
 import { RootStackParamList } from '~/shared/types/navigation';
 import QRCode from '~/shared/components/QRCode';
+import { useTickets } from '~/shared/hooks/useTickets';
+import { useEffect, useState } from 'react';
 
 type ResumenPagoRouteProp = RouteProp<RootStackParamList, 'ResumenPago'>;
 type ResumenPagoNavigationProp = NativeStackNavigationProp<RootStackParamList, 'ResumenPago'>;
@@ -21,6 +23,10 @@ type ResumenPagoNavigationProp = NativeStackNavigationProp<RootStackParamList, '
 export default function ResumenPago() {
   const navigation = useNavigation<ResumenPagoNavigationProp>();
   const route = useRoute<ResumenPagoRouteProp>();
+  const { saveTicket } = useTickets();
+  const [qrValue, setQrValue] = useState<string>('');
+  const [ticketSaved, setTicketSaved] = useState(false);
+
   const {
     peliculaId,
     cinemaName,
@@ -67,6 +73,54 @@ export default function ResumenPago() {
       month: 'short',
     });
   };
+
+  // Guardar el ticket
+  useEffect(() => {
+    const saveTicketToStorage = async () => {
+      if (!ticketSaved) {
+        try {
+          const ticket = await saveTicket({
+            codigoOperacion,
+            peliculaId,
+            cinemaName,
+            fecha,
+            hora,
+            sala,
+            formato,
+            asientosSeleccionados,
+            comidas,
+            metodoPago,
+            subtotalEntradas,
+            subtotalComidas,
+            totalPagado,
+          });
+
+          setQrValue(ticket.qrValue);
+          setTicketSaved(true);
+        } catch (error) {
+          console.error('Error al guardar el ticket:', error);
+        }
+      }
+    };
+
+    saveTicketToStorage();
+  }, [
+    saveTicket,
+    ticketSaved,
+    codigoOperacion,
+    peliculaId,
+    cinemaName,
+    fecha,
+    hora,
+    sala,
+    formato,
+    asientosSeleccionados,
+    comidas,
+    metodoPago,
+    subtotalEntradas,
+    subtotalComidas,
+    totalPagado,
+  ]);
 
   return (
     <View className="flex-1 bg-black">
@@ -187,7 +241,10 @@ export default function ResumenPago() {
             </View>
 
             <QRCode
-              value={`CINE_TICKET_${codigoOperacion}_${cinemaName}_${fecha}_${hora}_${asientosSeleccionados.join('-')}`}
+              value={
+                qrValue ||
+                `CINE_TICKET_${codigoOperacion}_${cinemaName}_${fecha}_${hora}_${asientosSeleccionados.join('-')}`
+              }
               size={180}
             />
 

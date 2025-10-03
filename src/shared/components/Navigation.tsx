@@ -64,29 +64,17 @@ export default function MainTabNavigator() {
           ),
         }}
       />
-      <Tab.Screen
-        name="Cartelera"
-        component={CarteleraScreen}
-        options={{
-          tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon focused={focused} icon={Film} color={color} />
-          ),
-        }}
-      />
+
       <Tab.Screen
         name="MisEntradas"
+        component={MisEntradasScreen}
         options={{
-          tabBarLabel: 'Entradas',
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon focused={focused} icon={Ticket} color={color} />
           ),
-        }}>
-        {() => (
-          <AuthRequired>
-            <MisEntradasScreen />
-          </AuthRequired>
-        )}
-      </Tab.Screen>
+        }}
+      />
+
       <Tab.Screen
         name="Perfil"
         options={{

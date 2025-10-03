@@ -24,12 +24,98 @@ import {
   Clock,
   ChevronRight,
   Navigation,
-  Target,
 } from 'lucide-react-native';
-import MapView, { Marker } from 'react-native-maps';
+
 import { Cine, CreateCineDto, UpdateCineDto } from '~/shared/types/cine';
 import { CineService } from '~/shared/services/cine.service';
-import { Platform } from 'react-native';
+
+// Distritos de Lima con sus coordenadas
+const distritosLima = [
+  {
+    nombre: 'Miraflores',
+    lat: -12.121111,
+    lng: -77.029722,
+    color: 'bg-blue-500/20',
+    textColor: 'text-blue-400',
+  },
+  {
+    nombre: 'San Isidro',
+    lat: -12.103889,
+    lng: -77.035556,
+    color: 'bg-green-500/20',
+    textColor: 'text-green-400',
+  },
+  {
+    nombre: 'Barranco',
+    lat: -12.140833,
+    lng: -77.020556,
+    color: 'bg-purple-500/20',
+    textColor: 'text-purple-400',
+  },
+  {
+    nombre: 'Surco',
+    lat: -12.135278,
+    lng: -76.987222,
+    color: 'bg-orange-500/20',
+    textColor: 'text-orange-400',
+  },
+  {
+    nombre: 'La Molina',
+    lat: -12.076667,
+    lng: -76.941667,
+    color: 'bg-pink-500/20',
+    textColor: 'text-pink-400',
+  },
+  {
+    nombre: 'San Borja',
+    lat: -12.108333,
+    lng: -77.001667,
+    color: 'bg-indigo-500/20',
+    textColor: 'text-indigo-400',
+  },
+  {
+    nombre: 'Jesús María',
+    lat: -12.073889,
+    lng: -77.048611,
+    color: 'bg-teal-500/20',
+    textColor: 'text-teal-400',
+  },
+  {
+    nombre: 'Lince',
+    lat: -12.088889,
+    lng: -77.038889,
+    color: 'bg-cyan-500/20',
+    textColor: 'text-cyan-400',
+  },
+  {
+    nombre: 'Magdalena',
+    lat: -12.096111,
+    lng: -77.075556,
+    color: 'bg-emerald-500/20',
+    textColor: 'text-emerald-400',
+  },
+  {
+    nombre: 'Pueblo Libre',
+    lat: -12.075556,
+    lng: -77.063889,
+    color: 'bg-lime-500/20',
+    textColor: 'text-lime-400',
+  },
+  {
+    nombre: 'Breña',
+    lat: -12.058333,
+    lng: -77.051667,
+    color: 'bg-yellow-500/20',
+    textColor: 'text-yellow-400',
+  },
+  {
+    nombre: 'Lima Centro',
+    lat: -12.046374,
+    lng: -77.042793,
+    color: 'bg-red-500/20',
+    textColor: 'text-red-400',
+  },
+];
 
 export default function CineCRUD() {
   // Estados principales
@@ -55,17 +141,6 @@ export default function CineCRUD() {
   });
   const [formLoading, setFormLoading] = useState(false);
   const [showMapSelector, setShowMapSelector] = useState(false);
-
-  const [mapRegion, setMapRegion] = useState({
-    latitude: -12.046374,
-    longitude: -77.042793,
-    latitudeDelta: 0.0922,
-    longitudeDelta: 0.0421,
-  });
-  const [selectedLocation, setSelectedLocation] = useState<{
-    latitude: number;
-    longitude: number;
-  } | null>(null);
 
   // Cargar datos iniciales
   useEffect(() => {
@@ -178,39 +253,14 @@ export default function CineCRUD() {
     }
   };
 
-  // Funciones para el mapa
-  const handleMapPress = (event: any) => {
-    const { latitude, longitude } = event.nativeEvent.coordinate;
-    setSelectedLocation({ latitude, longitude });
-  };
-
-  const confirmLocation = () => {
-    if (selectedLocation) {
-      setFormData({
-        ...formData,
-        latitud: selectedLocation.latitude,
-        longitud: selectedLocation.longitude,
-      });
-      setShowMapSelector(false);
-      setSelectedLocation(null);
-    }
-  };
-
-  const openMapSelector = () => {
-    // Si ya hay coordenadas, centrar el mapa ahí
-    if (formData.latitud && formData.longitud) {
-      setMapRegion({
-        latitude: formData.latitud,
-        longitude: formData.longitud,
-        latitudeDelta: 0.0922,
-        longitudeDelta: 0.0421,
-      });
-      setSelectedLocation({
-        latitude: formData.latitud,
-        longitude: formData.longitud,
-      });
-    }
-    setShowMapSelector(true);
+  // Función para seleccionar distrito
+  const selectDistrito = (distrito: any) => {
+    setFormData({
+      ...formData,
+      latitud: distrito.lat,
+      longitud: distrito.lng,
+    });
+    setShowMapSelector(false);
   };
 
   // Componente de tarjeta de cine estilo Perfil
@@ -447,7 +497,7 @@ export default function CineCRUD() {
                 <View>
                   <Text className="mb-2 text-sm font-bold text-white">Ubicación en Mapa</Text>
                   <Pressable
-                    onPress={openMapSelector}
+                    onPress={() => setShowMapSelector(true)}
                     className="flex-row items-center justify-between rounded-3xl bg-gray-800/50 px-4 py-3">
                     <View className="flex-row items-center">
                       <Navigation size={16} color="#9CA3AF" />
@@ -638,127 +688,65 @@ export default function CineCRUD() {
                 </Pressable>
               </View>
               <Text className="mt-1 text-sm text-gray-400">
-                Toca en el mapa para seleccionar la ubicación exacta del cine
+                Selecciona el distrito donde se ubicará el cine
               </Text>
             </View>
 
-            {/* Mapa Interactivo o Placeholder */}
-            <View className="flex-1">
-              <MapView
-                style={{ flex: 1 }}
-                region={mapRegion}
-                onPress={handleMapPress}
-                showsUserLocation={true}
-                showsMyLocationButton={true}
-                mapType="standard">
-                {/* Marcador de ubicación seleccionada */}
-                {selectedLocation && (
-                  <Marker
-                    coordinate={selectedLocation}
-                    title="Ubicación del Cine"
-                    description="Ubicación seleccionada para el cine">
-                    <View className="items-center">
-                      <View className="rounded-full bg-red-500 p-2">
-                        <MapPin size={20} color="#ffffff" />
-                      </View>
-                    </View>
-                  </Marker>
-                )}
-              </MapView>
+            {/* Selector de Distritos de Lima */}
+            <ScrollView className="flex-1 p-6">
+              <View className="mb-6">
+                <Text className="mb-2 text-lg font-semibold text-white">
+                  Selecciona un Distrito
+                </Text>
+                <Text className="text-sm text-gray-400">
+                  Elige el distrito donde se ubicará el cine
+                </Text>
+              </View>
 
-              {/* Overlay con información */}
-              <View className="absolute bottom-4 left-4 right-4">
-                {selectedLocation ? (
-                  <View className="rounded-2xl bg-black/80 p-4 backdrop-blur-xl">
-                    <View className="mb-3 flex-row items-center">
-                      <Target size={16} color="#10B981" />
-                      <Text className="ml-2 text-sm font-semibold text-green-400">
-                        Ubicación Seleccionada
+              {/* Grid de distritos */}
+              <View className="flex-row flex-wrap">
+                {distritosLima.map((distrito, index) => (
+                  <Pressable
+                    key={index}
+                    onPress={() => selectDistrito(distrito)}
+                    className={`mb-3 mr-3 rounded-2xl px-4 py-3 ${distrito.color} backdrop-blur-xl`}>
+                    <View className="items-center">
+                      <MapPin size={20} color={distrito.textColor.replace('text-', '#')} />
+                      <Text className={`mt-2 text-sm font-medium ${distrito.textColor}`}>
+                        {distrito.nombre}
+                      </Text>
+                      <Text className="mt-1 text-xs text-gray-400">
+                        {distrito.lat.toFixed(4)}, {distrito.lng.toFixed(4)}
                       </Text>
                     </View>
-                    <Text className="mb-1 text-xs text-gray-300">
-                      Latitud: {selectedLocation.latitude.toFixed(6)}
-                    </Text>
-                    <Text className="mb-3 text-xs text-gray-300">
-                      Longitud: {selectedLocation.longitude.toFixed(6)}
-                    </Text>
+                  </Pressable>
+                ))}
+              </View>
 
-                    <View className="flex-row space-x-3">
-                      <Pressable
-                        onPress={() => setSelectedLocation(null)}
-                        className="flex-1 rounded-xl bg-gray-600/50 py-3">
-                        <Text className="text-center text-sm font-semibold text-white">
-                          Cancelar
-                        </Text>
-                      </Pressable>
-                      <Pressable
-                        onPress={confirmLocation}
-                        className="flex-1 rounded-xl bg-green-500 py-3">
-                        <Text className="text-center text-sm font-semibold text-white">
-                          Confirmar
-                        </Text>
-                      </Pressable>
-                    </View>
+              {/* Información adicional */}
+              <View className="mt-6 rounded-2xl bg-gray-800/50 p-4">
+                <View className="mb-2 flex-row items-center">
+                  <Navigation size={16} color="#9CA3AF" />
+                  <Text className="ml-2 text-sm font-semibold text-white">
+                    Coordenadas Actuales
+                  </Text>
+                </View>
+                {formData.latitud && formData.longitud ? (
+                  <View>
+                    <Text className="text-xs text-gray-300">
+                      Latitud: {formData.latitud.toFixed(6)}
+                    </Text>
+                    <Text className="text-xs text-gray-300">
+                      Longitud: {formData.longitud.toFixed(6)}
+                    </Text>
                   </View>
                 ) : (
-                  <View className="rounded-2xl bg-black/80 p-4 backdrop-blur-xl">
-                    <View className="mb-2 flex-row items-center">
-                      <MapPin size={16} color="#9CA3AF" />
-                      <Text className="ml-2 text-sm font-semibold text-white">
-                        Seleccionar Ubicación
-                      </Text>
-                    </View>
-                    <Text className="text-xs text-gray-400">
-                      Toca en cualquier punto del mapa para seleccionar la ubicación del cine
-                    </Text>
-                  </View>
+                  <Text className="text-xs text-gray-400">
+                    No se ha seleccionado ninguna ubicación
+                  </Text>
                 )}
               </View>
-
-              {/* Botones de ubicaciones rápidas */}
-              <View
-                className={
-                  Platform.OS === 'web'
-                    ? 'mt-6 flex-row justify-center space-x-3'
-                    : 'absolute right-4 top-4'
-                }>
-                <View className={Platform.OS === 'web' ? 'flex-row space-x-2' : 'space-y-2'}>
-                  <Pressable
-                    onPress={() => {
-                      const limaCenter = { latitude: -12.046374, longitude: -77.042793 };
-                      if (Platform.OS !== 'web') {
-                        setMapRegion({ ...mapRegion, ...limaCenter });
-                      }
-                      setSelectedLocation(limaCenter);
-                    }}
-                    className="rounded-xl bg-blue-500/20 px-3 py-2 backdrop-blur-xl">
-                    <Text className="text-xs font-medium text-blue-400">Lima Centro</Text>
-                  </Pressable>
-                  <Pressable
-                    onPress={() => {
-                      const miraflores = { latitude: -12.121111, longitude: -77.029722 };
-                      if (Platform.OS !== 'web') {
-                        setMapRegion({ ...mapRegion, ...miraflores });
-                      }
-                      setSelectedLocation(miraflores);
-                    }}
-                    className="rounded-xl bg-green-500/20 px-3 py-2 backdrop-blur-xl">
-                    <Text className="text-xs font-medium text-green-400">Miraflores</Text>
-                  </Pressable>
-                  <Pressable
-                    onPress={() => {
-                      const sanIsidro = { latitude: -12.103889, longitude: -77.035556 };
-                      if (Platform.OS !== 'web') {
-                        setMapRegion({ ...mapRegion, ...sanIsidro });
-                      }
-                      setSelectedLocation(sanIsidro);
-                    }}
-                    className="rounded-xl bg-purple-500/20 px-3 py-2 backdrop-blur-xl">
-                    <Text className="text-xs font-medium text-purple-400">San Isidro</Text>
-                  </Pressable>
-                </View>
-              </View>
-            </View>
+            </ScrollView>
           </View>
         </View>
       </Modal>

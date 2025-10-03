@@ -374,7 +374,7 @@ export default function SalaCRUD() {
         </View>
 
         {/* Barra de búsqueda y botón crear */}
-        <View className="flex-row items-center space-x-3">
+        <View className="flex-row items-center gap-2">
           <View className="flex-1 flex-row items-center rounded-2xl bg-gray-800 px-4 py-3">
             <Search size={20} color="#9CA3AF" />
             <TextInput
@@ -484,7 +484,7 @@ export default function SalaCRUD() {
                 </View>
 
                 {/* Nombre y Tipo */}
-                <View className="flex-row space-x-3">
+                <View className="flex-row gap-3">
                   <View className="flex-1">
                     <Text className="mb-2 text-sm font-bold text-white">Nombre *</Text>
                     <View className="overflow-hidden rounded-2xl bg-gray-800">
@@ -566,7 +566,7 @@ export default function SalaCRUD() {
                       </Text>
                     </View>
                   ) : (
-                    <View className="space-y-3">
+                    <View className="gap-3">
                       {filas.map((fila, index) => (
                         <View key={index} className="rounded-xl bg-gray-700/30 p-4">
                           <View className="mb-3 flex-row items-center justify-between">
@@ -580,7 +580,7 @@ export default function SalaCRUD() {
                             </Pressable>
                           </View>
 
-                          <View className="flex-row space-x-3">
+                          <View className="flex-row gap-3">
                             <View className="flex-1">
                               <Text className="mb-1 text-xs font-medium text-gray-400">Letra</Text>
                               <View className="overflow-hidden rounded-xl bg-gray-800">
@@ -675,7 +675,7 @@ export default function SalaCRUD() {
             </ScrollView>
 
             {/* Botones */}
-            <View className="mb-6 mt-6 flex-row space-x-3">
+            <View className="mb-6 mt-6 flex-row gap-3">
               <Pressable
                 onPress={() => setModalVisible(false)}
                 className="flex-1 rounded-2xl bg-gray-800 px-4 py-3">

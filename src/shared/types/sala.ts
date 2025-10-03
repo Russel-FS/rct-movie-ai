@@ -4,6 +4,7 @@ export type TipoSala = 'Estándar' | 'VIP' | '3D' | 'IMAX';
 
 export interface Sala {
   id: number;
+  cine_id: number;
   nombre: string;
   capacidad: number;
   tipo: TipoSala;
@@ -13,6 +14,7 @@ export interface Sala {
 }
 
 export interface CreateSalaDto {
+  cine_id: number;
   nombre: string;
   capacidad: number;
   tipo: TipoSala;
@@ -20,6 +22,7 @@ export interface CreateSalaDto {
 }
 
 export interface UpdateSalaDto {
+  cine_id?: number;
   nombre?: string;
   capacidad?: number;
   tipo?: TipoSala;

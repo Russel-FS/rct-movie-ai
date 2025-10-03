@@ -60,8 +60,25 @@ CREATE TABLE pelicula_generos (
     PRIMARY KEY (pelicula_id, genero_id)
 );
 
+CREATE TABLE cines (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    direccion TEXT NOT NULL,
+    telefono VARCHAR(20),
+    email VARCHAR(100),
+    latitud DECIMAL(10, 8),
+    longitud DECIMAL(11, 8),
+    horario_apertura TIME,
+    horario_cierre TIME,
+    activo BOOLEAN DEFAULT true,
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    imagen_url VARCHAR(500),
+    descripcion TEXT
+);
+
 CREATE TABLE salas (
     id SERIAL PRIMARY KEY,
+    cine_id INTEGER REFERENCES cines (id) ON DELETE CASCADE,
     nombre VARCHAR(50) NOT NULL,
     capacidad INTEGER NOT NULL,
     tipo VARCHAR(50) DEFAULT 'Estándar', -- Estándar, VIP, 3D, IMAX

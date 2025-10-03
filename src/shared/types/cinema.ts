@@ -13,23 +13,8 @@ export interface Fila {
   precio_multiplicador?: number;
 }
 
-export interface Sala {
-  id: number;
-  nombre: string;
-  capacidad: number;
-  tipo: 'Estándar' | 'VIP' | '3D' | 'IMAX';
-  activa: boolean;
-  filas: Fila[];
-}
-
-export interface Cinema {
-  id: number;
-  nombre: string;
-  direccion: string;
-  telefono?: string;
-  salas: Sala[];
-  activo: boolean;
-}
+export { Cine, CreateCineDto, UpdateCineDto } from './cine';
+export { Sala } from './sala';
 
 export interface Funcion {
   id: string;

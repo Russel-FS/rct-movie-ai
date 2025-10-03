@@ -1,4 +1,4 @@
-import { GeneroMovie } from '~/shared/types/genero';
+import { GeneroMovie, CreateGeneroDto, UpdateGeneroDto } from '~/shared/types/genero';
 import { HttpClient } from '../../shared/lib/useHttpClient';
 
 export class GeneroService {
@@ -34,7 +34,7 @@ export class GeneroService {
   /**
    * Crea un nuevo género
    */
-  static async crearGenero(generoData: Omit<GeneroMovie, 'id'>): Promise<GeneroMovie> {
+  static async crearGenero(generoData: CreateGeneroDto): Promise<GeneroMovie> {
     try {
       const response = await HttpClient.post<GeneroMovie[]>(
         '/generos',
@@ -55,10 +55,7 @@ export class GeneroService {
   /**
    * Actualiza un género existente
    */
-  static async actualizarGenero(
-    id: number,
-    generoData: Partial<GeneroMovie>
-  ): Promise<GeneroMovie> {
+  static async actualizarGenero(id: number, generoData: UpdateGeneroDto): Promise<GeneroMovie> {
     try {
       const response = await HttpClient.patch<GeneroMovie[]>(`/generos?id=eq.${id}`, generoData, {
         headers: {

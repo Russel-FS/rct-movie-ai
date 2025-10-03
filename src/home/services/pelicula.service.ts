@@ -1,5 +1,11 @@
-import { Pelicula, CreatePeliculaDto, UpdatePeliculaDto, PeliculaGenero } from '~/shared/types/pelicula';
+import {
+  Pelicula,
+  CreatePeliculaDto,
+  UpdatePeliculaDto,
+  PeliculaGenero,
+} from '~/shared/types/pelicula';
 import { HttpClient } from '../../shared/lib/useHttpClient';
+import { MOVIE_CONFIG } from '~/shared/constants/app.constants';
 
 export class PeliculaService {
   /**
@@ -26,6 +32,25 @@ export class PeliculaService {
       return response.data;
     } catch (error) {
       console.error('Error al obtener películas destacadas:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtiene películas de estreno - trae los ultimos 30 dias
+   */
+  static async getPeliculasEstreno(): Promise<Pelicula[]> {
+    try {
+      const fechaLimite = new Date();
+      fechaLimite.setDate(fechaLimite.getDate() - MOVIE_CONFIG.ESTRENO_DAYS_LIMIT);
+      const fechaISO = fechaLimite.toISOString().split('T')[0];
+
+      const response = await HttpClient.get<Pelicula[]>(
+        `/peliculas?fecha_estreno=gte.${fechaISO}&activa=eq.true&order=fecha_estreno.desc`
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Error al obtener películas de estreno:', error);
       throw error;
     }
   }
@@ -92,22 +117,18 @@ export class PeliculaService {
         destacada: false,
         votos: 0,
         calificacion: null,
-        fecha_creacion: new Date().toISOString()
+        fecha_creacion: new Date().toISOString(),
       };
 
       // Crear la película
-      const response = await HttpClient.post<Pelicula[]>(
-        '/peliculas',
-        peliculaCompleta,
-        {
-          headers: {
-            'Prefer': 'return=representation'
-          }
-        }
-      );
+      const response = await HttpClient.post<Pelicula[]>('/peliculas', peliculaCompleta, {
+        headers: {
+          Prefer: 'return=representation',
+        },
+      });
 
       const peliculaCreada = response.data[0];
-      
+
       // Si hay géneros, crear las relaciones
       if (generos_ids && generos_ids.length > 0) {
         await this.asignarGenerosPelicula(peliculaCreada.id, generos_ids);
@@ -134,8 +155,8 @@ export class PeliculaService {
         peliculaSinGeneros,
         {
           headers: {
-            'Prefer': 'return=representation'
-          }
+            Prefer: 'return=representation',
+          },
         }
       );
 
@@ -149,7 +170,7 @@ export class PeliculaService {
       if (generos_ids !== undefined) {
         // Eliminar géneros existentes
         await HttpClient.delete(`/pelicula_generos?pelicula_id=eq.${id}`);
-        
+
         // Agregar nuevos géneros
         if (generos_ids.length > 0) {
           await this.asignarGenerosPelicula(id, generos_ids);
@@ -173,8 +194,8 @@ export class PeliculaService {
         { activa },
         {
           headers: {
-            'Prefer': 'return=representation'
-          }
+            Prefer: 'return=representation',
+          },
         }
       );
 
@@ -223,8 +244,8 @@ export class PeliculaService {
         { destacada },
         {
           headers: {
-            'Prefer': 'return=representation'
-          }
+            Prefer: 'return=representation',
+          },
         }
       );
 
@@ -242,11 +263,14 @@ export class PeliculaService {
   /**
    * Método auxiliar para asignar géneros a una película
    */
-  private static async asignarGenerosPelicula(peliculaId: string, generosIds: number[]): Promise<void> {
+  private static async asignarGenerosPelicula(
+    peliculaId: string,
+    generosIds: number[]
+  ): Promise<void> {
     try {
-      const relacionesGeneros: PeliculaGenero[] = generosIds.map(generoId => ({
+      const relacionesGeneros: PeliculaGenero[] = generosIds.map((generoId) => ({
         pelicula_id: peliculaId,
-        genero_id: generoId
+        genero_id: generoId,
       }));
 
       await HttpClient.post('/pelicula_generos', relacionesGeneros);
@@ -264,7 +288,7 @@ export class PeliculaService {
       const response = await HttpClient.get<PeliculaGenero[]>(
         `/pelicula_generos?pelicula_id=eq.${peliculaId}`
       );
-      return response.data.map(relacion => relacion.genero_id);
+      return response.data.map((relacion) => relacion.genero_id);
     } catch (error) {
       console.error('Error al obtener géneros de película:', error);
       throw error;
@@ -282,14 +306,14 @@ export class PeliculaService {
 
       const response = await HttpClient.patch<Pelicula[]>(
         `/peliculas?id=eq.${id}`,
-        { 
+        {
           calificacion,
-          votos: nuevosVotos 
+          votos: nuevosVotos,
         },
         {
           headers: {
-            'Prefer': 'return=representation'
-          }
+            Prefer: 'return=representation',
+          },
         }
       );
 

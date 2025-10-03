@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Text,
   View,
@@ -10,17 +10,17 @@ import {
   Alert,
   Switch,
 } from 'react-native';
-import { 
-  Plus, 
-  Edit, 
-  Search, 
-  X, 
+import {
+  Plus,
+  Edit,
+  Search,
+  X,
   Save,
   RefreshCw,
   Eye,
   EyeOff,
   Tag,
-  Film
+  Film,
 } from 'lucide-react-native';
 import { GeneroMovie, CreateGeneroDto, UpdateGeneroDto } from '~/shared/types/genero';
 import { GeneroService } from '../services/genero.service';
@@ -49,8 +49,8 @@ export default function GeneroCRUD() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const generosData = showInactive 
-        ? await GeneroService.getAllGeneros() 
+      const generosData = showInactive
+        ? await GeneroService.getAllGeneros()
         : await GeneroService.getGeneros();
       setGeneros(generosData);
     } catch (error) {
@@ -61,9 +61,10 @@ export default function GeneroCRUD() {
   };
 
   // Filtrar géneros por búsqueda
-  const filteredGeneros = generos.filter(genero =>
-    genero.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    genero.descripcion?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredGeneros = generos.filter(
+    (genero) =>
+      genero.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      genero.descripcion?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   // Abrir modal para crear género
@@ -95,19 +96,22 @@ export default function GeneroCRUD() {
 
     try {
       setFormLoading(true);
-      
+
       if (editingGenero) {
-        await GeneroService.modificarGenero(editingGenero.id, formData as UpdateGeneroDto);
+        await GeneroService.actualizarGenero(editingGenero.id, formData as UpdateGeneroDto);
         Alert.alert('Éxito', 'Género actualizado correctamente');
       } else {
-        await GeneroService.agregarGenero(formData);
+        await GeneroService.crearGenero(formData);
         Alert.alert('Éxito', 'Género creado correctamente');
       }
 
       setModalVisible(false);
       loadData();
     } catch (error: any) {
-      Alert.alert('Error', error.message || `No se pudo ${editingGenero ? 'actualizar' : 'crear'} el género`);
+      Alert.alert(
+        'Error',
+        error.message || `No se pudo ${editingGenero ? 'actualizar' : 'crear'} el género`
+      );
     } finally {
       setFormLoading(false);
     }
@@ -163,7 +167,7 @@ export default function GeneroCRUD() {
         <View className="mr-3 rounded-full bg-blue-600 p-3">
           <Tag size={20} color="#ffffff" />
         </View>
-        
+
         <View className="flex-1">
           <View className="mb-2 flex-row items-center justify-between">
             <Text className="text-lg font-bold text-white" numberOfLines={1}>
@@ -171,18 +175,16 @@ export default function GeneroCRUD() {
             </Text>
             <Text className="text-xs text-gray-400">ID: {genero.id}</Text>
           </View>
-          
+
           {genero.descripcion && (
             <Text className="mb-2 text-sm text-gray-300" numberOfLines={3}>
               {genero.descripcion}
             </Text>
           )}
-          
+
           <View className="flex-row items-center">
             <Film size={12} color="#9CA3AF" />
-            <Text className="ml-1 text-xs text-gray-400">
-              Género de películas
-            </Text>
+            <Text className="ml-1 text-xs text-gray-400">Género de películas</Text>
           </View>
         </View>
       </View>
@@ -190,7 +192,7 @@ export default function GeneroCRUD() {
       {/* Badge de estado */}
       {!genero.activo && (
         <View className="mb-3">
-          <View className="inline-flex rounded bg-red-600 px-2 py-1 self-start">
+          <View className="inline-flex self-start rounded bg-red-600 px-2 py-1">
             <Text className="text-xs font-bold text-white">Inactivo</Text>
           </View>
         </View>
@@ -200,11 +202,11 @@ export default function GeneroCRUD() {
       <View className="flex-row justify-between">
         <TouchableOpacity
           onPress={() => openEditModal(genero)}
-          className="flex-1 mr-2 flex-row items-center justify-center rounded-lg bg-blue-600 px-4 py-2">
+          className="mr-2 flex-1 flex-row items-center justify-center rounded-lg bg-blue-600 px-4 py-2">
           <Edit size={16} color="#ffffff" />
           <Text className="ml-2 font-bold text-white">Editar</Text>
         </TouchableOpacity>
-        
+
         <TouchableOpacity
           onPress={() => toggleGeneroStatus(genero)}
           className={`mr-2 flex-row items-center justify-center rounded-lg px-4 py-2 ${
@@ -251,7 +253,7 @@ export default function GeneroCRUD() {
       <View className="px-4 pb-4 pt-14">
         <Text className="mb-1 text-sm text-gray-400">Administración</Text>
         <Text className="mb-4 text-2xl font-bold text-white">Gestión de Géneros</Text>
-        
+
         {/* Stats */}
         <View className="mb-4 flex-row items-center justify-between">
           <Text className="text-sm text-gray-400">
@@ -280,13 +282,13 @@ export default function GeneroCRUD() {
               onChangeText={setSearchTerm}
             />
           </View>
-          
+
           <TouchableOpacity
             onPress={openCreateModal}
             className="flex-row items-center rounded-lg bg-green-600 px-4 py-3">
             <Plus size={20} color="#ffffff" />
           </TouchableOpacity>
-          
+
           <TouchableOpacity
             onPress={loadData}
             className="flex-row items-center rounded-lg bg-blue-600 px-4 py-3">
@@ -298,9 +300,7 @@ export default function GeneroCRUD() {
       {/* Lista de géneros */}
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         {filteredGeneros.length > 0 ? (
-          filteredGeneros.map((genero) => (
-            <GeneroCard key={genero.id} genero={genero} />
-          ))
+          filteredGeneros.map((genero) => <GeneroCard key={genero.id} genero={genero} />)
         ) : (
           <View className="flex-1 items-center justify-center px-4 py-20">
             <Tag size={48} color="#6B7280" />
@@ -370,7 +370,9 @@ export default function GeneroCRUD() {
               {/* Información adicional para edición */}
               {editingGenero && (
                 <View className="rounded-lg bg-gray-800 p-4">
-                  <Text className="mb-2 text-sm font-bold text-yellow-400">Información del Género</Text>
+                  <Text className="mb-2 text-sm font-bold text-yellow-400">
+                    Información del Género
+                  </Text>
                   <Text className="text-xs text-gray-300">ID: {editingGenero.id}</Text>
                   <Text className="text-xs text-gray-300">
                     Estado: {editingGenero.activo ? 'Activo' : 'Inactivo'}
@@ -386,7 +388,7 @@ export default function GeneroCRUD() {
                 className="flex-1 rounded-lg bg-gray-600 px-4 py-3">
                 <Text className="text-center font-bold text-white">Cancelar</Text>
               </TouchableOpacity>
-              
+
               <TouchableOpacity
                 onPress={handleSave}
                 disabled={formLoading || !formData.nombre.trim()}

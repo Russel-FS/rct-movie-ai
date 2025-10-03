@@ -18,27 +18,14 @@ import { PeliculaService } from '~/home/services/pelicula.service';
 import { GeneroService } from '~/home/services/genero.service';
 import { RootStackParamList } from '~/shared/types/navigation';
 import { Calendar, Clock, Star, Film, Users, Play, MapPin, ChevronLeft } from 'lucide-react-native';
-
-const cinemas = [
-  {
-    id: 1,
-    name: 'Cinépolis Plaza Norte',
-    address: 'Av. Constituyentes 1050, Col. Centro',
-    distance: '2.3 km',
-  },
-  {
-    id: 2,
-    name: 'Cinemex Galerías',
-    address: 'Blvd. Miguel de Cervantes 1200',
-    distance: '4.8 km',
-  },
-  {
-    id: 3,
-    name: 'Cinépolis VIP Centro',
-    address: 'Calle Madero 445, Centro Histórico',
-    distance: '5.8 km',
-  },
-];
+import { useCines } from '~/shared/hooks/useCines';
+import { usePelicula } from '~/shared/hooks/usePeliculas';
+import { MOVIE_CONFIG, ERROR_MESSAGES } from '~/shared/constants/app.constants';
+import {
+  formatearDuracion,
+  formatearFecha,
+  formatearCalificacion,
+} from '~/shared/utils/format.utils';
 
 type SeleccionLugarRouteProp = RouteProp<RootStackParamList, 'SeleccionLugar'>;
 type SeleccionLugarNavigationProp = NativeStackNavigationProp<RootStackParamList, 'SeleccionLugar'>;
@@ -49,22 +36,9 @@ export default function SeleccionLugar() {
   const { peliculaId } = route.params;
   const [selectedCinema, setSelectedCinema] = useState<number | null>(null);
   const [showFullSynopsis, setShowFullSynopsis] = useState(false);
-  const [pelicula, setPelicula] = useState<Pelicula | null>(null);
-  const [generos, setGeneros] = useState<GeneroMovie[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  const formatDuration = (minutos: number): string => {
-    const horas = Math.floor(minutos / 60);
-    const mins = minutos % 60;
-    return `${horas}h ${mins}min`;
-  };
-
-  const formatDate = (dateString?: string): string => {
-    if (!dateString) return 'N/A';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
-  };
+  const { cines, loading: loadingCines } = useCines({ incluirUbicacion: true, radio: 20 });
+  const { pelicula, generos, loading, error } = usePelicula(peliculaId);
 
   const getGeneros = (): string => {
     if (generos && generos.length > 0) {
@@ -97,12 +71,12 @@ export default function SeleccionLugar() {
 
   const handleContinue = () => {
     if (selectedCinema !== null) {
-      const cinema = cinemas.find((c) => c.id === selectedCinema);
+      const cinema = cines.find((c) => c.id === selectedCinema);
       if (cinema) {
         navigation.navigate('SeleccionHorario', {
           peliculaId,
           cinemaId: cinema.id,
-          cinemaName: cinema.name,
+          cinemaName: cinema.nombre,
         });
       }
     }
@@ -112,47 +86,13 @@ export default function SeleccionLugar() {
     navigation.goBack();
   };
 
-  useEffect(() => {
-    const fetchPelicula = async () => {
-      if (!peliculaId) {
-        setError('No se proporcionó un ID de película');
-        setLoading(false);
-        return;
-      }
-
-      try {
-        setLoading(true);
-        const data = await PeliculaService.getPeliculaById(peliculaId);
-        setPelicula(data);
-
-        // Cargar géneros de la película usando el servicio
-        try {
-          const generosIds = await PeliculaService.getGenerosPelicula(peliculaId);
-          const todosGeneros = await GeneroService.getGeneros();
-          const generosFiltrados = todosGeneros.filter((g) => generosIds.includes(g.id));
-          setGeneros(generosFiltrados);
-        } catch (generoError) {
-          console.error('Error al cargar géneros:', generoError);
-          setGeneros([]);
-        }
-
-        setError(null);
-      } catch (err) {
-        console.error('Error al cargar película:', err);
-        setError('Error al cargar la información de la película');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPelicula();
-  }, [peliculaId]);
-
-  if (loading) {
+  if (loading || loadingCines) {
     return (
       <View className="flex-1 items-center justify-center bg-black">
         <ActivityIndicator size="large" color="#3B82F6" />
-        <Text className="mt-4 text-base text-white">Cargando película...</Text>
+        <Text className="mt-4 text-base text-white">
+          {loading ? 'Cargando película...' : 'Cargando cines...'}
+        </Text>
       </View>
     );
   }
@@ -161,7 +101,7 @@ export default function SeleccionLugar() {
     return (
       <View className="flex-1 items-center justify-center bg-black px-6">
         <Text className="mb-6 text-center text-base text-red-400">
-          {error || 'No se pudo cargar la película'}
+          {error || ERROR_MESSAGES.MOVIE_NOT_FOUND}
         </Text>
         <TouchableOpacity
           onPress={handleBack}
@@ -198,7 +138,7 @@ export default function SeleccionLugar() {
         <View className="relative mx-4 mb-8 h-80 overflow-hidden rounded-3xl">
           <ImageBackground
             source={{
-              uri: pelicula.poster_url || 'https://via.placeholder.com/800x600?text=Sin+Imagen',
+              uri: pelicula.poster_url || MOVIE_CONFIG.DEFAULT_POSTER_URL,
             }}
             className="flex-1 justify-end"
             resizeMode="cover">
@@ -234,13 +174,13 @@ export default function SeleccionLugar() {
                 <View className="flex-row items-center">
                   <Star size={14} color="#FFD700" fill="#FFD700" />
                   <Text className="ml-1 font-semibold text-white">
-                    {pelicula.calificacion?.toFixed(1) || 'N/A'}
+                    {formatearCalificacion(pelicula.calificacion)}
                   </Text>
                 </View>
 
                 <View className="flex-row items-center">
                   <Clock size={14} color="#9CA3AF" />
-                  <Text className="ml-1 text-gray-300">{formatDuration(pelicula.duracion)}</Text>
+                  <Text className="ml-1 text-gray-300">{formatearDuracion(pelicula.duracion)}</Text>
                 </View>
 
                 <View className="rounded bg-gray-700/80 px-2 py-1">
@@ -271,52 +211,58 @@ export default function SeleccionLugar() {
         <View className="px-4 pb-8">
           <Text className="mb-6 text-2xl font-bold text-white">Cines Disponibles</Text>
 
-          {cinemas.map((cine) => (
-            <TouchableOpacity
-              key={cine.id}
-              onPress={() => setSelectedCinema(cine.id)}
-              className={`mb-4 overflow-hidden rounded-3xl ${
-                selectedCinema === cine.id ? 'bg-white' : 'bg-gray-800/50'
-              }`}
-              activeOpacity={0.8}>
-              <View className="p-6">
-                {/* Header del cine */}
-                <View className="mb-3 flex-row items-start justify-between">
-                  <View className="flex-1">
-                    <Text
-                      className={`mb-2 text-xl font-bold ${
-                        selectedCinema === cine.id ? 'text-black' : 'text-white'
-                      }`}>
-                      {cine.name}
-                    </Text>
-                    <Text
-                      className={`text-base leading-6 ${
-                        selectedCinema === cine.id ? 'text-gray-600' : 'text-gray-300'
-                      }`}>
-                      {cine.address}
-                    </Text>
+          {cines.length === 0 ? (
+            <View className="items-center py-8">
+              <Text className="text-base text-gray-400">{ERROR_MESSAGES.CINEMAS_NOT_FOUND}</Text>
+            </View>
+          ) : (
+            cines.map((cine) => (
+              <TouchableOpacity
+                key={cine.id}
+                onPress={() => setSelectedCinema(cine.id)}
+                className={`mb-4 overflow-hidden rounded-3xl ${
+                  selectedCinema === cine.id ? 'bg-white' : 'bg-gray-800/50'
+                }`}
+                activeOpacity={0.8}>
+                <View className="p-6">
+                  {/* Header del cine */}
+                  <View className="mb-3 flex-row items-start justify-between">
+                    <View className="flex-1">
+                      <Text
+                        className={`mb-2 text-xl font-bold ${
+                          selectedCinema === cine.id ? 'text-black' : 'text-white'
+                        }`}>
+                        {cine.nombre}
+                      </Text>
+                      <Text
+                        className={`text-base leading-6 ${
+                          selectedCinema === cine.id ? 'text-gray-600' : 'text-gray-300'
+                        }`}>
+                        {cine.direccion}
+                      </Text>
+                    </View>
+
+                    {selectedCinema === cine.id && (
+                      <View className="ml-4 h-8 w-8 items-center justify-center rounded-full bg-black">
+                        <Text className="text-sm font-bold text-white">✓</Text>
+                      </View>
+                    )}
                   </View>
 
-                  {selectedCinema === cine.id && (
-                    <View className="ml-4 h-8 w-8 items-center justify-center rounded-full bg-black">
-                      <Text className="text-sm font-bold text-white">✓</Text>
-                    </View>
-                  )}
+                  {/* Footer con distancia */}
+                  <View className="flex-row items-center">
+                    <MapPin size={16} color={selectedCinema === cine.id ? '#6B7280' : '#9CA3AF'} />
+                    <Text
+                      className={`ml-2 text-sm font-medium ${
+                        selectedCinema === cine.id ? 'text-gray-600' : 'text-gray-400'
+                      }`}>
+                      {cine.distance || 'Distancia no disponible'}
+                    </Text>
+                  </View>
                 </View>
-
-                {/* Footer con distancia */}
-                <View className="flex-row items-center">
-                  <MapPin size={16} color={selectedCinema === cine.id ? '#6B7280' : '#9CA3AF'} />
-                  <Text
-                    className={`ml-2 text-sm font-medium ${
-                      selectedCinema === cine.id ? 'text-gray-600' : 'text-gray-400'
-                    }`}>
-                    {cine.distance}
-                  </Text>
-                </View>
-              </View>
-            </TouchableOpacity>
-          ))}
+              </TouchableOpacity>
+            ))
+          )}
         </View>
       </ScrollView>
 
@@ -328,7 +274,7 @@ export default function SeleccionLugar() {
             onPress={handleContinue}
             activeOpacity={0.8}>
             <Text className="text-center text-lg font-bold text-black">
-              Continuar con {cinemas.find((c) => c.id === selectedCinema)?.name}
+              Continuar con {cines.find((c) => c.id === selectedCinema)?.nombre}
             </Text>
           </TouchableOpacity>
         ) : (

@@ -1,5 +1,5 @@
 /**
- * Utilidades para manejo de geolocalización
+ * Utilidades matemáticas para manejo de geolocalización
  */
 
 export interface LocationCoords {
@@ -39,18 +39,4 @@ export function formatearDistancia(distanceKm: number): string {
     return `${Math.round(distanceKm * 1000)} m`;
   }
   return `${distanceKm.toFixed(1)} km`;
-}
-
-/**
- * Obtiene la ubicación del usuario (placeholder para implementación futura)
- * TODO: Implementar con expo-location cuando sea necesario
- */
-export async function obtenerUbicacionUsuario(): Promise<LocationCoords | null> {
-  try {
-    console.warn('falta implementar');
-    return null;
-  } catch (error) {
-    console.error('Error obteniendo ubicación:', error);
-    return null;
-  }
 }

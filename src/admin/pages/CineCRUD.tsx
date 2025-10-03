@@ -16,8 +16,6 @@ import {
   X,
   Save,
   RotateCcw,
-  Eye,
-  EyeOff,
   MapPin,
   Phone,
   Mail,
@@ -28,6 +26,7 @@ import {
 
 import { Cine, CreateCineDto, UpdateCineDto } from '~/shared/types/cine';
 import { CineService } from '~/shared/services/cine.service';
+import { useLocation } from '~/shared/hooks/useLocation';
 
 // Distritos de Lima con sus coordenadas
 const distritosLima = [
@@ -118,6 +117,9 @@ const distritosLima = [
 ];
 
 export default function CineCRUD() {
+  // Hook de ubicación
+  const { location, requestLocation, hasPermission } = useLocation();
+
   // Estados principales
   const [cines, setCines] = useState<Cine[]>([]);
   const [loading, setLoading] = useState(true);
@@ -147,10 +149,27 @@ export default function CineCRUD() {
     loadData();
   }, [showInactive]);
 
+  // Solicitar ubicación al montar el componente
+  useEffect(() => {
+    if (!hasPermission) {
+      requestLocation();
+    }
+  }, []);
+
+  // Recargar datos cuando cambie la ubicación
+  useEffect(() => {
+    if (location) {
+      loadData();
+    }
+  }, [location]);
+
   const loadData = async () => {
     try {
       setLoading(true);
-      const cinesData = await CineService.getCines();
+      const userLat = location?.lat;
+      const userLon = location?.lon;
+
+      const cinesData = await CineService.getCines(userLat, userLon);
       const filteredCines = showInactive ? cinesData : cinesData.filter((c) => c.activo);
       setCines(filteredCines);
     } catch (error) {
@@ -280,7 +299,14 @@ export default function CineCRUD() {
               <Text className="flex-1 text-base font-medium text-white" numberOfLines={1}>
                 {cine.nombre}
               </Text>
-              <Text className="ml-3 text-xs text-gray-400">ID: {cine.id}</Text>
+              <View className="flex-row items-center space-x-2">
+                {cine.distance && (
+                  <View className="rounded-full bg-blue-500/10 px-2 py-1">
+                    <Text className="text-xs font-medium text-blue-400">{cine.distance}</Text>
+                  </View>
+                )}
+                <Text className="text-xs text-gray-400">ID: {cine.id}</Text>
+              </View>
             </View>
 
             <Text className="mb-2 text-sm text-gray-400" numberOfLines={2}>
@@ -366,17 +392,29 @@ export default function CineCRUD() {
             <Text className="text-sm font-medium text-gray-400">Administración</Text>
             <Text className="text-2xl font-bold text-white">Cines</Text>
           </View>
-          <Pressable onPress={loadData} className="rounded-full bg-gray-800/50 p-3">
-            <RotateCcw size={20} color="#9CA3AF" />
-          </Pressable>
+          <View className="flex-row space-x-2">
+            <Pressable onPress={requestLocation} className="rounded-full bg-gray-800/50 p-3">
+              <Navigation size={20} color="#9CA3AF" />
+            </Pressable>
+            <Pressable onPress={loadData} className="rounded-full bg-gray-800/50 p-3">
+              <RotateCcw size={20} color="#9CA3AF" />
+            </Pressable>
+          </View>
         </View>
 
         {/* Stats y controles */}
         <View className="mb-4 mt-6 flex-row items-center justify-between">
-          <Text className="text-sm text-gray-400">
-            {filteredCines.length} cine{filteredCines.length !== 1 ? 's' : ''} encontrado
-            {filteredCines.length !== 1 ? 's' : ''}
-          </Text>
+          <View className="flex-1">
+            <Text className="text-sm text-gray-400">
+              {filteredCines.length} cine{filteredCines.length !== 1 ? 's' : ''} encontrado
+              {filteredCines.length !== 1 ? 's' : ''}
+            </Text>
+            {location && (
+              <Text className="text-xs text-gray-500">
+                📍 Ubicación: {location.lat.toFixed(4)}, {location.lon.toFixed(4)}
+              </Text>
+            )}
+          </View>
           <View className="flex-row items-center">
             <Text className="mr-3 text-sm font-medium text-gray-400">Mostrar inactivos</Text>
             <Switch

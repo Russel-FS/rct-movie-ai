@@ -1,12 +1,13 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Text, View, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Fila, Asiento } from '~/shared/types/cinema';
-import { RootStackParamList } from '~/shared/types/navigation';
+import { Fila, Asiento } from '../../shared/types/cinema';
+import { RootStackParamList } from '../../shared/types/navigation';
 import { ChevronLeft, MapPin, Clock } from 'lucide-react-native';
-import { FuncionService } from '~/shared/services/funcion.service';
-import { Funcion } from '~/shared/types/funcion';
+import { FuncionService } from '../../shared/services/funcion.service';
+import { Funcion } from '../../shared/types/funcion';
+import { useButacas } from '../../shared/hooks/useButacas';
 
 type SeleccionButacasRouteProp = RouteProp<RootStackParamList, 'SeleccionButacas'>;
 type SeleccionButacasNavigationProp = NativeStackNavigationProp<
@@ -18,9 +19,24 @@ export default function SeleccionButacas() {
   const navigation = useNavigation<SeleccionButacasNavigationProp>();
   const route = useRoute<SeleccionButacasRouteProp>();
   const { funcionId, peliculaId, cinemaId, cinemaName } = route.params;
-  const [asientosSeleccionados, setAsientosSeleccionados] = useState<string[]>([]);
   const [funcion, setFuncion] = useState<Funcion | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Hook para manejar las butacas
+  const {
+    filasData,
+    asientosSeleccionados,
+    loading: loadingButacas,
+    error: errorButacas,
+    toggleAsiento,
+    calcularTotal,
+    getAsientoEstado,
+    setAsientosSeleccionados,
+  } = useButacas({
+    funcionId,
+    salaId: funcion?.sala_id || 0,
+    precioBase: funcion?.precio_base || 0,
+  });
 
   useEffect(() => {
     loadFuncion();
@@ -39,9 +55,10 @@ export default function SeleccionButacas() {
   };
 
   // Extraer datos de la función
-  const fecha = funcion ? new Date(funcion.fecha_hora).toLocaleDateString('es-ES') : '';
-  const hora = funcion
-    ? new Date(funcion.fecha_hora).toLocaleTimeString('es-ES', {
+  const fechaHora = funcion ? new Date(funcion.fecha_hora) : null;
+  const fecha = fechaHora ? fechaHora.toLocaleDateString('es-ES') : '';
+  const hora = fechaHora
+    ? fechaHora.toLocaleTimeString('es-ES', {
         hour: '2-digit',
         minute: '2-digit',
       })
@@ -69,184 +86,12 @@ export default function SeleccionButacas() {
     navigation.goBack();
   };
 
-  const filasData: Fila[] = [
-    {
-      letra: 'A',
-      asientos: [
-        { id: 'A1', numero: 1, ocupado: false, precio: precio },
-        { id: 'A2', numero: 2, ocupado: false, precio: precio },
-        { id: 'A3', numero: 3, ocupado: true, precio: precio },
-        { id: 'A4', numero: 4, ocupado: false, precio: precio },
-        { id: 'A5', numero: 5, ocupado: false, precio: precio },
-        { id: 'A6', numero: 6, ocupado: false, precio: precio },
-        { id: 'A7', numero: 7, ocupado: false, precio: precio },
-        { id: 'A8', numero: 8, ocupado: false, precio: precio },
-        { id: 'A9', numero: 9, ocupado: true, precio: precio },
-        { id: 'A10', numero: 10, ocupado: false, precio: precio },
-        { id: 'A11', numero: 11, ocupado: false, precio: precio },
-        { id: 'A12', numero: 12, ocupado: false, precio: precio },
-      ],
-    },
-    {
-      letra: 'B',
-      asientos: [
-        { id: 'B1', numero: 1, ocupado: false, precio: precio },
-        { id: 'B2', numero: 2, ocupado: false, precio: precio },
-        { id: 'B3', numero: 3, ocupado: false, precio: precio },
-        { id: 'B4', numero: 4, ocupado: true, precio: precio },
-        { id: 'B5', numero: 5, ocupado: false, precio: precio },
-        { id: 'B6', numero: 6, ocupado: false, precio: precio },
-        { id: 'B7', numero: 7, ocupado: false, precio: precio },
-        { id: 'B8', numero: 8, ocupado: false, precio: precio },
-        { id: 'B9', numero: 9, ocupado: false, precio: precio },
-        { id: 'B10', numero: 10, ocupado: true, precio: precio },
-        { id: 'B11', numero: 11, ocupado: false, precio: precio },
-        { id: 'B12', numero: 12, ocupado: false, precio: precio },
-      ],
-    },
-    {
-      letra: 'C',
-      asientos: [
-        { id: 'C1', numero: 1, ocupado: false, precio: precio },
-        { id: 'C2', numero: 2, ocupado: false, precio: precio },
-        { id: 'C3', numero: 3, ocupado: false, precio: precio },
-        { id: 'C4', numero: 4, ocupado: false, precio: precio },
-        { id: 'C5', numero: 5, ocupado: false, precio: precio },
-        { id: 'C6', numero: 6, ocupado: true, precio: precio },
-        { id: 'C7', numero: 7, ocupado: false, precio: precio },
-        { id: 'C8', numero: 8, ocupado: false, precio: precio },
-        { id: 'C9', numero: 9, ocupado: false, precio: precio },
-        { id: 'C10', numero: 10, ocupado: false, precio: precio },
-        { id: 'C11', numero: 11, ocupado: false, precio: precio },
-        { id: 'C12', numero: 12, ocupado: false, precio: precio },
-      ],
-    },
-    {
-      letra: 'D',
-      asientos: [
-        { id: 'D1', numero: 1, ocupado: false, precio: precio },
-        { id: 'D2', numero: 2, ocupado: false, precio: precio },
-        { id: 'D3', numero: 3, ocupado: false, precio: precio },
-        { id: 'D4', numero: 4, ocupado: false, precio: precio },
-        { id: 'D5', numero: 5, ocupado: false, precio: precio },
-        { id: 'D6', numero: 6, ocupado: false, precio: precio },
-        { id: 'D7', numero: 7, ocupado: true, precio: precio },
-        { id: 'D8', numero: 8, ocupado: false, precio: precio },
-        { id: 'D9', numero: 9, ocupado: false, precio: precio },
-        { id: 'D10', numero: 10, ocupado: false, precio: precio },
-        { id: 'D11', numero: 11, ocupado: false, precio: precio },
-        { id: 'D12', numero: 12, ocupado: false, precio: precio },
-      ],
-    },
-    {
-      letra: 'E',
-      asientos: [
-        { id: 'E1', numero: 1, ocupado: false, precio: precio },
-        { id: 'E2', numero: 2, ocupado: false, precio: precio },
-        { id: 'E3', numero: 3, ocupado: false, precio: precio },
-        { id: 'E4', numero: 4, ocupado: false, precio: precio },
-        { id: 'E5', numero: 5, ocupado: false, precio: precio },
-        { id: 'E6', numero: 6, ocupado: false, precio: precio },
-        { id: 'E7', numero: 7, ocupado: false, precio: precio },
-        { id: 'E8', numero: 8, ocupado: true, precio: precio },
-        { id: 'E9', numero: 9, ocupado: false, precio: precio },
-        { id: 'E10', numero: 10, ocupado: false, precio: precio },
-        { id: 'E11', numero: 11, ocupado: false, precio: precio },
-        { id: 'E12', numero: 12, ocupado: false, precio: precio },
-      ],
-    },
-    {
-      letra: 'F',
-      asientos: [
-        { id: 'F1', numero: 1, ocupado: false, precio: precio },
-        { id: 'F2', numero: 2, ocupado: false, precio: precio },
-        { id: 'F3', numero: 3, ocupado: false, precio: precio },
-        { id: 'F4', numero: 4, ocupado: false, precio: precio },
-        { id: 'F5', numero: 5, ocupado: false, precio: precio },
-        { id: 'F6', numero: 6, ocupado: false, precio: precio },
-        { id: 'F7', numero: 7, ocupado: false, precio: precio },
-        { id: 'F8', numero: 8, ocupado: false, precio: precio },
-        { id: 'F9', numero: 9, ocupado: true, precio: precio },
-        { id: 'F10', numero: 10, ocupado: false, precio: precio },
-        { id: 'F11', numero: 11, ocupado: false, precio: precio },
-        { id: 'F12', numero: 12, ocupado: false, precio: precio },
-      ],
-    },
-    {
-      letra: 'G',
-      asientos: [
-        { id: 'G1', numero: 1, ocupado: false, precio: precio },
-        { id: 'G2', numero: 2, ocupado: false, precio: precio },
-        { id: 'G3', numero: 3, ocupado: false, precio: precio },
-        { id: 'G4', numero: 4, ocupado: false, precio: precio },
-        { id: 'G5', numero: 5, ocupado: true, precio: precio },
-        { id: 'G6', numero: 6, ocupado: false, precio: precio },
-        { id: 'G7', numero: 7, ocupado: false, precio: precio },
-        { id: 'G8', numero: 8, ocupado: false, precio: precio },
-        { id: 'G9', numero: 9, ocupado: false, precio: precio },
-        { id: 'G10', numero: 10, ocupado: false, precio: precio },
-        { id: 'G11', numero: 11, ocupado: false, precio: precio },
-        { id: 'G12', numero: 12, ocupado: false, precio: precio },
-      ],
-    },
-    {
-      letra: 'H',
-      asientos: [
-        { id: 'H1', numero: 1, ocupado: false, precio: precio },
-        { id: 'H2', numero: 2, ocupado: false, precio: precio },
-        { id: 'H3', numero: 3, ocupado: false, precio: precio },
-        { id: 'H4', numero: 4, ocupado: false, precio: precio },
-        { id: 'H5', numero: 5, ocupado: false, precio: precio },
-        { id: 'H6', numero: 6, ocupado: true, precio: precio },
-        { id: 'H7', numero: 7, ocupado: false, precio: precio },
-        { id: 'H8', numero: 8, ocupado: false, precio: precio },
-        { id: 'H9', numero: 9, ocupado: false, precio: precio },
-        { id: 'H10', numero: 10, ocupado: false, precio: precio },
-        { id: 'H11', numero: 11, ocupado: false, precio: precio },
-        { id: 'H12', numero: 12, ocupado: false, precio: precio },
-      ],
-    },
-  ];
-
-  const asientosMap = useMemo(() => {
-    const map = new Map<string, Asiento>();
-    filasData.forEach((fila) => {
-      fila.asientos.forEach((asiento) => {
-        map.set(asiento.id, asiento);
-      });
-    });
-    return map;
-  }, []);
-
-  const toggleAsiento = (asientoId: string) => {
-    const asiento = asientosMap.get(asientoId);
-    if (asiento?.ocupado) return;
-
-    if (asientosSeleccionados.includes(asientoId)) {
-      setAsientosSeleccionados((prev) => prev.filter((id) => id !== asientoId));
-    } else {
-      setAsientosSeleccionados((prev) => [...prev, asientoId]);
-    }
-  };
-
-  const getAsientoEstado = (asiento: Asiento) => {
-    if (asiento.ocupado) return 'ocupado';
-    return asientosSeleccionados.includes(asiento.id) ? 'seleccionado' : 'disponible';
-  };
-
-  const calcularTotal = () => {
-    let total = 0;
-    for (const asientoId of asientosSeleccionados) {
-      const asiento = asientosMap.get(asientoId);
-      if (asiento) {
-        total += asiento.precio;
-      }
-    }
-    return total;
-  };
-
   const formatFecha = (fechaStr: string) => {
+    if (!fechaStr) return '';
     const fecha = new Date(fechaStr);
+    // Verificar que la fecha sea válida
+    if (isNaN(fecha.getTime())) return fechaStr;
+
     return fecha.toLocaleDateString('es-ES', {
       weekday: 'long',
       day: 'numeric',
@@ -296,11 +141,27 @@ export default function SeleccionButacas() {
     );
   };
 
-  if (loading) {
+  if (loading || loadingButacas) {
     return (
       <View className="flex-1 items-center justify-center bg-black">
         <ActivityIndicator size="large" color="#3B82F6" />
-        <Text className="mt-4 text-base text-white">Cargando información de la función...</Text>
+        <Text className="mt-4 text-base text-white">
+          {loading ? 'Cargando información de la función...' : 'Cargando butacas...'}
+        </Text>
+      </View>
+    );
+  }
+
+  if (errorButacas) {
+    return (
+      <View className="flex-1 items-center justify-center bg-black px-4">
+        <Text className="mb-4 text-center text-lg text-white">Error al cargar las butacas</Text>
+        <Text className="mb-6 text-center text-base text-gray-400">{errorButacas}</Text>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          className="rounded-full bg-white px-6 py-3">
+          <Text className="text-base font-semibold text-black">Volver</Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -341,7 +202,9 @@ export default function SeleccionButacas() {
             <View className="flex-row items-center space-x-6">
               <View>
                 <Text className="text-sm font-medium text-gray-400">Fecha</Text>
-                <Text className="text-base font-medium text-white">{formatFecha(fecha)}</Text>
+                <Text className="text-base font-medium text-white">
+                  {funcion ? formatFecha(funcion.fecha_hora) : 'N/A'}
+                </Text>
               </View>
 
               <View className="flex-row items-center">

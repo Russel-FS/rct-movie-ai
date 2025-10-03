@@ -72,6 +72,7 @@ export type MainTabParamList = {
   Inicio: undefined;
   Cartelera: undefined;
   MisEntradas: undefined;
+  Perfil: undefined;
 };
 
 declare global {

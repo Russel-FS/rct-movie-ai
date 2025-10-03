@@ -1,10 +1,12 @@
-import { useMemo, useState } from 'react';
-import { Text, View, TouchableOpacity, ScrollView } from 'react-native';
+import { useMemo, useState, useEffect } from 'react';
+import { Text, View, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Fila, Asiento } from '~/shared/types/cinema';
 import { RootStackParamList } from '~/shared/types/navigation';
 import { ChevronLeft, MapPin, Clock } from 'lucide-react-native';
+import { FuncionService } from '~/shared/services/funcion.service';
+import { Funcion } from '~/shared/types/funcion';
 
 type SeleccionButacasRouteProp = RouteProp<RootStackParamList, 'SeleccionButacas'>;
 type SeleccionButacasNavigationProp = NativeStackNavigationProp<
@@ -15,8 +17,38 @@ type SeleccionButacasNavigationProp = NativeStackNavigationProp<
 export default function SeleccionButacas() {
   const navigation = useNavigation<SeleccionButacasNavigationProp>();
   const route = useRoute<SeleccionButacasRouteProp>();
-  const { peliculaId, cinemaName, fecha, hora, sala, formato, precio } = route.params;
+  const { funcionId, peliculaId, cinemaId, cinemaName } = route.params;
   const [asientosSeleccionados, setAsientosSeleccionados] = useState<string[]>([]);
+  const [funcion, setFuncion] = useState<Funcion | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadFuncion();
+  }, [funcionId]);
+
+  const loadFuncion = async () => {
+    try {
+      setLoading(true);
+      const funcionData = await FuncionService.getFuncionById(funcionId);
+      setFuncion(funcionData);
+    } catch (error) {
+      console.error('Error al cargar función:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Extraer datos de la función
+  const fecha = funcion ? new Date(funcion.fecha_hora).toLocaleDateString('es-ES') : '';
+  const hora = funcion
+    ? new Date(funcion.fecha_hora).toLocaleTimeString('es-ES', {
+        hour: '2-digit',
+        minute: '2-digit',
+      })
+    : '';
+  const sala = funcion?.sala?.nombre || 'N/A';
+  const formato = funcion?.formato || 'N/A';
+  const precio = funcion?.precio_base || 0;
 
   const handleContinue = () => {
     if (asientosSeleccionados.length > 0) {
@@ -263,6 +295,15 @@ export default function SeleccionButacas() {
       </View>
     );
   };
+
+  if (loading) {
+    return (
+      <View className="flex-1 items-center justify-center bg-black">
+        <ActivityIndicator size="large" color="#3B82F6" />
+        <Text className="mt-4 text-base text-white">Cargando información de la función...</Text>
+      </View>
+    );
+  }
 
   return (
     <View className="flex-1 bg-black">

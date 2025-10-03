@@ -77,7 +77,7 @@ export default function SeleccionHorario() {
     if (selectedFuncion) {
       const funcion = funciones.find((f) => f.id === selectedFuncion);
       if (funcion) {
-        navigation.navigate('SeleccionAsientos', {
+        navigation.navigate('SeleccionButacas', {
           funcionId: funcion.id,
           peliculaId,
           cinemaId,
@@ -303,7 +303,7 @@ export default function SeleccionHorario() {
             className="rounded-full bg-white px-6 py-4"
             onPress={handleContinue}
             activeOpacity={0.8}>
-            <Text className="text-center text-lg font-bold text-black">Seleccionar Asientos</Text>
+            <Text className="text-center text-lg font-bold text-black">Seleccionar Butacas</Text>
           </TouchableOpacity>
         ) : (
           <View className="rounded-full bg-gray-800/50 px-6 py-4">

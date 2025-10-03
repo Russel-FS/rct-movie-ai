@@ -8,7 +8,7 @@ export type RootStackParamList = {
     cinemaId: number;
     cinemaName: string;
   };
-  SeleccionAsientos: {
+  SeleccionButacas: {
     funcionId: string;
     peliculaId: string;
     cinemaId: number;

@@ -120,23 +120,31 @@ export class CineService {
   // Crear nuevo cine
   static async createCine(cineData: CreateCineDto): Promise<Cine> {
     try {
-      const response = await HttpClient.post<SupabaseCine>('/cines', cineData);
+      const response = await HttpClient.post<SupabaseCine>('/cines', cineData, {
+        headers: {
+          Prefer: 'return=representation',
+        },
+      });
       return mapSupabaseToCine(response.data);
     } catch (error) {
       console.error('Error al crear cine:', error);
-      throw new Error('No se pudo crear el cine');
+      throw error;
     }
   }
 
   // Actualizar cine
   static async updateCine(id: number, updateData: UpdateCineDto): Promise<Cine | null> {
     try {
-      const response = await HttpClient.patch<SupabaseCine>(`/cines?id=eq.${id}`, updateData);
+      const response = await HttpClient.patch<SupabaseCine>(`/cines?id=eq.${id}`, updateData, {
+        headers: {
+          Prefer: 'return=representation',
+        },
+      });
       if (!response.data) return null;
       return mapSupabaseToCine(response.data);
     } catch (error) {
       console.error('Error al actualizar cine:', error);
-      throw new Error('No se pudo actualizar el cine');
+      throw error;
     }
   }
 

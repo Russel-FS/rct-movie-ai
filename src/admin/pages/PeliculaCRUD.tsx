@@ -423,9 +423,10 @@ export default function PeliculaCRUD() {
                     <Text className="mb-2 text-sm font-bold text-white">Duración (min) *</Text>
                     <TextInput
                       value={formData.duracion.toString()}
-                      onChangeText={(text) =>
-                        setFormData({ ...formData, duracion: parseInt(text) || 0 })
-                      }
+                      onChangeText={(text) => {
+                        const duracion = text === '' ? 0 : parseInt(text) || 0;
+                        setFormData({ ...formData, duracion });
+                      }}
                       placeholder="120"
                       placeholderTextColor="#9CA3AF"
                       className="rounded-lg bg-gray-800 px-4 py-3 text-white"

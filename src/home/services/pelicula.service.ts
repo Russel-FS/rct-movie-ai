@@ -6,6 +6,7 @@ import {
 } from '~/shared/types/pelicula';
 import { HttpClient } from '../../shared/lib/useHttpClient';
 import { MOVIE_CONFIG } from '~/shared/constants/app.constants';
+import { limpiarObjetoVacio } from '~/shared/utils/object.utils';
 
 export class PeliculaService {
   /**
@@ -131,17 +132,29 @@ export class PeliculaService {
       // Extraer generos_ids del objeto principal
       const { generos_ids, ...peliculaSinGeneros } = peliculaData;
 
-      // Preparar datos de la película con valores por defecto
+      // Validar datos obligatorios
+      if (!peliculaSinGeneros.titulo || peliculaSinGeneros.titulo.trim() === '') {
+        throw new Error('El título es obligatorio');
+      }
+
+      if (!peliculaSinGeneros.duracion || peliculaSinGeneros.duracion <= 0) {
+        throw new Error('La duración debe ser mayor a 0');
+      }
+
+      if (!peliculaSinGeneros.clasificacion) {
+        throw new Error('La clasificación es obligatoria');
+      }
+
+      const peliculaLimpia = limpiarObjetoVacio(peliculaSinGeneros);
+
       const peliculaCompleta = {
-        ...peliculaSinGeneros,
+        ...peliculaLimpia,
         activa: true,
         destacada: false,
         votos: 0,
         calificacion: null,
-        fecha_creacion: new Date().toISOString(),
       };
 
-      // Crear la película
       const response = await HttpClient.post<Pelicula[]>('/peliculas', peliculaCompleta, {
         headers: {
           Prefer: 'return=representation',
@@ -150,14 +163,17 @@ export class PeliculaService {
 
       const peliculaCreada = response.data[0];
 
-      // Si hay géneros, crear las relaciones
       if (generos_ids && generos_ids.length > 0) {
         await this.asignarGenerosPelicula(peliculaCreada.id, generos_ids);
       }
 
       return peliculaCreada;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error al crear película:', error);
+      console.error('Detalles del error:', JSON.stringify(error.response?.data, null, 2));
+      console.error('Status:', error.response?.status);
+      console.error('Headers:', error.response?.headers);
+      console.error('URL:', error.config?.url);
       throw error;
     }
   }
@@ -170,10 +186,13 @@ export class PeliculaService {
       // Extraer generos_ids del objeto principal
       const { generos_ids, ...peliculaSinGeneros } = peliculaData;
 
+      // Limpiar campos vacíos
+      const peliculaLimpia = limpiarObjetoVacio(peliculaSinGeneros);
+
       // Actualizar la película
       const response = await HttpClient.patch<Pelicula[]>(
         `/peliculas?id=eq.${id}`,
-        peliculaSinGeneros,
+        peliculaLimpia,
         {
           headers: {
             Prefer: 'return=representation',

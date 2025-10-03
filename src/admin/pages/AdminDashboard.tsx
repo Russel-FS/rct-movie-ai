@@ -1,16 +1,26 @@
 import { useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, SafeAreaView } from 'react-native';
-import { Film, Tag, MapPin, Users, BarChart3, Settings, ChevronLeft } from 'lucide-react-native';
+import {
+  Film,
+  Tag,
+  MapPin,
+  Users,
+  BarChart3,
+  Settings,
+  ChevronLeft,
+  Armchair,
+} from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 
 // Importar los componentes CRUD
 import PeliculaCRUD from './PeliculaCRUD';
 import GeneroCRUD from './GeneroCRUD';
 import CineCRUD from './CineCRUD';
+import SalaCRUD from './SalaCRUD';
 import UsuarioCRUD from './UsuarioCRUD';
 import EstadisticasAdmin from './EstadisticasAdmin';
 
-type TabType = 'peliculas' | 'generos' | 'cines' | 'usuarios' | 'estadisticas';
+type TabType = 'peliculas' | 'generos' | 'cines' | 'salas' | 'usuarios' | 'estadisticas';
 
 interface TabConfig {
   id: TabType;
@@ -41,6 +51,13 @@ const tabs: TabConfig[] = [
     icon: MapPin,
     component: CineCRUD,
     color: '#F59E0B',
+  },
+  {
+    id: 'salas',
+    label: 'Salas',
+    icon: Armchair,
+    component: SalaCRUD,
+    color: '#EC4899',
   },
   {
     id: 'usuarios',

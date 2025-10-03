@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { CineService } from '../services/cine.service';
 import { Cine } from '../types/cine';
-import { obtenerUbicacionUsuario, LocationCoords } from '../utils/location.utils';
+import { useLocation } from './useLocation';
+import { LocationCoords } from '../utils/location.utils';
 
 interface UseCinesOptions {
   incluirUbicacion?: boolean;
@@ -12,15 +13,19 @@ export const useCines = (options: UseCinesOptions = {}) => {
   const [cines, setCines] = useState<Cine[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [userLocation, setUserLocation] = useState<LocationCoords | null>(null);
 
-  const { incluirUbicacion = false, radio = 10 } = options;
+  const { incluirUbicacion = true, radio = 10 } = options;
 
-  const loadCines = async (userLat?: number, userLon?: number) => {
+  // Usar el hook de ubicación
+  const { location, requestLocation, hasPermission } = useLocation();
+
+  const loadCines = async () => {
     try {
       setLoading(true);
       setError(null);
 
+      const userLat = location?.lat;
+      const userLon = location?.lon;
       let cinesData: Cine[];
 
       if (userLat && userLon && radio) {
@@ -38,26 +43,11 @@ export const useCines = (options: UseCinesOptions = {}) => {
     }
   };
 
-  const getUserLocation = async (): Promise<LocationCoords | null> => {
-    try {
-      const location = await obtenerUbicacionUsuario();
-      if (location) {
-        setUserLocation(location);
-      }
-      return location;
-    } catch (error) {
-      console.warn('Error obteniendo ubicación:', error);
-      return null;
-    }
-  };
-
   const refreshCines = async () => {
-    if (incluirUbicacion) {
-      const location = await getUserLocation();
-      await loadCines(location?.lat, location?.lon);
-    } else {
-      await loadCines();
+    if (incluirUbicacion && !location) {
+      await requestLocation();
     }
+    await loadCines();
   };
 
   const buscarCines = async (termino: string) => {
@@ -65,11 +55,7 @@ export const useCines = (options: UseCinesOptions = {}) => {
       setLoading(true);
       setError(null);
 
-      const cinesData = await CineService.buscarCines(
-        termino,
-        userLocation?.lat,
-        userLocation?.lon
-      );
+      const cinesData = await CineService.buscarCines(termino, location?.lat, location?.lon);
       setCines(cinesData);
     } catch (err) {
       setError('Error al buscar cines');
@@ -81,22 +67,32 @@ export const useCines = (options: UseCinesOptions = {}) => {
 
   const getCineById = async (id: number): Promise<Cine | null> => {
     try {
-      return await CineService.getCineById(id, userLocation?.lat, userLocation?.lon);
+      return await CineService.getCineById(id, location?.lat, location?.lon);
     } catch (err) {
       console.error('Error getting cine by id:', err);
       return null;
     }
   };
 
+  // Solicitar ubicación al montar si se requiere
   useEffect(() => {
-    refreshCines();
-  }, [incluirUbicacion, radio]);
+    if (incluirUbicacion && !hasPermission) {
+      requestLocation();
+    }
+  }, [incluirUbicacion]);
+
+  // Cargar cines cuando cambie la ubicación o las opciones
+  useEffect(() => {
+    loadCines();
+  }, [location, incluirUbicacion, radio]);
 
   return {
     cines,
     loading,
     error,
-    userLocation,
+    userLocation: location,
+    hasPermission,
+    requestLocation,
     refreshCines,
     buscarCines,
     getCineById,

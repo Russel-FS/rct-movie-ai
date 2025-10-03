@@ -2,6 +2,7 @@ export type RootStackParamList = {
   MainTabs: undefined;
   GenreMovies: { generoId: number };
   AdminDashboard: undefined;
+  DebugReserva: undefined;
   SeleccionLugar: { peliculaId: string };
   SeleccionHorario: {
     peliculaId: string;
@@ -15,6 +16,8 @@ export type RootStackParamList = {
     cinemaName: string;
   };
   SeleccionComidas: {
+    funcionId: string;
+    salaId: number;
     peliculaId: string;
     cinemaName: string;
     fecha: string;
@@ -25,7 +28,9 @@ export type RootStackParamList = {
     asientosSeleccionados: string[];
   };
   MetodoPago: {
+    funcionId: string;
     peliculaId: string;
+    salaId: number;
     cinemaName: string;
     fecha: string;
     hora: string;
@@ -43,6 +48,7 @@ export type RootStackParamList = {
     totalPagar: number;
   };
   ResumenPago: {
+    funcionId: string;
     peliculaId: string;
     cinemaName: string;
     fecha: string;

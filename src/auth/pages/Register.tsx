@@ -1,11 +1,49 @@
-import { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useAuth } from '~/shared/contexts/AuthContext';
 
 export default function Register() {
+  const [nombre, setNombre] = useState('');
+  const [apellido, setApellido] = useState('');
+  const [email, setEmail] = useState('');
+  const [telefono, setTelefono] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [acceptTerms, setAcceptTerms] = useState(false);
+
+  const { register, loading } = useAuth();
+
+  const handleRegister = async () => {
+    if (!nombre || !apellido || !email || !password) {
+      Alert.alert('Error', 'Por favor completa todos los campos obligatorios');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      Alert.alert('Error', 'Las contraseñas no coinciden');
+      return;
+    }
+
+    if (password.length < 8) {
+      Alert.alert('Error', 'La contraseña debe tener al menos 8 caracteres');
+      return;
+    }
+
+    if (!acceptTerms) {
+      Alert.alert('Error', 'Debes aceptar los términos y condiciones');
+      return;
+    }
+
+    const success = await register(email, password, nombre, apellido);
+    if (success) {
+      Alert.alert('Éxito', 'Cuenta creada exitosamente. Revisa tu email para verificar tu cuenta.');
+    } else {
+      Alert.alert('Error', 'No se pudo crear la cuenta. Verifica que el email no esté en uso.');
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -35,21 +73,13 @@ export default function Register() {
       {/* Correo */}
       <View style={styles.inputWrapper}>
         <Text style={styles.label}>Correo Electrónico</Text>
-        <TextInput
-          style={styles.input}
-          keyboardType="email-address"
-          placeholderTextColor="#999"
-        />
+        <TextInput style={styles.input} keyboardType="email-address" placeholderTextColor="#999" />
       </View>
 
       {/* Teléfono */}
       <View style={styles.inputWrapper}>
         <Text style={styles.label}>Número de Teléfono</Text>
-        <TextInput
-          style={styles.input}
-          keyboardType="phone-pad"
-          placeholderTextColor="#999"
-        />
+        <TextInput style={styles.input} keyboardType="phone-pad" placeholderTextColor="#999" />
       </View>
 
       {/* Contraseña */}
@@ -64,7 +94,7 @@ export default function Register() {
           />
           <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
             <Ionicons
-              name={showPassword ? "eye-off-outline" : "eye-outline"}
+              name={showPassword ? 'eye-off-outline' : 'eye-outline'}
               size={24}
               color="gray"
             />
@@ -84,7 +114,7 @@ export default function Register() {
           />
           <TouchableOpacity onPress={() => setShowConfirm(!showConfirm)}>
             <Ionicons
-              name={showConfirm ? "eye-off-outline" : "eye-outline"}
+              name={showConfirm ? 'eye-off-outline' : 'eye-outline'}
               size={24}
               color="gray"
             />
@@ -115,97 +145,97 @@ export default function Register() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
-    justifyContent: "center",
+    backgroundColor: '#fff',
+    justifyContent: 'center',
     paddingHorizontal: 24,
   },
   logoContainer: {
-    alignItems: "center",
+    alignItems: 'center',
     marginBottom: 40,
   },
   squareContainer: {
     width: 100,
     height: 100,
     borderRadius: 20, // Esquinas redondeadas del cuadrado externo
-    backgroundColor: "#2563EB",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: '#2563EB',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   circleContainer: {
     width: 70,
     height: 70,
     borderRadius: 35, // Círculo interno
-    backgroundColor: "#1D4ED8",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: '#1D4ED8',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   playIcon: {
-    color: "#fff",
+    color: '#fff',
     fontSize: 36,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
   logoText: {
     fontSize: 28,
-    fontWeight: "bold",
-    color: "#111827",
+    fontWeight: 'bold',
+    color: '#111827',
     marginTop: 12,
   },
   logoSubtitle: {
-    color: "#6B7280",
+    color: '#6B7280',
     marginTop: 4,
-    textAlign: "center",
+    textAlign: 'center',
   },
 
-  row: { flexDirection: "row", marginBottom: 16 },
+  row: { flexDirection: 'row', marginBottom: 16 },
   inputWrapper: { marginBottom: 16, flex: 1 },
-  label: { color: "#333", marginBottom: 4 },
+  label: { color: '#333', marginBottom: 4 },
   input: {
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: '#ccc',
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 16,
   },
   passwordContainer: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: '#ccc',
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 0,
   },
   inputPassword: { flex: 1, fontSize: 16, paddingVertical: 10 },
   termsContainer: {
-    flexDirection: "row",
-    alignItems: "flex-start",
+    flexDirection: 'row',
+    alignItems: 'flex-start',
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: '#ccc',
     borderRadius: 8,
     padding: 12,
     marginBottom: 24,
-    backgroundColor: "#F9FAFB",
+    backgroundColor: '#F9FAFB',
   },
   checkbox: {
     width: 24,
     height: 24,
     borderWidth: 2,
-    borderColor: "#ccc",
+    borderColor: '#ccc',
     borderRadius: 6,
     marginRight: 12,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   checkboxChecked: {
-    backgroundColor: "#007BFF",
-    borderColor: "#007BFF",
+    backgroundColor: '#007BFF',
+    borderColor: '#007BFF',
   },
-  checkboxLabel: { flex: 1, color: "#333" },
+  checkboxLabel: { flex: 1, color: '#333' },
   button: {
-    backgroundColor: "#007BFF",
+    backgroundColor: '#007BFF',
     paddingVertical: 14,
     borderRadius: 8,
   },
-  buttonText: { color: "#fff", fontSize: 16, fontWeight: "bold", textAlign: "center" },
+  buttonText: { color: '#fff', fontSize: 16, fontWeight: 'bold', textAlign: 'center' },
 });

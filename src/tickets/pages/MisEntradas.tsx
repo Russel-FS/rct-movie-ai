@@ -13,12 +13,26 @@ export default function MisEntradas() {
   const { tickets, loading, refreshTickets } = useTickets();
 
   const formatFecha = (fechaStr: string) => {
-    const fecha = new Date(fechaStr);
-    return fecha.toLocaleDateString('es-ES', {
-      weekday: 'short',
-      day: 'numeric',
-      month: 'short',
-    });
+    if (!fechaStr) return '';
+
+    if (fechaStr.includes('/') || fechaStr.includes('-')) {
+      try {
+        const fecha = new Date(fechaStr);
+
+        if (isNaN(fecha.getTime())) {
+          return fechaStr;
+        }
+        return fecha.toLocaleDateString('es-ES', {
+          weekday: 'short',
+          day: 'numeric',
+          month: 'short',
+        });
+      } catch (error) {
+        return fechaStr;
+      }
+    }
+
+    return fechaStr;
   };
 
   const handleTicketPress = (ticketId: string) => {

@@ -1,6 +1,21 @@
 import React, { useState } from 'react';
 import { Text, View, ScrollView, TouchableOpacity, Switch, Alert } from 'react-native';
-import { User, ChevronRight, Mail, Phone, Lock, Settings, LogOut } from 'lucide-react-native';
+import {
+  User,
+  ChevronRight,
+  Mail,
+  Phone,
+  Lock,
+  Settings,
+  LogOut,
+  Shield,
+  Crown,
+} from 'lucide-react-native';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '~/shared/types/navigation';
+
+type PerfilNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 // Interfaz para los items del perfil
 interface ProfileItem {
@@ -11,6 +26,8 @@ interface ProfileItem {
 }
 
 export default function Perfil() {
+  const navigation = useNavigation<PerfilNavigationProp>();
+
   // Estados para los switches de configuración
   const [notifications, setNotifications] = useState<boolean>(true);
   const [darkMode, setDarkMode] = useState<boolean>(true);
@@ -19,6 +36,7 @@ export default function Perfil() {
   const userInfo = {
     name: 'James Velezmoro',
     email: 'James.Velezmoro@email.com',
+    isAdmin: true, // TODO: Obtener esto del contexto de usuario real
   };
 
   // Items de información personal
@@ -63,6 +81,10 @@ export default function Perfil() {
         },
       },
     ]);
+  };
+
+  const handleAdminAccess = () => {
+    navigation.navigate('AdminDashboard');
   };
 
   const ProfileItemRow: React.FC<{ item: ProfileItem }> = ({ item }) => (
@@ -130,6 +152,52 @@ export default function Perfil() {
           {profileItems.map((item) => (
             <ProfileItemRow key={item.id} item={item} />
           ))}
+
+          {/* Sección de Administracin*/}
+          {userInfo.isAdmin && (
+            <>
+              <Text className="mb-6 mt-8 text-xl font-bold text-white">Administración</Text>
+
+              <TouchableOpacity
+                className="mb-4 overflow-hidden rounded-3xl border border-purple-500/30 bg-gradient-to-r from-purple-600/20 to-blue-600/20"
+                onPress={handleAdminAccess}
+                activeOpacity={0.8}>
+                <View className="flex-row items-center p-6">
+                  <View className="mr-4 rounded-full bg-purple-600/30 p-3">
+                    <Crown size={20} color="#A855F7" />
+                  </View>
+                  <View className="flex-1">
+                    <Text className="mb-1 text-sm font-medium text-purple-300">
+                      Panel de Control
+                    </Text>
+                    <Text className="text-base font-medium text-white">Administrar Sistema</Text>
+                    <Text className="mt-1 text-xs text-gray-400">
+                      Gestionar películas, cines, géneros y usuarios
+                    </Text>
+                  </View>
+                  <View className="rounded-full bg-purple-600/20 p-2">
+                    <ChevronRight size={16} color="#A855F7" />
+                  </View>
+                </View>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                className="mb-4 overflow-hidden rounded-3xl bg-gray-800/50"
+                activeOpacity={0.8}>
+                <View className="flex-row items-center p-6">
+                  <View className="mr-4 rounded-full bg-gray-700/50 p-3">
+                    <Shield size={20} color="#9CA3AF" />
+                  </View>
+                  <View className="flex-1">
+                    <Text className="mb-1 text-sm font-medium text-gray-400">Permisos</Text>
+                    <Text className="text-base font-medium text-white">Administrador</Text>
+                    <Text className="mt-1 text-xs text-gray-400">Acceso completo al sistema</Text>
+                  </View>
+                  <ChevronRight size={20} color="#6B7280" />
+                </View>
+              </TouchableOpacity>
+            </>
+          )}
 
           {/* Configuración */}
           <Text className="mb-6 mt-8 text-xl font-bold text-white">Preferencias</Text>

@@ -16,6 +16,7 @@ import SeleccionButacas from '~/cartelera/pages/SeleccionButacas';
 import SeleccionComidas from '~/cartelera/pages/SeleccionComidas';
 import MetodoPago from '~/cartelera/pages/MetodoPago';
 import ResumenPago from '~/cartelera/pages/ResumenPago';
+import AdminDashboard from '~/admin/pages/AdminDashboard';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -36,6 +37,15 @@ export default function App() {
         <Stack.Screen
           name="GenreMovies"
           component={GenreMovies}
+          options={{
+            animation: 'slide_from_right',
+          }}
+        />
+
+        {/* Panel de Administración */}
+        <Stack.Screen
+          name="AdminDashboard"
+          component={AdminDashboard}
           options={{
             animation: 'slide_from_right',
           }}

@@ -139,4 +139,13 @@ export class HttpClient {
   static async getPeliculas<T>(): Promise<AxiosResponse<T>> {
     return await HttpClient.get<T>('/Peliculas');
   }
+
+  /**
+   * Método específico para obtener cines de Supabase
+   * @template T Tipo de dato que se espera recibir
+   * @returns {Promise<AxiosResponse<T>>} Promesa con los cines
+   */
+  static async getCines<T>(): Promise<AxiosResponse<T>> {
+    return await HttpClient.get<T>('/cines?activo=eq.true&order=nombre.asc');
+  }
 }

@@ -72,6 +72,27 @@ export class PeliculaService {
   }
 
   /**
+   * Obtiene una película por ID junto con sus géneros
+   */
+  static async getPeliculaConGeneros(
+    id: string
+  ): Promise<{ pelicula: Pelicula; generos: import('~/shared/types/genero').GeneroMovie[] }> {
+    try {
+      const pelicula = await this.getPeliculaById(id);
+
+      const generosIds = await this.getGenerosPelicula(id);
+
+      const { GeneroService } = await import('./genero.service');
+      const generos = await GeneroService.getGenerosByIds(generosIds);
+
+      return { pelicula, generos };
+    } catch (error) {
+      console.error('Error al obtener película con géneros:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Busca películas por título
    */
   static async buscarPeliculas(termino: string): Promise<Pelicula[]> {

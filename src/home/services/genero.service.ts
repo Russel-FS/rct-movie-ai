@@ -32,6 +32,24 @@ export class GeneroService {
   }
 
   /**
+   * Obtiene múltiples géneros por sus IDs
+   */
+  static async getGenerosByIds(ids: number[]): Promise<GeneroMovie[]> {
+    try {
+      if (ids.length === 0) return [];
+
+      const idsString = ids.join(',');
+      const response = await HttpClient.get<GeneroMovie[]>(
+        `/generos?id=in.(${idsString})&activo=eq.true`
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Error al obtener géneros por IDs:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Crea un nuevo género
    */
   static async crearGenero(generoData: CreateGeneroDto): Promise<GeneroMovie> {

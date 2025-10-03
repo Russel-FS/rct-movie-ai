@@ -10,6 +10,8 @@ import {
   ChevronLeft,
   Armchair,
   Calendar,
+  ShoppingBag,
+  Package,
 } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 
@@ -21,6 +23,8 @@ import SalaCRUD from './SalaCRUD';
 import FuncionCRUD from './FuncionCRUD';
 import UsuarioCRUD from './UsuarioCRUD';
 import EstadisticasAdmin from './EstadisticasAdmin';
+import CategoriaProductoCRUD from './CategoriaProductoCRUD';
+import ProductoCRUD from './ProductoCRUD';
 
 type TabType =
   | 'peliculas'
@@ -29,6 +33,8 @@ type TabType =
   | 'salas'
   | 'funciones'
   | 'usuarios'
+  | 'categorias-productos'
+  | 'productos'
   | 'estadisticas';
 
 interface TabConfig {
@@ -81,6 +87,20 @@ const tabs: TabConfig[] = [
     icon: Users,
     component: UsuarioCRUD,
     color: '#8B5CF6',
+  },
+  {
+    id: 'categorias-productos',
+    label: 'Categorías',
+    icon: Tag,
+    component: CategoriaProductoCRUD,
+    color: '#F97316',
+  },
+  {
+    id: 'productos',
+    label: 'Productos',
+    icon: Package,
+    component: ProductoCRUD,
+    color: '#84CC16',
   },
   {
     id: 'estadisticas',

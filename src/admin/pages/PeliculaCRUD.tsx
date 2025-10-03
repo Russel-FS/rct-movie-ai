@@ -23,7 +23,17 @@ import {
   Star,
   Calendar,
   Clock,
+  ChevronRight,
+  User,
+  Globe,
+  Image,
+  Play,
+  Tag,
+  Languages,
+  Subtitles,
 } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Calendar as CalendarPicker } from 'react-native-calendars';
 import {
   Pelicula,
   CreatePeliculaDto,
@@ -64,6 +74,9 @@ export default function PeliculaCRUD() {
     generos_ids: [],
   });
   const [formLoading, setFormLoading] = useState(false);
+
+  // Estados para selectores de fecha
+  const [showDatePicker, setShowDatePicker] = useState<'estreno' | 'fin' | null>(null);
 
   // Cargar datos iniciales
   useEffect(() => {
@@ -148,6 +161,7 @@ export default function PeliculaCRUD() {
 
   // Guardar película (crear o editar)
   const handleSave = async () => {
+    // Validaciones
     if (!formData.titulo.trim()) {
       Alert.alert('Error', 'El título es obligatorio');
       return;
@@ -155,6 +169,22 @@ export default function PeliculaCRUD() {
 
     if (formData.duracion <= 0) {
       Alert.alert('Error', 'La duración debe ser mayor a 0');
+      return;
+    }
+
+    if (!formData.generos_ids || formData.generos_ids.length === 0) {
+      Alert.alert('Error', 'Selecciona al menos un género para la película');
+      return;
+    }
+
+    // Validar URLs si se proporcionan
+    if (formData.poster_url && !isValidUrl(formData.poster_url)) {
+      Alert.alert('Error', 'La URL del póster no es válida');
+      return;
+    }
+
+    if (formData.trailer_url && !isValidUrl(formData.trailer_url)) {
+      Alert.alert('Error', 'La URL del tráiler no es válida');
       return;
     }
 
@@ -179,6 +209,48 @@ export default function PeliculaCRUD() {
     } finally {
       setFormLoading(false);
     }
+  };
+
+  // Función auxiliar para validar URLs
+  const isValidUrl = (url: string): boolean => {
+    try {
+      new URL(url);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  // Funciones para manejar fechas
+  const formatDateForDisplay = (dateString: string): string => {
+    if (!dateString) return 'Seleccionar fecha';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('es-ES', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric',
+    });
+  };
+
+  const generateDateOptions = () => {
+    const options = [];
+    const today = new Date();
+
+    // Generar fechas desde hoy hasta 2 años en el futuro
+    for (let i = 0; i < 730; i++) {
+      const date = new Date(today);
+      date.setDate(today.getDate() + i);
+      options.push({
+        value: date.toISOString().split('T')[0],
+        label: date.toLocaleDateString('es-ES', {
+          weekday: 'short',
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric',
+        }),
+      });
+    }
+    return options;
   };
 
   // Cambiar estado de película
@@ -392,96 +464,301 @@ export default function PeliculaCRUD() {
 
             {/* Formulario en ScrollView */}
             <ScrollView showsVerticalScrollIndicator={false} className="flex-1">
-              <View className="space-y-4">
-                {/* Título */}
+              <View className="space-y-6">
+                {/* Sección: Información Básica */}
                 <View>
-                  <Text className="mb-2 text-sm font-bold text-white">Título *</Text>
-                  <TextInput
-                    value={formData.titulo}
-                    onChangeText={(text) => setFormData({ ...formData, titulo: text })}
-                    placeholder="Título de la película"
-                    placeholderTextColor="#9CA3AF"
-                    className="rounded-lg bg-gray-800 px-4 py-3 text-white"
-                  />
-                </View>
+                  <Text className="mb-4 text-lg font-bold text-white">📝 Información Básica</Text>
 
-                {/* Título Original */}
-                <View>
-                  <Text className="mb-2 text-sm font-bold text-white">Título Original</Text>
-                  <TextInput
-                    value={formData.titulo_original}
-                    onChangeText={(text) => setFormData({ ...formData, titulo_original: text })}
-                    placeholder="Título original (si es diferente)"
-                    placeholderTextColor="#9CA3AF"
-                    className="rounded-lg bg-gray-800 px-4 py-3 text-white"
-                  />
-                </View>
-
-                {/* Duración y Clasificación */}
-                <View className="flex-row space-x-3">
-                  <View className="flex-1">
-                    <Text className="mb-2 text-sm font-bold text-white">Duración (min) *</Text>
+                  {/* Título */}
+                  <View className="mb-4">
+                    <Text className="mb-2 text-sm font-semibold text-gray-300">Título *</Text>
                     <TextInput
-                      value={formData.duracion.toString()}
-                      onChangeText={(text) => {
-                        const duracion = text === '' ? 0 : parseInt(text) || 0;
-                        setFormData({ ...formData, duracion });
-                      }}
-                      placeholder="120"
-                      placeholderTextColor="#9CA3AF"
-                      className="rounded-lg bg-gray-800 px-4 py-3 text-white"
-                      keyboardType="numeric"
+                      value={formData.titulo}
+                      onChangeText={(text) => setFormData({ ...formData, titulo: text })}
+                      placeholder="Ej: Avengers: Endgame"
+                      placeholderTextColor="#6B7280"
+                      className="rounded-2xl border border-gray-700/50 bg-gray-800/50 px-4 py-4 text-white focus:border-blue-500"
                     />
                   </View>
-                  <View className="flex-1">
-                    <Text className="mb-2 text-sm font-bold text-white">Clasificación *</Text>
-                    <View className="rounded-lg bg-gray-800 px-4 py-3">
-                      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                        <View className="flex-row space-x-2">
-                          {clasificaciones.map((clasificacion) => (
-                            <TouchableOpacity
-                              key={clasificacion}
-                              onPress={() => setFormData({ ...formData, clasificacion })}
-                              className={`rounded px-3 py-1 ${
-                                formData.clasificacion === clasificacion
-                                  ? 'bg-blue-600'
-                                  : 'bg-gray-700'
-                              }`}>
-                              <Text className="text-sm font-bold text-white">{clasificacion}</Text>
-                            </TouchableOpacity>
-                          ))}
-                        </View>
-                      </ScrollView>
+
+                  {/* Título Original */}
+                  <View className="mb-4">
+                    <Text className="mb-2 text-sm font-semibold text-gray-300">
+                      Título Original
+                    </Text>
+                    <TextInput
+                      value={formData.titulo_original}
+                      onChangeText={(text) => setFormData({ ...formData, titulo_original: text })}
+                      placeholder="Título en idioma original (opcional)"
+                      placeholderTextColor="#6B7280"
+                      className="rounded-2xl border border-gray-700/50 bg-gray-800/50 px-4 py-4 text-white"
+                    />
+                  </View>
+
+                  {/* Sinopsis */}
+                  <View className="mb-4">
+                    <Text className="mb-2 text-sm font-semibold text-gray-300">Sinopsis</Text>
+                    <TextInput
+                      value={formData.sinopsis}
+                      onChangeText={(text) => setFormData({ ...formData, sinopsis: text })}
+                      placeholder="Describe la trama de la película..."
+                      placeholderTextColor="#6B7280"
+                      className="rounded-2xl border border-gray-700/50 bg-gray-800/50 px-4 py-4 text-white"
+                      multiline
+                      numberOfLines={4}
+                      textAlignVertical="top"
+                      maxLength={500}
+                    />
+                    <Text className="mt-1 text-xs text-gray-500">
+                      {(formData.sinopsis || '').length}/500 caracteres
+                    </Text>
+                  </View>
+                </View>
+
+                {/* Sección: Detalles Técnicos */}
+                <View>
+                  <Text className="mb-4 text-lg font-bold text-white"> Detalles Técnicos</Text>
+
+                  {/* Duración y Clasificación */}
+                  <View className="mb-4 flex-row space-x-3">
+                    <View className="flex-1">
+                      <Text className="mb-2 text-sm font-semibold text-gray-300">
+                        Duración (min) *
+                      </Text>
+                      <TextInput
+                        value={formData.duracion.toString()}
+                        onChangeText={(text) => {
+                          const duracion = text === '' ? 0 : parseInt(text) || 0;
+                          setFormData({ ...formData, duracion });
+                        }}
+                        placeholder="120"
+                        placeholderTextColor="#6B7280"
+                        className="rounded-2xl border border-gray-700/50 bg-gray-800/50 px-4 py-4 text-white"
+                        keyboardType="numeric"
+                      />
+                    </View>
+                    <View className="flex-1">
+                      <Text className="mb-2 text-sm font-semibold text-gray-300">
+                        Clasificación *
+                      </Text>
+                      <View className="rounded-2xl border border-gray-700/50 bg-gray-800/50 px-4 py-3">
+                        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                          <View className="flex-row space-x-2">
+                            {clasificaciones.map((clasificacion) => (
+                              <TouchableOpacity
+                                key={clasificacion}
+                                onPress={() => setFormData({ ...formData, clasificacion })}
+                                className={`rounded-xl px-4 py-2 ${
+                                  formData.clasificacion === clasificacion
+                                    ? 'bg-blue-600'
+                                    : 'bg-gray-700/50'
+                                }`}>
+                                <Text className="text-sm font-semibold text-white">
+                                  {clasificacion}
+                                </Text>
+                              </TouchableOpacity>
+                            ))}
+                          </View>
+                        </ScrollView>
+                      </View>
+                    </View>
+                  </View>
+
+                  {/* Idioma y Subtítulos */}
+                  <View className="mb-4 flex-row space-x-3">
+                    <View className="flex-1">
+                      <Text className="mb-2 text-sm font-semibold text-gray-300">
+                        Idioma Original
+                      </Text>
+                      <TextInput
+                        value={formData.idioma_original}
+                        onChangeText={(text) => setFormData({ ...formData, idioma_original: text })}
+                        placeholder="Español, Inglés, etc."
+                        placeholderTextColor="#6B7280"
+                        className="rounded-2xl border border-gray-700/50 bg-gray-800/50 px-4 py-4 text-white"
+                      />
+                    </View>
+                    <View className="flex-1">
+                      <Text className="mb-2 text-sm font-semibold text-gray-300">Subtítulos</Text>
+                      <TextInput
+                        value={formData.subtitulos}
+                        onChangeText={(text) => setFormData({ ...formData, subtitulos: text })}
+                        placeholder="Español, Inglés"
+                        placeholderTextColor="#6B7280"
+                        className="rounded-2xl border border-gray-700/50 bg-gray-800/50 px-4 py-4 text-white"
+                      />
                     </View>
                   </View>
                 </View>
 
-                {/* Director */}
+                {/* Sección: Equipo Creativo */}
                 <View>
-                  <Text className="mb-2 text-sm font-bold text-white">Director</Text>
-                  <TextInput
-                    value={formData.director}
-                    onChangeText={(text) => setFormData({ ...formData, director: text })}
-                    placeholder="Nombre del director"
-                    placeholderTextColor="#9CA3AF"
-                    className="rounded-lg bg-gray-800 px-4 py-3 text-white"
-                  />
+                  <Text className="mb-4 text-lg font-bold text-white">🎬 Equipo Creativo</Text>
+
+                  {/* Director */}
+                  <View className="mb-4">
+                    <Text className="mb-2 text-sm font-semibold text-gray-300">Director</Text>
+                    <TextInput
+                      value={formData.director}
+                      onChangeText={(text) => setFormData({ ...formData, director: text })}
+                      placeholder="Nombre del director"
+                      placeholderTextColor="#6B7280"
+                      className="rounded-2xl border border-gray-700/50 bg-gray-800/50 px-4 py-4 text-white"
+                    />
+                  </View>
+
+                  {/* Reparto */}
+                  <View className="mb-4">
+                    <Text className="mb-2 text-sm font-semibold text-gray-300">
+                      Reparto Principal
+                    </Text>
+                    <TextInput
+                      value={formData.reparto}
+                      onChangeText={(text) => setFormData({ ...formData, reparto: text })}
+                      placeholder="Actor 1, Actor 2, Actor 3..."
+                      placeholderTextColor="#6B7280"
+                      className="rounded-2xl border border-gray-700/50 bg-gray-800/50 px-4 py-4 text-white"
+                      multiline
+                      numberOfLines={2}
+                      textAlignVertical="top"
+                    />
+                  </View>
                 </View>
 
-                {/* Sinopsis */}
+                {/* Sección: Géneros */}
                 <View>
-                  <Text className="mb-2 text-sm font-bold text-white">Sinopsis</Text>
-                  <TextInput
-                    value={formData.sinopsis}
-                    onChangeText={(text) => setFormData({ ...formData, sinopsis: text })}
-                    placeholder="Descripción de la película..."
-                    placeholderTextColor="#9CA3AF"
-                    className="rounded-lg bg-gray-800 px-4 py-3 text-white"
-                    multiline
-                    numberOfLines={4}
-                    textAlignVertical="top"
-                  />
+                  <Text className="mb-4 text-lg font-bold text-white">🏷️ Géneros *</Text>
+                  <View className="rounded-2xl border border-gray-700/50 bg-gray-800/30 p-4">
+                    <View className="flex-row flex-wrap">
+                      {generos.map((genero) => {
+                        const isSelected = formData.generos_ids?.includes(genero.id) || false;
+                        return (
+                          <TouchableOpacity
+                            key={genero.id}
+                            onPress={() => {
+                              const currentGeneros = formData.generos_ids || [];
+                              const newGeneros = isSelected
+                                ? currentGeneros.filter((id) => id !== genero.id)
+                                : [...currentGeneros, genero.id];
+                              setFormData({ ...formData, generos_ids: newGeneros });
+                            }}
+                            className={`mb-2 mr-2 rounded-full px-4 py-2 ${
+                              isSelected
+                                ? 'border border-blue-500 bg-blue-600'
+                                : 'border border-gray-600 bg-gray-700/50'
+                            }`}>
+                            <Text
+                              className={`text-sm font-medium ${
+                                isSelected ? 'text-white' : 'text-gray-300'
+                              }`}>
+                              {genero.nombre}
+                            </Text>
+                          </TouchableOpacity>
+                        );
+                      })}
+                    </View>
+                    {(!formData.generos_ids || formData.generos_ids.length === 0) && (
+                      <Text className="mt-2 text-xs text-gray-500">
+                        Selecciona al menos un género para la película
+                      </Text>
+                    )}
+                  </View>
                 </View>
+
+                {/* Sección: Multimedia */}
+                <View>
+                  <Text className="mb-4 text-lg font-bold text-white">🖼️ Multimedia</Text>
+
+                  {/* Poster URL */}
+                  <View className="mb-4">
+                    <Text className="mb-2 text-sm font-semibold text-gray-300">URL del Póster</Text>
+                    <TextInput
+                      value={formData.poster_url}
+                      onChangeText={(text) => setFormData({ ...formData, poster_url: text })}
+                      placeholder="https://ejemplo.com/poster.jpg"
+                      placeholderTextColor="#6B7280"
+                      className="rounded-2xl border border-gray-700/50 bg-gray-800/50 px-4 py-4 text-white"
+                      keyboardType="url"
+                    />
+                  </View>
+
+                  {/* Trailer URL */}
+                  <View className="mb-4">
+                    <Text className="mb-2 text-sm font-semibold text-gray-300">
+                      URL del Tráiler
+                    </Text>
+                    <TextInput
+                      value={formData.trailer_url}
+                      onChangeText={(text) => setFormData({ ...formData, trailer_url: text })}
+                      placeholder="https://youtube.com/watch?v=..."
+                      placeholderTextColor="#6B7280"
+                      className="rounded-2xl border border-gray-700/50 bg-gray-800/50 px-4 py-4 text-white"
+                      keyboardType="url"
+                    />
+                  </View>
+                </View>
+
+                {/* Sección: Fechas */}
+                <View>
+                  <Text className="mb-4 text-lg font-bold text-white">📅 Fechas de Exhibición</Text>
+
+                  {/* Fechas */}
+                  <View className="flex-row space-x-3">
+                    <View className="flex-1">
+                      <Text className="mb-2 text-sm font-semibold text-gray-300">
+                        Fecha de Estreno
+                      </Text>
+                      <TextInput
+                        value={formData.fecha_estreno}
+                        onChangeText={(text) => setFormData({ ...formData, fecha_estreno: text })}
+                        placeholder="YYYY-MM-DD"
+                        placeholderTextColor="#6B7280"
+                        className="rounded-2xl border border-gray-700/50 bg-gray-800/50 px-4 py-4 text-white"
+                      />
+                    </View>
+                    <View className="flex-1">
+                      <Text className="mb-2 text-sm font-semibold text-gray-300">
+                        Fecha Fin Exhibición
+                      </Text>
+                      <TextInput
+                        value={formData.fecha_fin_exhibicion}
+                        onChangeText={(text) =>
+                          setFormData({ ...formData, fecha_fin_exhibicion: text })
+                        }
+                        placeholder="YYYY-MM-DD"
+                        placeholderTextColor="#6B7280"
+                        className="rounded-2xl border border-gray-700/50 bg-gray-800/50 px-4 py-4 text-white"
+                      />
+                    </View>
+                  </View>
+                  <Text className="mt-2 text-xs text-gray-500">
+                    Formato: Año-Mes-Día (ej: 2024-12-25)
+                  </Text>
+                </View>
+
+                {/* Información adicional para edición */}
+                {editingPelicula && (
+                  <View className="rounded-2xl border border-yellow-500/30 bg-gradient-to-r from-yellow-600/20 to-orange-600/20 p-4">
+                    <Text className="mb-3 text-sm font-bold text-yellow-400">
+                      ℹ️ Información de la Película
+                    </Text>
+                    <View className="space-y-1">
+                      <Text className="text-xs text-gray-300">ID: {editingPelicula.id}</Text>
+                      <Text className="text-xs text-gray-300">
+                        Estado: {editingPelicula.activa ? '✅ Activa' : '❌ Inactiva'}
+                      </Text>
+                      <Text className="text-xs text-gray-300">
+                        Destacada: {editingPelicula.destacada ? '⭐ Sí' : '➖ No'}
+                      </Text>
+                      {editingPelicula.calificacion && (
+                        <Text className="text-xs text-gray-300">
+                          Calificación: ⭐ {editingPelicula.calificacion.toFixed(1)} (
+                          {editingPelicula.votos} votos)
+                        </Text>
+                      )}
+                    </View>
+                  </View>
+                )}
               </View>
             </ScrollView>
 
@@ -489,17 +766,27 @@ export default function PeliculaCRUD() {
             <View className="mt-6 flex-row space-x-3">
               <TouchableOpacity
                 onPress={() => setModalVisible(false)}
-                className="flex-1 rounded-lg bg-gray-600 px-4 py-3">
+                className="flex-1 rounded-xl border border-gray-600 bg-gray-700/50 px-4 py-4">
                 <Text className="text-center font-bold text-white">Cancelar</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
                 onPress={handleSave}
-                disabled={formLoading || !formData.titulo.trim() || formData.duracion <= 0}
-                className={`flex-1 rounded-lg px-4 py-3 ${
-                  formLoading || !formData.titulo.trim() || formData.duracion <= 0
-                    ? 'bg-gray-500'
-                    : 'bg-green-600'
+                disabled={
+                  formLoading ||
+                  !formData.titulo.trim() ||
+                  formData.duracion <= 0 ||
+                  !formData.generos_ids ||
+                  formData.generos_ids.length === 0
+                }
+                className={`flex-1 rounded-xl px-4 py-4 ${
+                  formLoading ||
+                  !formData.titulo.trim() ||
+                  formData.duracion <= 0 ||
+                  !formData.generos_ids ||
+                  formData.generos_ids.length === 0
+                    ? 'bg-gray-600/50'
+                    : 'bg-gradient-to-r from-green-600 to-emerald-600'
                 }`}>
                 {formLoading ? (
                   <ActivityIndicator size="small" color="#ffffff" />

@@ -1,16 +1,29 @@
-import { useState } from 'react';
-import { Text, View, TouchableOpacity, ScrollView, Dimensions, Image } from 'react-native';
+import { useState, useEffect } from 'react';
+import {
+  Text,
+  View,
+  TouchableOpacity,
+  ScrollView,
+  Dimensions,
+  Image,
+  ActivityIndicator,
+} from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '~/shared/types/navigation';
 import { ChevronLeft, MapPin, Clock, Calendar } from 'lucide-react-native';
+import { ProductoService } from '~/shared/services/producto.service';
+import { CategoriaProductoService } from '~/shared/services/categoria-producto.service';
+import { Producto } from '~/shared/types/producto';
+import { CategoriaProducto } from '~/shared/types/categoria-producto';
 
-type Producto = {
+type ProductoCarrito = {
+  id: number;
   name: string;
   description: string;
   price: number;
   type: string;
-  image: any;
+  image: string;
   cantidad?: number;
 };
 
@@ -26,11 +39,45 @@ export default function SeleccionComidas() {
   const { peliculaId, cinemaName, fecha, hora, sala, formato, precio, asientosSeleccionados } =
     route.params;
   const { width, height } = Dimensions.get('window');
-  const tGrande = width * 0.07;
-  const tMedio = width * 0.045;
-  const tPeque = width * 0.035;
 
-  const handleContinue = (comidas: Producto[], subtotalComidas: number) => {
+  // Estados para datos de la BD
+  const [categorias, setCategorias] = useState<CategoriaProducto[]>([]);
+  const [productos, setProductos] = useState<Producto[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [catActiva, setCatActiva] = useState<number | null>(null);
+  const [carrito, setCarrito] = useState<ProductoCarrito[]>([]);
+
+  // Cargar datos iniciales
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      const [categoriasData, productosData] = await Promise.all([
+        CategoriaProductoService.getAllCategorias(false),
+        ProductoService.getAllProductos(false),
+      ]);
+
+      setCategorias(categoriasData.sort((a, b) => a.orden - b.orden));
+      setProductos(productosData.sort((a, b) => a.orden - b.orden));
+
+      // categoría por defecto
+      if (categoriasData.length > 0) {
+        setCatActiva(categoriasData[0].id);
+      }
+    } catch (error) {
+      console.error('Error al cargar productos:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Filtrar productos por categoría activa
+  const productosFiltrados = productos.filter((p) => p.categoria_id === catActiva);
+
+  const handleContinue = (comidas: ProductoCarrito[], subtotalComidas: number) => {
     const subtotalEntradas = precio * asientosSeleccionados.length;
     const totalPagar = subtotalEntradas + subtotalComidas;
 
@@ -42,8 +89,8 @@ export default function SeleccionComidas() {
       sala,
       formato,
       asientosSeleccionados,
-      comidas: comidas.map((c, index) => ({
-        id: index + 1,
+      comidas: comidas.map((c) => ({
+        id: c.id,
         nombre: c.name,
         cantidad: c.cantidad || 1,
         precio: c.price,
@@ -58,192 +105,35 @@ export default function SeleccionComidas() {
     navigation.goBack();
   };
 
-  const productos: Record<string, Producto[]> = {
-    Combos: [
-      {
-        name: 'Combo Trio Estelar',
-        description: '3 Canchitas medianas + 3 Bebidas grandes',
-        price: 85.9,
-        type: 'COMBO',
-        image: {
-          uri: 'https://assets.cinemark-core.com/6183fbcacbb5c4a4c7d8d950/vista/concessions/653aa79e5aa07300084dca61/common/529-1754336185869',
-        },
-      },
-      {
-        name: 'Combo Duo Estelar',
-        description: '2 Canchitas + 2 Bebidas grandes',
-        price: 47.3,
-        type: 'COMBO',
-        image: {
-          uri: 'https://assets.cinemark-core.com/6183fbcacbb5c4a4c7d8d950/vista/concessions/653aa79e5aa07300084dca61/common/529-1754336185869',
-        },
-      },
-      {
-        name: 'Combinación 1 Estelar',
-        description: '1 Canchita + 1 Bebida',
-        price: 22.2,
-        type: 'COMBO',
-        image: {
-          uri: 'https://assets.cinemark-core.com/6183fbcacbb5c4a4c7d8d950/vista/concessions/653aa79e5aa07300084dca64/common/530-1754336201782',
-        },
-      },
-      {
-        name: 'Mega Combinación Estelar',
-        description: '1 Canchita + 1 Bebida grande',
-        price: 22.9,
-        type: 'COMBO',
-        image: {
-          uri: 'https://assets.cinemark-core.com/6183fbcacbb5c4a4c7d8d950/vista/concessions/653aa79e5aa07300084dca67/common/531-1754336216332',
-        },
-      },
-    ],
-    Canchita: [
-      {
-        name: 'Canchita Mediana',
-        description: 'Clásica con mantequilla',
-        price: 15.0,
-        type: 'CANCHITA',
-        image: {
-          uri: 'https://assets.cinemark-core.com/6183fbcacbb5c4a4c7d8d950/vista/concessions/653aa79e5aa07300084dca76/common/535-1754336275727',
-        },
-      },
-      {
-        name: 'Canchita Grande',
-        description: 'Ideal para compartir',
-        price: 20.0,
-        type: 'CANCHITA',
-        image: {
-          uri: 'https://assets.cinemark-core.com/6183fbcacbb5c4a4c7d8d950/vista/concessions/653aa79e5aa07300084dca79/common/1094-1754336288561',
-        },
-      },
-    ],
-    Bebidas: [
-      {
-        name: 'Gaseosa Grande',
-        description: 'Tamaño grande, refrescante',
-        price: 12.0,
-        type: 'BEBIDA',
-        image: {
-          uri: 'https://assets.cinemark-core.com/6183fbcacbb5c4a4c7d8d950/vista/concessions/653aa79e5aa07300084dca7f/common/1095-1752610498463',
-        },
-      },
-      {
-        name: 'Gaseosa Mediana',
-        description: 'Tamaño mediano',
-        price: 9.0,
-        type: 'BEBIDA',
-        image: {
-          uri: 'https://assets.cinemark-core.com/6183fbcacbb5c4a4c7d8d950/vista/concessions/653aa79e5aa07300084dca7c/common/537-1752610612431',
-        },
-      },
-      {
-        name: 'Agua sin Gas',
-        description: 'Botella de agua sin gas',
-        price: 7.0,
-        type: 'BEBIDA',
-        image: {
-          uri: 'https://assets.cinemark-core.com/6183fbcacbb5c4a4c7d8d950/vista/concessions/653aa79e5aa07300084dca82/common/538-1752610632804',
-        },
-      },
-    ],
-    Snacks: [
-      {
-        name: 'Hot Dog Frankfurter',
-        description: 'Pan, salchicha, mostaza y ketchup',
-        price: 16.0,
-        type: 'SNACK',
-        image: {
-          uri: 'https://assets.cinemark-core.com/6183fbcacbb5c4a4c7d8d950/vista/concessions/653aa79e5aa07300084dca88/common/534-1756913017116',
-        },
-      },
-      {
-        name: 'Nachos con Queso',
-        description: 'Nachos crujientes con queso cheddar',
-        price: 18.0,
-        type: 'SNACK',
-        image: {
-          uri: 'https://assets.cinemark-core.com/6183fbcacbb5c4a4c7d8d950/vista/concessions/653aa79e5aa07300084dca91/common/536-1756912982119',
-        },
-      },
-    ],
-    Dulces: [
-      {
-        name: "M&M's",
-        description: 'Bolsa 150g',
-        price: 12.0,
-        type: 'DULCE',
-        image: {
-          uri: 'https://assets.cinemark-core.com/6183fbcacbb5c4a4c7d8d950/vista/concessions/67925fc2890878ee2b0e6386/common/1100-1752618390328',
-        },
-      },
-      {
-        name: 'Skittles',
-        description: 'Bolsa 120g',
-        price: 11.0,
-        type: 'DULCE',
-        image: {
-          uri: 'https://assets.cinemark-core.com/6183fbcacbb5c4a4c7d8d950/vista/concessions/67925fc2890878ee2b0e6386/common/1100-1752618390328',
-        },
-      },
-    ],
-    Coleccionables: [
-      {
-        name: 'Combo Duo Superman',
-        description: 'Combo edición especial Superman',
-        price: 49.9,
-        type: 'COLECCIONABLE',
-        image: {
-          uri: 'https://assets.cinemark-core.com/6183fbcacbb5c4a4c7d8d950/vista/concessions/687ff623be197a99a4397654/common/15325-1754592931469',
-        },
-      },
-      {
-        name: 'Combo Vaso 4 Fantástico',
-        description: 'Incluye vaso edición especial',
-        price: 39.9,
-        type: 'COLECCIONABLE',
-        image: {
-          uri: 'https://assets.cinemark-core.com/6183fbcacbb5c4a4c7d8d950/vista/concessions/6883c5aeebe651c5cb3c42cb/common/15374-1754592910175',
-        },
-      },
-      {
-        name: 'Combo Duo Cabeza Pitufo',
-        description: 'Combo edición Pitufo',
-        price: 44.9,
-        type: 'COLECCIONABLE',
-        image: {
-          uri: 'https://assets.cinemark-core.com/6183fbcacbb5c4a4c7d8d950/vista/concessions/687ff623be197a99a4397660/common/15327-1754592965166',
-        },
-      },
-    ],
-  };
-
-  const categorias = Object.keys(productos);
-  const [catActiva, setCatActiva] = useState('Combos');
-  const [carrito, setCarrito] = useState<Producto[]>([]);
-
   const agregarCarrito = (producto: Producto) => {
-    const productoExistente = carrito.find((p) => p.name === producto.name);
+    const productoCarrito: ProductoCarrito = {
+      id: producto.id,
+      name: producto.nombre,
+      description: producto.descripcion || '',
+      price: producto.precio,
+      type: producto.categoria?.nombre || '',
+      image: producto.imagen_url || '',
+    };
+    const productoExistente = carrito.find((p) => p.id === productoCarrito.id);
     if (productoExistente) {
       setCarrito(
         carrito.map((p) =>
-          p.name === producto.name ? { ...p, cantidad: (p.cantidad || 1) + 1 } : p
+          p.id === productoCarrito.id ? { ...p, cantidad: (p.cantidad || 1) + 1 } : p
         )
       );
     } else {
-      setCarrito([...carrito, { ...producto, cantidad: 1 }]);
+      setCarrito([...carrito, { ...productoCarrito, cantidad: 1 }]);
     }
   };
 
-  const quitarDelCarrito = (nombreProducto: string) => {
-    const producto = carrito.find((p) => p.name === nombreProducto);
+  const quitarDelCarrito = (productoId: number) => {
+    const producto = carrito.find((p) => p.id === productoId);
     if (producto && (producto.cantidad || 1) > 1) {
       setCarrito(
-        carrito.map((p) =>
-          p.name === nombreProducto ? { ...p, cantidad: (p.cantidad || 1) - 1 } : p
-        )
+        carrito.map((p) => (p.id === productoId ? { ...p, cantidad: (p.cantidad || 1) - 1 } : p))
       );
     } else {
-      setCarrito(carrito.filter((p) => p.name !== nombreProducto));
+      setCarrito(carrito.filter((p) => p.id !== productoId));
     }
   };
 
@@ -269,6 +159,15 @@ export default function SeleccionComidas() {
       month: 'short',
     });
   };
+
+  if (loading) {
+    return (
+      <View className="flex-1 items-center justify-center bg-black">
+        <ActivityIndicator size="large" color="#3B82F6" />
+        <Text className="mt-4 text-base text-white">Cargando productos...</Text>
+      </View>
+    );
+  }
 
   return (
     <View className="flex-1 bg-black">
@@ -338,20 +237,23 @@ export default function SeleccionComidas() {
         {/* Categorías */}
         <View className="mb-6">
           <ScrollView horizontal showsHorizontalScrollIndicator={false} className="px-4">
-            {categorias.map((c) => (
+            {categorias.map((categoria) => (
               <TouchableOpacity
-                key={c}
-                onPress={() => setCatActiva(c)}
+                key={categoria.id}
+                onPress={() => setCatActiva(categoria.id)}
                 className={`mr-4 rounded-full px-6 py-3 ${
-                  catActiva === c ? 'bg-white' : 'bg-gray-800/50'
+                  catActiva === categoria.id ? 'bg-white' : 'bg-gray-800/50'
                 }`}
                 activeOpacity={0.8}>
-                <Text
-                  className={`text-base font-semibold ${
-                    catActiva === c ? 'text-black' : 'text-gray-400'
-                  }`}>
-                  {c}
-                </Text>
+                <View className="flex-row items-center">
+                  {categoria.icono && <Text className="mr-2 text-base">{categoria.icono}</Text>}
+                  <Text
+                    className={`text-base font-semibold ${
+                      catActiva === categoria.id ? 'text-black' : 'text-gray-400'
+                    }`}>
+                    {categoria.nombre}
+                  </Text>
+                </View>
               </TouchableOpacity>
             ))}
           </ScrollView>
@@ -359,35 +261,69 @@ export default function SeleccionComidas() {
 
         {/* Lista productos */}
         <View className="px-4" style={{ paddingBottom: carrito.length > 0 ? 200 : 40 }}>
-          {productos[catActiva].map((p, index) => (
-            <View
-              key={`${p.name}-${index}`}
-              className="mb-6 overflow-hidden rounded-3xl bg-gray-800/50">
-              <Image
-                source={p.image}
-                style={{
-                  width: '100%',
-                  height: height * 0.25,
-                }}
-                resizeMode="cover"
-              />
-              <View className="p-6">
-                <Text className="mb-2 text-lg font-bold text-white">{p.name}</Text>
-                <Text className="mb-4 text-sm leading-5 text-gray-400">{p.description}</Text>
-                <View className="flex-row items-center justify-between">
-                  <Text className="text-xl font-bold text-white">
-                    S/ {(p.price || 0).toFixed(2)}
-                  </Text>
-                  <TouchableOpacity
-                    onPress={() => agregarCarrito(p)}
-                    className="rounded-full bg-white px-6 py-3"
-                    activeOpacity={0.8}>
-                    <Text className="text-base font-semibold text-black">Agregar</Text>
-                  </TouchableOpacity>
+          {productosFiltrados.length > 0 ? (
+            productosFiltrados.map((producto) => (
+              <View key={producto.id} className="mb-6 overflow-hidden rounded-3xl bg-gray-800/50">
+                {producto.imagen_url ? (
+                  <Image
+                    source={{ uri: producto.imagen_url }}
+                    style={{
+                      width: '100%',
+                      height: height * 0.25,
+                    }}
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <View
+                    style={{
+                      width: '100%',
+                      height: height * 0.25,
+                    }}
+                    className="items-center justify-center bg-gray-700/50">
+                    <Text className="text-4xl">{producto.categoria?.icono || '🍿'}</Text>
+                  </View>
+                )}
+                <View className="p-6">
+                  <View className="mb-2 flex-row items-center justify-between">
+                    <Text className="flex-1 text-lg font-bold text-white">{producto.nombre}</Text>
+                    {producto.destacado && (
+                      <View className="ml-2 rounded-full bg-yellow-500/10 px-2 py-1">
+                        <Text className="text-xs font-medium text-yellow-400">Destacado</Text>
+                      </View>
+                    )}
+                  </View>
+                  {producto.descripcion && (
+                    <Text className="mb-4 text-sm leading-5 text-gray-400">
+                      {producto.descripcion}
+                    </Text>
+                  )}
+                  <View className="flex-row items-center justify-between">
+                    <Text className="text-xl font-bold text-white">
+                      S/ {producto.precio.toFixed(2)}
+                    </Text>
+                    <TouchableOpacity
+                      onPress={() => agregarCarrito(producto)}
+                      className="rounded-full bg-white px-6 py-3"
+                      activeOpacity={0.8}>
+                      <Text className="text-base font-semibold text-black">Agregar</Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
               </View>
+            ))
+          ) : (
+            <View className="items-center py-20">
+              <Text className="mb-4 text-4xl">
+                {categorias.find((c) => c.id === catActiva)?.icono || '🍿'}
+              </Text>
+              <Text className="mb-2 text-lg font-medium text-gray-400">
+                No hay productos disponibles
+              </Text>
+              <Text className="text-center text-sm text-gray-500">
+                En esta categoría no hay productos disponibles por el momento
+              </Text>
             </View>
-          ))}
+          )}
         </View>
       </ScrollView>
 
@@ -398,7 +334,7 @@ export default function SeleccionComidas() {
           <ScrollView className="mb-4 max-h-24" showsVerticalScrollIndicator={false}>
             {carrito.map((item, index) => (
               <View
-                key={`${item.name}-${index}`}
+                key={`${item.id}-${index}`}
                 className={`flex-row items-center justify-between py-2 ${
                   index < carrito.length - 1 ? 'border-b border-gray-800' : ''
                 }`}>
@@ -410,7 +346,7 @@ export default function SeleccionComidas() {
                 </View>
                 <View className="flex-row items-center">
                   <TouchableOpacity
-                    onPress={() => quitarDelCarrito(item.name)}
+                    onPress={() => quitarDelCarrito(item.id)}
                     className="mr-3 h-7 w-7 items-center justify-center rounded-full bg-gray-700"
                     activeOpacity={0.8}>
                     <Text className="text-sm font-bold text-white">-</Text>
@@ -419,7 +355,12 @@ export default function SeleccionComidas() {
                     {item.cantidad || 1}
                   </Text>
                   <TouchableOpacity
-                    onPress={() => agregarCarrito(item)}
+                    onPress={() => {
+                      const productoOriginal = productos.find((p) => p.id === item.id);
+                      if (productoOriginal) {
+                        agregarCarrito(productoOriginal);
+                      }
+                    }}
                     className="ml-3 h-7 w-7 items-center justify-center rounded-full bg-white"
                     activeOpacity={0.8}>
                     <Text className="text-sm font-bold text-black">+</Text>

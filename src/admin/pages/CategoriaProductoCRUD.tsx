@@ -134,8 +134,8 @@ export default function CategoriaProductoCRUD() {
     }
   };
 
-  // Cambiar estado de categoría
-  const toggleCategoriaStatus = async (categoria: CategoriaProducto) => {
+  // Cambiar estado de categoría (reemplaza eliminar)
+  const toggleCategoriaState = async (categoria: CategoriaProducto) => {
     try {
       await CategoriaProductoService.toggleCategoriaStatus(categoria.id, !categoria.activa);
       loadData();
@@ -148,35 +148,14 @@ export default function CategoriaProductoCRUD() {
     }
   };
 
-  // Eliminar categoría
-  const handleDelete = async (categoria: CategoriaProducto) => {
-    Alert.alert(
-      'Confirmar eliminación',
-      `¿Estás seguro de que deseas eliminar la categoría "${categoria.nombre}"?`,
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Eliminar',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await CategoriaProductoService.deleteCategoria(categoria.id);
-              Alert.alert('Éxito', 'Categoría eliminada correctamente');
-              loadData();
-            } catch (error) {
-              Alert.alert('Error', 'No se pudo eliminar la categoría');
-            }
-          },
-        },
-      ]
-    );
-  };
-
-  // Componente de tarjeta de categoría
-  const CategoriaCard = ({ categoria }: { categoria: CategoriaProducto }) => {
-    return (
-      <View className="mb-4 overflow-hidden rounded-3xl bg-gray-800/50">
-        <View className="flex-row items-center p-6">
+  // Componente de tarjeta de categoría estilo GeneroCRUD
+  const CategoriaCard = ({ categoria }: { categoria: CategoriaProducto }) => (
+    <Pressable
+      className="mx-4 mb-4 overflow-hidden rounded-3xl bg-gray-800/50"
+      onPress={() => openEditModal(categoria)}
+      style={{ opacity: 1 }}>
+      <View className="p-6">
+        <View className="flex-row items-start">
           <View
             className="mr-4 rounded-full p-3"
             style={{ backgroundColor: categoria.color ? `${categoria.color}20` : '#374151' }}>
@@ -186,15 +165,13 @@ export default function CategoriaProductoCRUD() {
               <Tag size={20} color={categoria.color || '#9CA3AF'} />
             )}
           </View>
+
           <View className="flex-1">
             <View className="mb-1 flex-row items-center justify-between">
-              <Text className="text-base font-medium text-white" numberOfLines={1}>
+              <Text className="flex-1 text-base font-medium text-white" numberOfLines={1}>
                 {categoria.nombre}
               </Text>
-              <View className="flex-row items-center space-x-2">
-                <Text className="text-xs text-gray-400">#{categoria.orden}</Text>
-                <Text className="text-xs text-gray-400">ID: {categoria.id}</Text>
-              </View>
+              <Text className="ml-3 text-xs text-gray-400">#{categoria.orden}</Text>
             </View>
 
             {categoria.descripcion && (
@@ -203,46 +180,56 @@ export default function CategoriaProductoCRUD() {
               </Text>
             )}
 
-            <View className="flex-row items-center space-x-4">
-              {categoria.color && (
-                <View className="flex-row items-center">
-                  <View
-                    className="mr-2 h-3 w-3 rounded-full"
-                    style={{ backgroundColor: categoria.color }}
-                  />
-                  <Text className="text-xs text-gray-400">{categoria.color}</Text>
-                </View>
-              )}
+            <View className="mb-3 flex-row items-center">
+              <Tag size={12} color="#6B7280" />
+              <Text className="ml-2 text-xs text-gray-500">Categoría de productos</Text>
+            </View>
 
-              {!categoria.activa && (
-                <View className="rounded-full bg-red-500/10 px-3 py-1">
-                  <Text className="text-xs font-medium text-red-400">Inactiva</Text>
-                </View>
-              )}
+            {/* Color y estado */}
+            <View className="flex-row items-center justify-between">
+              <View className="flex-row items-center space-x-2">
+                {categoria.color && (
+                  <View className="flex-row items-center">
+                    <View
+                      className="mr-2 h-3 w-3 rounded-full"
+                      style={{ backgroundColor: categoria.color }}
+                    />
+                    <Text className="text-xs text-gray-400">{categoria.color}</Text>
+                  </View>
+                )}
+
+                {!categoria.activa && (
+                  <View className="rounded-full bg-red-500/10 px-3 py-1">
+                    <Text className="text-xs font-medium text-red-400">Inactiva</Text>
+                  </View>
+                )}
+              </View>
+
+              <Pressable
+                onPress={(e) => {
+                  e.stopPropagation();
+                  toggleCategoriaState(categoria);
+                }}
+                className={`rounded-full px-4 py-2 ${
+                  categoria.activa ? 'bg-red-500/10' : 'bg-green-500/10'
+                }`}>
+                <Text
+                  className={`text-xs font-medium ${
+                    categoria.activa ? 'text-red-400' : 'text-green-400'
+                  }`}>
+                  {categoria.activa ? 'Desactivar' : 'Activar'}
+                </Text>
+              </Pressable>
             </View>
           </View>
 
-          <View className="flex-row items-center space-x-2">
-            <TouchableOpacity
-              onPress={() => openEditModal(categoria)}
-              className="rounded-full bg-blue-500/10 p-2"
-              activeOpacity={0.7}>
-              <Edit3 size={16} color="#3B82F6" />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() => handleDelete(categoria)}
-              className="rounded-full bg-red-500/10 p-2"
-              activeOpacity={0.7}>
-              <Trash2 size={16} color="#EF4444" />
-            </TouchableOpacity>
-
+          <View className="ml-2">
             <ChevronRight size={20} color="#6B7280" />
           </View>
         </View>
       </View>
-    );
-  };
+    </Pressable>
+  );
 
   if (loading) {
     return (
@@ -255,31 +242,27 @@ export default function CategoriaProductoCRUD() {
 
   return (
     <View className="flex-1 bg-black">
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        {/* Header */}
-        <View className="px-4 pb-6 pt-14">
-          <View className="flex-row items-center justify-between">
-            <View>
-              <Text className="text-sm font-medium text-gray-400">Administración</Text>
-              <Text className="text-2xl font-bold text-white">Categorías de Productos</Text>
-            </View>
-            <Pressable onPress={loadData} className="rounded-full bg-gray-800/50 p-3">
-              <RotateCcw size={20} color="#9CA3AF" />
-            </Pressable>
+      {/* Header estilo GeneroCRUD */}
+      <View className="px-4 pb-6 pt-14">
+        <View className="flex-row items-center justify-between">
+          <View>
+            <Text className="text-sm font-medium text-gray-400">Administración</Text>
+            <Text className="text-2xl font-bold text-white">Categorías de Productos</Text>
           </View>
+          <Pressable onPress={loadData} className="rounded-full bg-gray-800/50 p-3">
+            <RotateCcw size={20} color="#9CA3AF" />
+          </Pressable>
+        </View>
 
-          {/* Configuración */}
-          <Text className="mb-6 mt-8 text-xl font-bold text-white">Configuración</Text>
-
-          <View className="mb-4 flex-row items-center justify-between rounded-3xl bg-gray-800/50 p-6">
-            <View className="flex-1">
-              <Text className="text-base font-medium text-white">Mostrar categorías inactivas</Text>
-              <Text className="text-sm text-gray-400">
-                {filteredCategorias.length} categoría{filteredCategorias.length !== 1 ? 's' : ''}{' '}
-                encontrada
-                {filteredCategorias.length !== 1 ? 's' : ''}
-              </Text>
-            </View>
+        {/* Stats y controles */}
+        <View className="mb-4 mt-6 flex-row items-center justify-between">
+          <Text className="text-sm text-gray-400">
+            {filteredCategorias.length} categoría{filteredCategorias.length !== 1 ? 's' : ''}{' '}
+            encontrada
+            {filteredCategorias.length !== 1 ? 's' : ''}
+          </Text>
+          <View className="flex-row items-center">
+            <Text className="mr-3 text-sm font-medium text-gray-400">Mostrar inactivas</Text>
             <Switch
               value={showInactive}
               onValueChange={setShowInactive}
@@ -287,64 +270,61 @@ export default function CategoriaProductoCRUD() {
               thumbColor={showInactive ? '#000000' : '#9CA3AF'}
             />
           </View>
+        </View>
 
-          {/* Barra de búsqueda y botón crear */}
-          <View className="mb-6 flex-row items-center gap-3">
-            <View className="flex-1 flex-row items-center rounded-3xl bg-gray-800/50 px-4 py-4">
-              <Search size={20} color="#9CA3AF" />
-              <TextInput
-                placeholder="Buscar categorías..."
-                placeholderTextColor="#9CA3AF"
-                className="ml-3 flex-1 text-white"
-                value={searchTerm}
-                onChangeText={setSearchTerm}
-                returnKeyType="search"
-              />
-            </View>
-
-            <Pressable onPress={openCreateModal} className="rounded-3xl bg-gray-800/50 p-4">
-              <Plus size={20} color="#9CA3AF" />
-            </Pressable>
+        {/* Barra de búsqueda y botón crear */}
+        <View className="flex-row items-center space-x-3">
+          <View className="flex-1 flex-row items-center rounded-3xl bg-gray-800/50 px-4 py-3">
+            <Search size={20} color="#9CA3AF" />
+            <TextInput
+              placeholder="Buscar categorías..."
+              placeholderTextColor="#9CA3AF"
+              className="ml-3 flex-1 text-white"
+              value={searchTerm}
+              onChangeText={setSearchTerm}
+              returnKeyType="search"
+            />
           </View>
+
+          <Pressable onPress={openCreateModal} className="rounded-full bg-gray-800/50 p-3">
+            <Plus size={20} color="#9CA3AF" />
+          </Pressable>
         </View>
+      </View>
 
-        <View className="px-4">
-          {/* Lista de categorías */}
-          <Text className="mb-6 text-xl font-bold text-white">Categorías Disponibles</Text>
-
-          {filteredCategorias.length > 0 ? (
-            filteredCategorias.map((categoria) => (
-              <CategoriaCard key={categoria.id} categoria={categoria} />
-            ))
-          ) : (
-            <View className="items-center rounded-3xl bg-gray-800/30 p-8">
-              <View className="mb-4 h-20 w-20 items-center justify-center rounded-full bg-gray-700/50">
-                <Tag size={32} color="#9CA3AF" />
+      {/* Lista de categorías */}
+      {filteredCategorias.length > 0 ? (
+        <ScrollView
+          className="flex-1"
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 20 }}>
+          {filteredCategorias.map((categoria) => (
+            <CategoriaCard key={categoria.id} categoria={categoria} />
+          ))}
+        </ScrollView>
+      ) : (
+        <View className="flex-1 items-center justify-center px-4 py-20">
+          <Tag size={48} color="#6B7280" />
+          <Text className="mb-2 mt-4 text-lg text-gray-400">
+            {searchTerm ? 'No se encontraron categorías' : 'No hay categorías disponibles'}
+          </Text>
+          <Text className="px-8 text-center text-sm text-gray-500">
+            {searchTerm
+              ? 'Intenta con otro término de búsqueda o ajusta los filtros'
+              : 'Comienza creando tu primera categoría de productos'}
+          </Text>
+          {!searchTerm && (
+            <Pressable
+              onPress={openCreateModal}
+              className="mt-6 overflow-hidden rounded-3xl bg-gray-800/50 px-6 py-3">
+              <View className="flex-row items-center">
+                <Plus size={20} color="#9CA3AF" />
+                <Text className="ml-2 font-medium text-white">Agregar Categoría</Text>
               </View>
-              <Text className="mb-2 text-xl font-bold text-white">
-                {searchTerm ? 'No se encontraron categorías' : 'No hay categorías disponibles'}
-              </Text>
-              <Text className="mb-6 text-center text-sm text-gray-400">
-                {searchTerm
-                  ? 'Intenta con otro término de búsqueda o ajusta los filtros'
-                  : 'Comienza creando tu primera categoría de productos'}
-              </Text>
-              {!searchTerm && (
-                <Pressable
-                  onPress={openCreateModal}
-                  className="overflow-hidden rounded-3xl bg-white px-6 py-3">
-                  <View className="flex-row items-center">
-                    <Plus size={20} color="#000000" />
-                    <Text className="ml-2 font-semibold text-black">Crear Primera Categoría</Text>
-                  </View>
-                </Pressable>
-              )}
-            </View>
+            </Pressable>
           )}
-
-          <View className="h-20" />
         </View>
-      </ScrollView>
+      )}
 
       {/* Modal de formulario */}
       <Modal
@@ -482,32 +462,26 @@ export default function CategoriaProductoCRUD() {
             </ScrollView>
 
             {/* Botones */}
-            <View className="mb-6 mt-6 flex-row gap-3">
+            <View className="mt-6 flex-row space-x-3">
               <Pressable
                 onPress={() => setModalVisible(false)}
-                className="flex-1 rounded-3xl bg-gray-800/50 px-6 py-4">
-                <Text className="text-center text-base font-semibold text-white">Cancelar</Text>
+                className="flex-1 rounded-3xl bg-gray-800/50 px-4 py-3">
+                <Text className="text-center font-bold text-white">Cancelar</Text>
               </Pressable>
 
               <Pressable
                 onPress={handleSave}
                 disabled={formLoading || !formData.nombre.trim()}
-                className={`flex-1 rounded-3xl px-6 py-4 ${
-                  formLoading || !formData.nombre.trim() ? 'bg-gray-600/50' : 'bg-white'
+                className={`flex-1 rounded-3xl px-4 py-3 ${
+                  formLoading || !formData.nombre.trim() ? 'bg-gray-600/50' : 'bg-gray-800/50'
                 }`}>
                 {formLoading ? (
                   <ActivityIndicator size="small" color="#ffffff" />
                 ) : (
                   <View className="flex-row items-center justify-center">
-                    <Save
-                      size={16}
-                      color={formLoading || !formData.nombre.trim() ? '#ffffff' : '#000000'}
-                    />
-                    <Text
-                      className={`ml-2 text-base font-semibold ${
-                        formLoading || !formData.nombre.trim() ? 'text-white' : 'text-black'
-                      }`}>
-                      {editingCategoria ? 'Actualizar Categoría' : 'Crear Categoría'}
+                    <Save size={16} color="#ffffff" />
+                    <Text className="ml-2 font-bold text-white">
+                      {editingCategoria ? 'Actualizar' : 'Crear'}
                     </Text>
                   </View>
                 )}
